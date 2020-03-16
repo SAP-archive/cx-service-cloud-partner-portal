@@ -1,0 +1,10 @@
+<ngx-file-drop (onFileDrop)="onDrop($event)"
+               dropZoneClassName="file-drop-zone"
+               contentClassName="file-drop-zone-content"
+               [directory]="false"
+               [showBrowseBtn]="true">
+  <ng-template ngx-file-drop-content-tmp let-openFileSelector="openFileSelector">
+    <div (click)="openFileSelector()">
+      {{'SELECT_OR_DRAG_AND_DROP_FILE' | translate}} ({{'MAX_SIZE' | translate}}: {{maxSize | humanizeBytes}})</div>
+  </ng-template>
+</ngx-file-drop>

@@ -1,0 +1,10 @@
+{
+  "appConfig": {
+    "application_name": "partner-portal",
+    "application_short_name": "PP",
+    "clientIdentifier": "partner-portal",
+    "clientSecret": "",
+    "title": "Partner Portal",
+    "version": "0.11.0-rc43"
+  }
+}

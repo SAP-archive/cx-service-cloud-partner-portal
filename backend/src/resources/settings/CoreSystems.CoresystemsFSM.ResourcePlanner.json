@@ -1,0 +1,16 @@
+{
+  "boardSnapIntervalInMinutes":15,
+  "defaultTravelTimeToInMinutes":30,
+  "defaultTravelTimeFromInMinutes":30,
+  "allowOverlappingAssignments":true,
+  "ServiceCallStatusForReadyToPlanMapping": "-3",
+  "DefaultServiceCallOrigin": "-3",
+  "DefaultServiceCallType": null,
+  "DefaultServiceCallProblemType": null,
+  "DefaultServiceCallPriority": "MEDIUM",
+  "DefaultEnableAutoscheduling": true,
+  "DefaultServiceCallStatus": "-3",
+  "minimumAssignmentDuration": 30,
+  "IsAutomaticallyAssignTechniciansEnabled": false,
+  "MaxNumFilterTechnician": 40
+}

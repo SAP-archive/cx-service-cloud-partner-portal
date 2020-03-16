@@ -1,0 +1,12 @@
+<mat-card (click)="navigateToEditor()">
+  <mat-card-title class="side-padded" translate>DASHBOARD_PROFILE_TILE_YOUR_COMPANY_PROFILE</mat-card-title>
+  <mat-card-subtitle class="side-padded" translate>DASHBOARD_PROFILE_TILE_VIEW_AND_EDIT_ALL_COMPANY_RELATED_INFORMATION</mat-card-subtitle>
+  <mat-card-content>
+    <div class="logo-placeholder">{{name | async | abbreviate}}</div>
+    <div class="mat-subheading-2 no-margin side-padded">
+      <pp-fake-data *ngIf="!(name | async)" [fontSize]="16" [lineHeight]="28"></pp-fake-data>
+      <div *ngIf="name | async">{{name | async}}</div>
+    </div>
+    <div class="mat-subheading-1 side-padded faded" translate>DASHBOARD_PROFILE_TILE_PARTNER</div>
+  </mat-card-content>
+</mat-card>

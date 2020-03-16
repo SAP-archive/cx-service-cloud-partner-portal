@@ -1,0 +1,56 @@
+mat-card {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+mat-card-content {
+  .logo-wrapper {
+    height: 115px;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+
+    img.logo {
+      height: 100%;
+      max-width: 100%;
+    }
+  }
+
+  .contact-details > div {
+    overflow-wrap: break-word;
+
+    a {
+      color: black;
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+.no-margin {
+  margin: 0;
+}
+
+.side-padded {
+  $padding: 16px;
+  padding-left: $padding;
+  padding-right: $padding;
+}
+
+.logo-placeholder {
+  $height: 115px;
+  background-color: #0f828f;
+  color: #ffffff;
+  text-align: center;
+  font-size: 50px;
+  height: $height;
+  line-height: $height;
+  margin-bottom: 16px;
+}
+
+pp-fake-data {
+  padding-bottom: 8px;
+}

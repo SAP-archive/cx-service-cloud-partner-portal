@@ -1,0 +1,32 @@
+<form #form="ngForm" (ngSubmit)="onSubmit()">
+  <mat-form-field>
+    <input matInput
+           placeholder="{{'ACCOUNT' | translate}}"
+           required
+           name="account"
+           [disabled]="true"
+           [(ngModel)]="credentials.accountName">
+  </mat-form-field>
+  <mat-form-field>
+    <input matInput
+           placeholder="{{'USERNAME' | translate}}"
+           required
+           name="userName"
+           #userName="matInput"
+           [(ngModel)]="credentials.userName">
+  </mat-form-field>
+  <mat-form-field>
+    <input matInput
+           type="password"
+           placeholder="{{'PASSWORD' | translate}}"
+           required
+           name="password"
+           [(ngModel)]="credentials.password">
+  </mat-form-field>
+  <button type="submit"
+          mat-raised-button
+          [disabled]="form.invalid || (isBusy | async)"
+          color="primary">
+    {{'LOGIN' | translate}}
+  </button>
+</form>

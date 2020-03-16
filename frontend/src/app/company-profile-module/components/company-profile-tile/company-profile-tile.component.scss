@@ -1,0 +1,26 @@
+mat-card {
+  cursor: pointer;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.no-margin {
+  margin: 0;
+}
+
+.side-padded {
+  $padding: 16px;
+  padding-left: $padding;
+  padding-right: $padding;
+}
+
+.logo-placeholder {
+  $height: 115px;
+  background-color: #0f828f;
+  color: #ffffff;
+  text-align: center;
+  font-size: 50px;
+  height: $height;
+  line-height: $height;
+  margin-bottom: 16px;
+}

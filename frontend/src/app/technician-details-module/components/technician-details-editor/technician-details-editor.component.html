@@ -1,0 +1,110 @@
+<div *ngIf="isLoading | async" class="spinner-container">
+  <mat-spinner></mat-spinner>
+</div>
+<form *ngIf="!(isLoading | async)" [formGroup]="profileForm" (ngSubmit)="onSubmit()">
+  <mat-card class="header">
+    <div class="first-line">
+      <mat-card-title>{{getFullName()}}</mat-card-title>
+      <div class="action-buttons">
+        <button
+          *ngIf="profileForm.dirty"
+          [disabled]="profileForm.invalid"
+          class="save-button"
+          mat-flat-button color="primary"
+          type="submit">Save</button>
+        <mat-icon routerLink="/" class="button close">clear</mat-icon>
+      </div>
+    </div>
+    <div class="second-line">
+      <div class="avatar">
+        {{getFullName() | abbreviate}}
+      </div>
+      <div class="meta-data">
+        <div class="field">
+          <span class="label" translate>TECHNICIAN_PROFILE_ENTRY_DATE</span>
+          <span class="value">{{technicianProfile.createdAt | date}}</span>
+        </div>
+      </div>
+    </div>
+  </mat-card>
+  <div class="editor-content">
+    <div class="flex-horizontal grow-evenly">
+      <div class="flex-vertical">
+        <mat-card formGroupName="contact">
+          <mat-card-title translate>TECHNICIAN_PROFILE_ABOUT_TITLE</mat-card-title>
+          <mat-card-content>
+            <mat-form-field>
+              <input matInput
+                [placeholder]="'TECHNICIAN_PROFILE_ABOUT_FIRST_NAME' | translate"
+                required
+                formControlName="firstName">
+            </mat-form-field>
+            <mat-form-field>
+              <input matInput
+                [placeholder]="'TECHNICIAN_PROFILE_ABOUT_LAST_NAME' | translate"
+                required
+                formControlName="lastName">
+            </mat-form-field>
+            <mat-form-field>
+              <input matInput
+                type="email"
+                [placeholder]="'TECHNICIAN_PROFILE_ABOUT_EMAIL_ADDRESS' | translate"
+                required
+                formControlName="emailAddress">
+            </mat-form-field>
+            <mat-form-field>
+              <input matInput
+                [placeholder]="'TECHNICIAN_PROFILE_ABOUT_PHONE_NUMBER' | translate"
+                required
+                formControlName="phoneNumber">
+            </mat-form-field>
+          </mat-card-content>
+        </mat-card>
+        <mat-card formGroupName="address">
+          <mat-card-title translate>TECHNICIAN_PROFILE_ADDRESS_TITLE</mat-card-title>
+          <mat-card-content>
+            <mat-form-field>
+              <input matInput
+                [placeholder]="'TECHNICIAN_PROFILE_ADDRESS_LABEL_STREET_NAME' | translate"
+                required
+                formControlName="streetName">
+            </mat-form-field>
+            <mat-form-field>
+              <input matInput
+                [placeholder]="'TECHNICIAN_PROFILE_ADDRESS_LABEL_HOUSE_NUMBER' | translate"
+                required
+                formControlName="houseNumber">
+            </mat-form-field>
+            <mat-form-field>
+              <input matInput
+                [placeholder]="'TECHNICIAN_PROFILE_ADDRESS_LABEL_ZIP_CODE' | translate"
+                required
+                formControlName="zipCode">
+            </mat-form-field>
+            <mat-form-field>
+              <input matInput
+                [placeholder]="'TECHNICIAN_PROFILE_ADDRESS_LABEL_CITY' | translate"
+                required
+                formControlName="city">
+            </mat-form-field>
+            <mat-form-field>
+              <input matInput
+                [placeholder]="'TECHNICIAN_PROFILE_ADDRESS_LABEL_COUNTRY' | translate"
+                required
+                formControlName="country">
+            </mat-form-field>
+          </mat-card-content>
+        </mat-card>
+      </div>
+      <pp-skills-card></pp-skills-card>
+    </div>
+  </div>
+  <div class="action-buttons-bottom mobile-only">
+    <button
+      *ngIf="profileForm.dirty"
+      [disabled]="!profileForm.valid"
+      class="save-button"
+      mat-flat-button color="primary"
+      type="submit">Save</button>
+  </div>
+</form>

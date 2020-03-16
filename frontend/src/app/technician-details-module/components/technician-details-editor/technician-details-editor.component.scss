@@ -1,0 +1,137 @@
+@import '../../../../breakpoints';
+
+.mobile-only {
+  visibility: hidden;
+}
+
+.spinner-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 75vh;
+}
+
+.flex-vertical {
+  display: flex;
+  flex-direction: column;
+  flex-basis: 40%;
+  flex-grow: 0.4;
+}
+
+.flex-horizontal {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  align-content: stretch;
+
+  pp-skills-card {
+    flex-basis: 60%;
+    flex-grow: 0.6;
+    min-width: 60%;
+  }
+}
+
+mat-card {
+  margin: 1em;
+}
+
+pp-skills-card {
+  margin: 1em 1em 1em 0;
+}
+
+.header {
+  margin-bottom: 0;
+
+  .first-line {
+    display: flex;
+    justify-content: space-between;
+
+    .action-buttons {
+      display: flex;
+
+      .save-button {
+        margin-right: 10px;
+      }
+    }
+
+    .button {
+      cursor: pointer;
+      font-size: 35px;
+    }
+  }
+
+  .second-line {
+    display: flex;
+    justify-content: start;
+
+    .avatar {
+      background-color: #0f828f;
+      width: 80px;
+      height: 80px;
+      border-radius: 4px;
+      text-align: center;
+      line-height: 80px;
+      font-size: 24px;
+      color: #ffffff;
+    }
+
+    .meta-data {
+      display: flex;
+      flex-direction: column;
+      margin-left: 30px;
+      padding-top: 4px;
+
+      .field {
+        margin-bottom: 8px;
+
+        .label {
+          color: #6a6d70;
+          padding-right: 8px;
+        }
+        .value {
+          color: #32363a;
+        }
+      }
+    }
+  }
+}
+
+.editor-content {
+  mat-card {
+    mat-form-field {
+      display: block;
+    }
+  }
+}
+
+
+@media screen and (max-width: $mobile-width-breakpoint) {
+  .mobile-only {
+    visibility: visible;
+  }
+
+  .header .action-buttons {
+    .button.close {
+      display: none;
+    }
+  }
+
+  .editor-content {
+    .flex-horizontal {
+      flex-direction: column;
+
+      pp-skills-card {
+        margin-left: 1em;
+      }
+    }
+  }
+
+  .action-buttons-bottom {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    height: 5em;
+  }
+}

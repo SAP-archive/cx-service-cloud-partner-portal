@@ -1,0 +1,1 @@
+export { clientConfigService } from './ClientConfigService';

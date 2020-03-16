@@ -1,0 +1,20 @@
+<mat-card>
+  <mat-card-title class="side-padded" translate>DASHBOARD_CROWD_OWNER_TILE_CONTACT_TITLE</mat-card-title>
+  <mat-card-subtitle class="side-padded" translate><span translate>DASHBOARD_CROWD_OWNER_TILE_SUBTITLE_PREFIX</span> {{companyName| async}}</mat-card-subtitle>
+  <mat-card-content>
+    <div class="logo-wrapper" *ngIf="hasLogo | async">
+      <img class="logo" alt="Crowd Owner logo" [src]="logo | async" />
+    </div>
+    <div *ngIf="!(hasLogo | async)" class="logo-placeholder">
+      <span *ngIf="!(isLoading | async)">{{(contactDetails | async).name | abbreviate}}</span>
+    </div>
+    <div class="mat-subheading-2 no-margin side-padded contact-details">
+      <div *ngIf="!(isLoading | async)">{{(contactDetails | async).name}}</div>
+      <pp-fake-data *ngIf="isLoading | async" [fontSize]="16" [lineHeight]="28"></pp-fake-data>
+      <div *ngIf="!(isLoading | async)"><a href="mailto:{{(contactDetails | async).emailAddress}}">{{(contactDetails | async).emailAddress}}</a></div>
+      <pp-fake-data *ngIf="isLoading | async" [fontSize]="16" [lineHeight]="28"></pp-fake-data>
+      <div *ngIf="!(isLoading | async)">{{(contactDetails | async).phoneNumber}}</div>
+      <pp-fake-data *ngIf="isLoading | async" [fontSize]="16" [lineHeight]="28"></pp-fake-data>
+    </div>
+  </mat-card-content>
+</mat-card>

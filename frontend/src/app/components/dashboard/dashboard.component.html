@@ -1,0 +1,19 @@
+<div class="container">
+  <div class="column">
+    <div class="header">
+      <h1 *ngIf="(person | async) else noPersonHeadline">
+        Welcome {{(person | async).firstName}} {{(person | async).lastName}}!</h1>
+      <ng-template #noPersonHeadline><h1>Welcome!</h1></ng-template>
+
+      <p *ngIf="(companyName | async) else noCompanySubheadline" class="sub-headline">{{(companyName | async)}}</p>
+      <ng-template #noCompanySubheadline><p class="sub-headline">to the Company</p></ng-template>
+    </div>
+  </div>
+</div>
+<div class="content">
+  <div class="side-by-side">
+    <pp-company-profile-tile class="tile"></pp-company-profile-tile>
+    <pp-crowd-owner-profile-tile class="tile"></pp-crowd-owner-profile-tile>
+  </div>
+  <technicians-list class="double-tile"></technicians-list>
+</div>

@@ -1,0 +1,46 @@
+<mat-card>
+  <mat-card-title>{{'SERVICE_AREA' | translate}}</mat-card-title>
+  <mat-card-content [formGroup]="form">
+    <mat-form-field>
+      <input type="text" matInput formControlName="searchInput"
+             [matAutocomplete]="auto"
+             placeholder="{{'SERVICE_AREA_AREA' | translate}}">
+    </mat-form-field>
+
+    <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayAutocompletePrediction">
+      <mat-option *ngFor="let place of autocompleteValues | async" [value]="place">
+        {{place.description}}
+      </mat-option>
+    </mat-autocomplete>
+
+    <div class="radius-fields">
+      <mat-form-field class="radius-value">
+        <input type="number" matInput
+               formControlName="radiusValue"
+               min="1"
+               placeholder="{{'SERVICE_AREA_RADIUS' | translate}}">
+      </mat-form-field>
+
+      <mat-form-field class="radius-unit">
+        <select matNativeControl
+                formControlName="radiusUnit">
+          <option value="km">km</option>
+          <option value="mi">mi</option>
+        </select>
+      </mat-form-field>
+    </div>
+
+    <div *ngIf="radiusValueInput.touched">
+      <mat-error *ngIf="radiusValueInput.hasError('min') || isRadiusErrorEnabled(area)"
+                 class="radius-error"
+                 translate>SERVICE_AREA_RADIUS_HAS_TO_BE_BIGGER
+      </mat-error>
+      <mat-error *ngIf="radiusValueInput.hasError('pattern')"
+                 class="radius-error"
+                 translate>SERVICE_AREA_RADIUS_PLEASE_FILL_WITH_A_VALID_NUMBER
+      </mat-error>
+    </div>
+
+    <pp-map-with-circle-area [area]="area" [height]="150"></pp-map-with-circle-area>
+  </mat-card-content>
+</mat-card>

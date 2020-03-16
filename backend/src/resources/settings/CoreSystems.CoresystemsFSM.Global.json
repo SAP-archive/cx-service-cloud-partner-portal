@@ -1,0 +1,40 @@
+{
+  "dateTimeFormats": {
+    "DATE": {
+      "LONG": "DD.MM.YYYY",
+      "MEDIUM": "DD.MM.YY",
+      "SHORT": "D.M.YY"
+    },
+    "YEAR": {
+      "LONG": "YYYY",
+      "MEDIUM": "YY",
+      "SHORT": "YY"
+    },
+    "MONTH": {
+      "LONG": "MM",
+      "MEDIUM": "M",
+      "SHORT": "M"
+    },
+    "DAY": {
+      "LONG": "DD",
+      "MEDIUM": "D",
+      "SHORT": "D"
+    },
+    "TIME": {
+      "LONG": "HH:mm",
+      "MEDIUM": "H:mm",
+      "SHORT": "H:mm"
+    },
+    "HOUR": {
+      "LONG": "HH",
+      "MEDIUM": "H",
+      "SHORT": "H"
+    },
+    "MINUTE": {
+      "LONG": "mm",
+      "MEDIUM": "m",
+      "SHORT": "m"
+    }
+  },
+  "firstDayOfWeek": "MO"
+}

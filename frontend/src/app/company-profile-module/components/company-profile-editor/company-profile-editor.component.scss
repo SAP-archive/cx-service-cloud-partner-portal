@@ -1,0 +1,77 @@
+@import '../../../../breakpoints';
+
+.spinner-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 75vh;
+}
+
+$margin: 24px;
+.container {
+  padding: 0 $margin;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: $margin;
+
+  h1 {
+    margin: 0 $margin;
+  }
+
+  .left-side-header {
+    display: flex;
+    align-items: center;
+  }
+}
+
+mat-card {
+  width: 296px;
+  margin: $margin 0;
+}
+
+mat-card-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.horizontal-flex {
+  display: flex;
+}
+
+.documents-card {
+  width: 100%;
+  margin-left: $margin;
+}
+
+@media screen and (max-width: 700px) {
+  .horizontal-flex {
+    flex-direction: column;
+  }
+
+  mat-card {
+    width: initial;
+  }
+
+  .documents-card {
+    margin-left: 0;
+    width: initial;
+  }
+
+  .mat-display-3 {
+    font-size: 24px;
+  }
+}
+
+.footer {
+  text-align: right;
+}
+
+@media (min-width: $desktop-width-breakpoint) {
+  .footer {
+    display: none;
+  }
+}

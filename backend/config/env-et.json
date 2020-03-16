@@ -1,0 +1,11 @@
+{
+  "dataCloudHost": "et.dev.coresuite.com",
+  "dataCloudPort": 443,
+  "listenPort": 8000,
+  "mode": "production",
+  "directoryService": "https://et.dev.coresuite.com",
+  "logLevel": "info",
+  "realTimeRetries": 2,
+  "realTimeServerSocketEnabled": true,
+  "docsUrl": "http://ancient-ibex.cloudvent.net"
+}

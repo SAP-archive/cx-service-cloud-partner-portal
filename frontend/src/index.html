@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Partner Portal</title>
+  <base href="/partner-portal/">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/x-icon" href="https://cdn.coresystems.net/graphics-files/sap-favicon.ico">
+
+  <script>
+    function addMaximumScaleToMetaViewport() {
+      var el = document.querySelector('meta[name=viewport]');
+
+      if (el !== null) {
+        var content = el.getAttribute('content');
+        var regExp = /maximum\-scale=[0-9\.]+/g;
+
+        if (regExp.test(content)) {
+          content = content.replace(regExp, 'maximum-scale=1.0');
+        } else {
+          content = [content, 'maximum-scale=1.0'].join(', ');
+        }
+
+        el.setAttribute('content', content);
+      }
+    }
+
+    function isIOS() {
+      return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    }
+
+    if (isIOS()) {
+      addMaximumScaleToMetaViewport();
+    }
+  </script>
+  <script>
+    const NGXSTORE_CONFIG = {
+      prefix: 'sap_pp_',
+      mutateObjects: false
+    };
+  </script>
+  <script>
+    var CS_EMBEDDED_CONFIG = null;
+    csConfigCallback = config => CS_EMBEDDED_CONFIG = config;
+    document.writeln("<script src='portal/getConfig?callback=csConfigCallback&nocache=" + (new Date()).getTime() + "'><\/script>");
+  </script>
+  <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
+<body>
+<pp-partner-portal></pp-partner-portal>
+</body>
+</html>

@@ -1,0 +1,11 @@
+{
+  "dataCloudHost": "de.coresuite.com",
+  "dataCloudPort": 443,
+  "listenPort": 8000,
+  "mode": "production",
+  "directoryService": "https://ds.coresuite.com",
+  "logLevel": "info",
+  "realTimeRetries": 2,
+  "realTimeServerSocketEnabled": true,
+  "docsUrl": "https://docs.coresystems.net"
+}

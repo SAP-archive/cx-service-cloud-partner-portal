@@ -1,0 +1,12 @@
+div {
+  $size: 80px;
+  width: $size;
+  height: $size;
+  border-radius: 4px;
+  background-color: #0f828f;
+  color: #ffffff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0;
+}

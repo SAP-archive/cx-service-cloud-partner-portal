@@ -1,0 +1,50 @@
+<div id="document-list">
+  <div class="document-card" *ngFor="let document of documents; index as i"
+    id="documentsList.document.{{i}}"
+    [ngClass]="{'marked-for-removal': (removedDocumentsFacade.isDocumentMarkedForRemoval(document) | async)}">
+    <div id="card-content">
+      <div id="left-title">
+        <div *ngIf="!(removedDocumentsFacade.isDocumentMarkedForRemoval(document) | async)">
+          <a *ngIf="isDownloadable(document); else justTitle" class="download-link line-space"
+            (click)="downloadDocument(document, $event)">
+            {{document.name}}
+          </a>
+          <ng-template #justTitle><span class="title">{{document.name}}</span></ng-template>
+          <div class="line-space">
+            <label class="label-style" id="documentList.document.expirationDate">
+              {{'COMPANY_PROFILE_EDITOR_DOCUMENTS_EXPIRATION_DATE' | translate}}:
+            </label>
+            <span>{{formatDate(document.validTo)}}</span>
+          </div>
+          <div class="line-space">
+            <label class="label-style">{{'COMPANY_PROFILE_EDITOR_DOCUMENTS_REMARKS' | translate}}: </label>
+            <span id="document-reason">{{document.approvalDecision.reason}}</span>
+          </div>
+        </div>
+        <div *ngIf="removedDocumentsFacade.isDocumentMarkedForRemoval(document) | async">
+          <del class="line-space">{{document.name}}</del>
+          <div class="expiration-date deleted-text line-space">
+            {{'COMPANY_PROFILE_EDITOR_DOCUMENTS_EXPIRATION_WARNING' | translate}}
+          </div>
+        </div>
+      </div>
+      <div id="right-title">
+        <pp-approval-decision-status class="document-status" [approvalDecision]="document.approvalDecision"></pp-approval-decision-status>
+        <button mat-icon-button *ngIf="!(removedDocumentsFacade.isDocumentMarkedForRemoval(document) | async)"
+          type="button" class="delete-button" title="{{'DELETE' | translate }}"
+          (click)="deleteDocument(document, $event)">
+          <mat-icon>delete_outline</mat-icon>
+        </button>
+        <button mat-icon-button *ngIf="removedDocumentsFacade.isDocumentMarkedForRemoval(document) | async"
+          type="button" class="delete-button" title="{{'UNDO_REMOVAL' | translate }}"
+          (click)="undoDocumentDelete(document, $event)">
+          <mat-icon>undo</mat-icon>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="file-uploader">
+  <pp-file-uploader (dropped)="addDocument($event)" (errorOccurred)="onUploadError($event)"
+    [maxSize]="configFacade.maxAttachmentSize | async"></pp-file-uploader>
+</div>

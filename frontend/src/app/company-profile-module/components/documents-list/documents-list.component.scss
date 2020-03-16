@@ -1,0 +1,72 @@
+@import '../../../../breakpoints';
+
+.mat-expansion-panel-header-title, .mat-expansion-panel-header-description {
+  display: flex;
+  align-items: center;
+}
+
+.mat-expansion-panel-header-title {
+  width: 100%;
+}
+
+.mat-expansion-panel-header-description {
+  min-width: 58px;
+  justify-content: center;
+}
+
+@media (max-width: $desktop-width-breakpoint) {
+  .content {
+    flex-direction: column;
+  }
+}
+
+.download-link {
+  cursor: pointer;
+  color: #0a6ed1;
+}
+.download-link:hover {
+  text-decoration: underline;
+}
+
+.file-uploader {
+  margin-top: 24px;
+}
+
+#document-list {
+  border-top: #cccccc solid 1px;
+  border-left: #cccccc solid 1px;
+  border-right: #cccccc solid 1px;
+  .document-card {
+    border-bottom: #cccccc solid 1px;
+    #card-content {
+      display: flex;
+      min-height: 65px;
+      margin: 24px;
+
+      .line-space {
+        margin: 5px 0px 5px 0px;
+      }
+      #left-title {
+        word-wrap: break-word;
+        width: calc(100% - 100px);
+      }
+
+      .label-style {
+        color: rgba(0,0,0,.54)
+      }
+
+      #right-title {
+        position: absolute;
+        display: flex;
+        right: 15px;
+        margin-right: 10px;
+        .document-status {
+          margin-top: 12px;
+        }
+      }
+      .deleted-text {
+        color: red;
+      }
+    }
+  }
+}

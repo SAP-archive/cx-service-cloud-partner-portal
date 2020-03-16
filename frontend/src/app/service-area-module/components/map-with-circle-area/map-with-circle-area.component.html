@@ -1,0 +1,8 @@
+<agm-map [latitude]="area.latitude" [longitude]="area.longitude"
+                 [ngStyle]="{'height.px': height, 'width.px': width}"
+                 [disableDefaultUI]="true" [keyboardShortcuts]="false" [streetViewControl]="false"
+                 [zoomControl]="showZoomControls" [fitBounds]="bounds | async">
+  <agm-circle [latitude]="area.latitude" [longitude]="area.longitude"
+                          (centerChange)="onChange()" (radiusChange)="onChange()"
+                          [radius]="area.radius.value | radiusInMeters: area.radius.unit" fillColor="#00b2c9"></agm-circle>
+</agm-map>

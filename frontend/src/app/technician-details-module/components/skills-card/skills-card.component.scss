@@ -1,0 +1,158 @@
+@import '../../../../breakpoints';
+
+:host {
+  display: block;
+}
+
+.tag-list .tag {
+  border-top: 1px solid #ededed;
+  padding-top: 10px;
+
+  .main {
+    display: flex;
+    justify-content: space-between;
+
+    .tag-name {
+      flex-basis: 40%;
+    }
+
+    .expire-date {
+      flex-basis: 40%;
+      line-height: 12px;
+      margin-top: 6px;
+    }
+
+    .action-button {
+      cursor: pointer;
+    }
+  }
+
+  .details-panel {
+    display: flex;
+    justify-content: stretch;
+    justify-items: stretch;
+    padding: 10px 0 15px;
+
+    & > * {
+      flex: 1;
+    }
+
+    .description {
+      flex-basis: 40%;
+      padding-right:  10px;
+
+      .label {
+        color: #6a6d70;
+      }
+    }
+
+    .certificate {
+      display: flex;
+      align-items: center;
+      flex-basis: 40%;
+      min-width: 40%;
+
+      .file {
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+        min-width: 40%;
+        word-wrap: break-word;
+
+        .icon {
+          text-decoration: none !important;
+        }
+
+        .metadata {
+          padding-left: 8px;
+          min-width: 40%;
+        }
+
+        &.deleted {
+          color: darkred;
+
+          .metadata {
+            text-decoration: line-through;
+          }
+        }
+      }
+
+      .action-button {
+        cursor: pointer;
+        margin-left: 20px;
+      }
+    }
+
+    .certificate-upload {
+      display: flex;
+      align-items: center;
+      flex-basis: 40%;
+      min-width: 40%;
+
+      .selected-file {
+        display: flex;
+        align-items: center;
+        color: darkgreen;
+        min-width: 40%;
+
+        .file-name {
+          padding-left: 8px;
+          min-width: 40%;
+          word-wrap: break-word;
+        }
+      }
+
+      .action-button {
+        margin-left: 20px;
+        cursor: pointer;
+      }
+
+      pp-file-uploader {
+        display: block;
+      }
+    }
+
+    .approval-status {
+      display: flex;
+      align-items: center;
+      padding-left: 10px;
+
+      &.hidden {
+        visibility: hidden;
+      }
+
+      pp-approval-decision-status {
+        display: inline-block;
+      }
+    }
+  }
+
+  .remarks-label {
+    color: #6a6d70;
+  }
+}
+
+@media screen and (max-width: $mobile-width-breakpoint) {
+  .tag-list .tag .details-panel {
+    flex-direction: column;
+
+    & > div {
+      margin: 10px 0;
+    }
+
+    .approval-status {
+      order: 1;
+      padding-left: 25px;
+    }
+
+    .description {
+      order: 2;
+      padding-left: 25px;
+    }
+
+    .certificate, .certificate-upload {
+      order: 3;
+      padding-left: 25px;
+    }
+  }
+}

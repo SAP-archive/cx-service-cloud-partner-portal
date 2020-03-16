@@ -1,0 +1,91 @@
+$tile-width: 328px;
+$tile-margin-top: 24px;
+
+.container {
+  height: 429px;
+  background-image: url(//d2pqbuqf8h9nmp.cloudfront.net/images/signup/CrowdSignUpHeader.png);
+  background-size: cover;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.container .column {
+  width: 700px;
+
+  .header {
+    padding: 100px 0;
+
+    h1 {
+      font-size: 40px;
+      text-align: center;
+      margin: 0;
+    }
+
+    p.sub-headline {
+      font-size: 20px;
+      text-align: center;
+    }
+  }
+
+}
+
+@media screen and (max-width: 600px) {
+  .container .column {
+    width: 100vw;
+
+    .header {
+      padding: 50px 0;
+
+      h1 {
+        font-size: 30px;
+        line-height: 1em;
+      }
+
+      p.sub-headline {
+        font-size: 15px;
+      }
+    }
+  }
+}
+
+.content {
+  max-width: 681px;
+  position: relative;
+  top: -160px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.tile {
+  margin-top: $tile-margin-top;
+  width: $tile-width;
+}
+
+.double-tile {
+  margin-top: $tile-margin-top;
+}
+
+.side-by-side {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+@media screen and (max-width: 700px) {
+  .content {
+    align-items: center;
+    width: 100vw;
+    top: -250px;
+  }
+
+  .side-by-side {
+    justify-content: center;
+  }
+
+  .double-tile {
+    width: $tile-width;
+  }
+}

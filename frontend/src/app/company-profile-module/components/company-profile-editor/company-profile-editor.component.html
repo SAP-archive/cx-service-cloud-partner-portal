@@ -1,0 +1,95 @@
+<div *ngIf="(isLoading | async) || (isSaving | async)" class="spinner-container">
+  <mat-spinner></mat-spinner>
+</div>
+
+<form *ngIf="!(isLoading | async) && !((isSaving | async))" [formGroup]="profileForm" (ngSubmit)="onSubmit()">
+  <div class="container">
+    <div class="header">
+      <div class="left-side-header">
+        <pp-avatar [text]="name | async"></pp-avatar>
+        <h1 class="mat-display-3">{{name | async}}</h1>
+      </div>
+      <div>
+        <button mat-raised-button type="submit" color="primary" *ngIf="profileForm.dirty"
+          [disabled]="profileForm.invalid">{{saveButtonLabel | async | translate}}</button>
+      </div>
+    </div>
+    <mat-divider></mat-divider>
+    <div class="content">
+      <div class="horizontal-flex">
+        <div>
+          <mat-card>
+            <mat-card-title translate>COMPANY_PROFILE_EDITOR_ABOUT</mat-card-title>
+            <mat-card-content>
+              <mat-form-field>
+                <input matInput [placeholder]="'COMPANY_PROFILE_EDITOR_ABOUT_COMPANY_NAME' | translate" required
+                  formControlName="name">
+              </mat-form-field>
+              </mat-card-content>
+          </mat-card>
+              <mat-card formGroupName="contact">
+                <mat-card-title translate>COMPANY_PROFILE_EDITOR_CONTACT</mat-card-title>
+                <mat-card-content>
+                  <mat-form-field>
+                    <input matInput [placeholder]="'COMPANY_PROFILE_EDITOR_CONTACT_FIRST_NAME' | translate" required
+                      formControlName="firstName">
+                  </mat-form-field>
+                  <mat-form-field>
+                    <input matInput [placeholder]="'COMPANY_PROFILE_EDITOR_CONTACT_LAST_NAME' | translate" required
+                      formControlName="lastName">
+                  </mat-form-field>
+                  <mat-form-field>
+                    <input matInput [placeholder]="'COMPANY_PROFILE_EDITOR_CONTACT_EMAIL' | translate" required
+                      formControlName="emailAddress">
+                  </mat-form-field>
+                  <mat-form-field>
+                    <input matInput [placeholder]="'COMPANY_PROFILE_EDITOR_CONTACT_PHONE' | translate" required
+                      inputmode="numeric" formControlName="phoneNumber">
+                  </mat-form-field>
+                </mat-card-content>
+              </mat-card>
+
+              <mat-card formGroupName="address">
+                <mat-card-title translate>COMPANY_PROFILE_EDITOR_ADDRESS</mat-card-title>
+                <mat-card-content>
+                  <mat-form-field>
+                    <input matInput [placeholder]="'COMPANY_PROFILE_EDITOR_ADDRESS_STREET_NAME' | translate"
+                      formControlName="streetName">
+                  </mat-form-field>
+                  <mat-form-field>
+                    <input matInput [placeholder]="'COMPANY_PROFILE_EDITOR_ADDRESS_NUMBER' | translate"
+                      formControlName="number">
+                  </mat-form-field>
+                  <mat-form-field>
+                    <input matInput [placeholder]="'COMPANY_PROFILE_EDITOR_ADDRESS_CITY' | translate"
+                      formControlName="city">
+                  </mat-form-field>
+                  <mat-form-field>
+                    <input matInput [placeholder]="'COMPANY_PROFILE_EDITOR_ADDRESS_ZIP_CODE' | translate"
+                      formControlName="zipCode">
+                  </mat-form-field>
+                  <mat-form-field>
+                    <input matInput [placeholder]="'COMPANY_PROFILE_EDITOR_ADDRESS_COUNTRY' | translate"
+                      formControlName="country">
+                  </mat-form-field>
+                </mat-card-content>
+              </mat-card>
+
+              <pp-service-area-form formControlName="serviceArea"></pp-service-area-form>
+        </div>
+
+        <mat-card class="documents-card">
+          <mat-card-title translate>COMPANY_PROFILE_EDITOR_DOCUMENTS</mat-card-title>
+          <mat-card-subtitle translate>COMPANY_PROFILE_EDITOR_DOCUMENTS_SUBTITLE</mat-card-subtitle>
+          <mat-card-content>
+            <pp-documents-list (documentsListChange)="onDocsListChange()"></pp-documents-list>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </div>
+    <div class="footer">
+      <button mat-raised-button type="submit" color="primary"
+        [disabled]="profileForm.invalid || (isSaving | async)">{{saveButtonLabel | async | translate}}</button>
+    </div>
+  </div>
+</form>

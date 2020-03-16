@@ -1,0 +1,76 @@
+<mat-card>
+  <mat-card-title>{{'TECHNICIAN_PROFILE_SKILLS' | translate}} ({{selectedSkillsCount}})</mat-card-title>
+  <mat-card-content>
+    <div class="tag-list">
+      <div class="tag" *ngFor="let skillViewModel of skillViewModels | async">
+        <div class="main">
+          <mat-checkbox
+            class="tag-name"
+            [checked]="skillViewModel.selected"
+            (click)="toggleTag(skillViewModel)">{{skillViewModel.tag.name}}</mat-checkbox>
+          <div class="expire-date" *ngIf="skillViewModel.selected && skillViewModel.skill?.expiredAt">
+            <span>{{skillViewModel.skill?.expiredAt}}</span>
+          </div>
+          <mat-icon class="action-button" *ngIf="!skillViewModel.expanded" (click)="toggleTagDetails(skillViewModel)">keyboard_arrow_down</mat-icon>
+          <mat-icon class="action-button" *ngIf="skillViewModel.expanded" (click)="toggleTagDetails(skillViewModel)">keyboard_arrow_up</mat-icon>
+        </div>
+        <div class="details-panel" *ngIf="skillViewModel.expanded">
+          <div class="description">
+            <span class="label">{{'TECHNICIAN_PROFILE_SKILL_DETAIL_DESCRIPTION' | translate}}:</span><br />
+            <div class="description-body">{{skillViewModel.tag.description}}</div>
+          </div>
+          <div
+            class="certificate-upload"
+            *ngIf="skillViewModel.selected && (!skillViewModel.skill || !skillViewModel.skill.certificate)">
+            <div *ngIf="!!skillViewModel.newCertificate" class="selected-file">
+              <mat-icon>cloud_upload</mat-icon>
+              <span class="file-name">{{skillViewModel.newCertificate.fileName}}</span>
+            </div>
+            <mat-icon
+              class="action-button"
+              *ngIf="skillViewModel.newCertificate"
+              (click)="removeCertificateUpload(skillViewModel)">delete</mat-icon>
+            <pp-file-uploader
+              *ngIf="!skillViewModel.newCertificate"
+              (dropped)="addCertificateUpload($event, skillViewModel)"
+              (errorOccurred)="onUploadError($event)"
+              [maxSize]="configFacade.maxAttachmentSize | async"></pp-file-uploader>
+          </div>
+          <div
+            class="certificate"
+            *ngIf="skillViewModel.selected && skillViewModel.skill && skillViewModel.skill.certificate">
+            <div
+              class="file"
+              (click)="downloadCertificate(skillViewModel.skill)"
+              [ngClass]="{'deleted': skillViewModel.certificateToBeDeleted}">
+              <mat-icon class="icon">insert_drive_file</mat-icon>
+              <div class="metadata">
+                <div>{{skillViewModel.skill.certificate.fileName}}</div>
+              </div>
+            </div>
+            <mat-icon
+              class="action-button"
+              *ngIf="!skillViewModel.certificateToBeDeleted"
+              (click)="deleteCertificate(skillViewModel)">delete</mat-icon>
+            <mat-icon
+              class="action-button"
+              *ngIf="skillViewModel.certificateToBeDeleted"
+              (click)="undoCertificateDeletion(skillViewModel)">undo</mat-icon>
+          </div>
+          <div
+            *ngIf="skillViewModel.selected"
+            class="approval-status"
+            ngClass="{'hidden': !(tag.skill && tag.skill.approvalDecision)}">
+            <pp-approval-decision-status
+              *ngIf="skillViewModel.skill?.approvalDecision"
+              [approvalDecision]="skillViewModel.skill?.approvalDecision"></pp-approval-decision-status>
+          </div>
+        </div>
+        <div *ngIf="skillViewModel.skill?.approvalDecision?.reason">
+          <label class="remarks-label">{{'TECHNICIAN_PROFILE_SKILL_DETAIL_REMARKS' | translate}}: </label>
+          <div>{{skillViewModel.skill?.approvalDecision?.reason}}</div>
+        </div>
+      </div>
+    </div>
+  </mat-card-content>
+</mat-card>

@@ -1,0 +1,35 @@
+:host {
+  width: 100%;
+}
+
+.header {
+  $height: 48px;
+  display: flex;
+  justify-content: space-between;
+  background-color: #354a5f;
+  height: $height;
+  color: #ffffff;
+
+  .horizontal {
+    align-items: center;
+    display: flex;
+  }
+
+  .logo {
+    width: 48px;
+    height: 24px;
+    margin: 0 12px 0 56px;
+  }
+
+  .title {
+    font-size: 16px;
+  }
+
+  button {
+    margin: 0 32px;
+  }
+}
+
+pp-breadcrumbs {
+  margin-left: 8px;
+}

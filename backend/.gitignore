@@ -1,0 +1,4 @@
+src/resources/i18n
+*.js
+coverage
+mocha.json

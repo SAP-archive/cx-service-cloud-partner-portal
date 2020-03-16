@@ -1,0 +1,8 @@
+<div mat-dialog-content>
+  <p translate [translateParams]="{technicianName: technicianName}">
+    DASHBOARD_ARE_YOU_SURE_YOU_WANT_TO_REMOVE_TECHNICIAN</p>
+</div>
+<div mat-dialog-actions>
+  <button mat-button [mat-dialog-close]="false">{{'DASHBOARD_CANCEL' | translate}}</button>
+  <button mat-button [mat-dialog-close]="true" cdkFocusInitial>{{'DASHBOARD_YES_REMOVE' | translate}}</button>
+</div>

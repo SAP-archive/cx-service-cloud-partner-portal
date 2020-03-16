@@ -1,0 +1,30 @@
+@import './breakpoints';
+@import './colors';
+@import './fiori.custom.css';
+/* You can add global styles to this file, and also import other style files */
+
+html, body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+  background-color: #fafafa;
+}
+
+.faded {
+  color: $faded-color;
+}
+
+@media (max-width: $desktop-width-breakpoint) {
+  .hidden-on-mobile {
+    display: none !important;
+  }
+}
+
+@media (min-width: $desktop-width-breakpoint) {
+  .hidden-on-desktop {
+    display: none !important;
+  }
+}

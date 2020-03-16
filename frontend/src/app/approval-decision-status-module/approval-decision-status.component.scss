@@ -1,0 +1,23 @@
+div {
+  color: #ffffff;
+  padding: 4px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  background-color: #0a6ed1;
+}
+
+.declined {
+  background-color: #bb0000;
+  width: fit-content;
+}
+
+.approved {
+  background-color: #107e3e;
+  width: fit-content;
+}
+
+.pending {
+  background-color: #e9730c;
+  width: fit-content;
+}
