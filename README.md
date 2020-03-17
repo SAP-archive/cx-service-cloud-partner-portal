@@ -1,10 +1,16 @@
 # Partner Portal
 
+Partner Portal enables service partners to
+* maintain their technicians data (skills, certificates, contact information, etc.)
+* upload and maintain company information (e.g. upload certificate documents)
+
+This repository contains a reference implementation. It is an example on how to use our public APIs. It helps crowd owners to offer their service partners a customized experience.
+
+
 ## Table of contents
 
 - [Partner Portal](#partner-portal)
   - [Table of contents](#table-of-contents)
-  - [Description](#description)
   - [Requirements](#requirements)
   - [Installation](#installation)
   - [Configuration](#configuration)
@@ -15,16 +21,6 @@
   - [Architecture](#architecture)
   - [SAP APIs being used](#sap-apis-being-used)
   - [License](#license)
-
-
-## Description
-
-It will enable service partners to
-* maintain their technicians data (skills, certificates, contact information, etc.)
-* upload and maintain company information (e.g. upload certificate documents)
-
-This repository contains a reference implementation. It is an example on how to use our public APIs. It helps crowd owners to offer their service partners a customized experience.
-
 
 ## Requirements
 * Node.js (find required version in the `.nvmrc` files)
@@ -74,7 +70,6 @@ Contributions are not supported. Since this is just example code.
 
 
 ## To-Do (upcoming changes)
-
 
 ## Architecture
 
