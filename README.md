@@ -1,6 +1,6 @@
-# Partner Portal
+# SAP FSM Crowd Partner Portal
 
-Partner Portal enables service partners to
+Partner Portal enables SAP FSM Crowd service partners to:
 * maintain their technicians data (skills, certificates, contact information, etc.)
 * upload and maintain company information (e.g. upload certificate documents)
 
