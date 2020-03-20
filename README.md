@@ -1,4 +1,4 @@
-# SAP FSM Crowd Partner Portal
+# SAP Field Service Management Crowd Partner Portal
 
 Partner Portal enables [SAP FSM Crowd](https://apps.coresystems.net/marketplace/) service partners to:
 * maintain their technicians data (skills, certificates, contact information, etc.)
