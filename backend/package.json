@@ -3,7 +3,6 @@
   "version": "0.0.0",
   "description": "Server side app for the partner portal",
   "scripts": {
-    "dev": "npm run start:local:et",
     "pretest": "npm run clean",
     "test:docker": "./run-tests-in-docker.sh",
     "test": "cross-env CLIENT_ID=\"partner-portal\" cross-env CLIENT_SECRET=\"partner-portal-test\" nyc mocha --opts mocha.opts --watch",
@@ -18,10 +17,7 @@
     "start": "node ./node_modules/typescript/bin/tsc -w",
     "start:local": "cross-env PROMETHEUS_USERNAME=none cross-env PROMETHEUS_PASSWORD=none cross-env LOCAL_TRANSLATIONS=true cross-env CLIENT_ID=\"partner-portal\" cross-env CLIENT_SECRET=\"partner-portal-test\" cross-env APP_VERSION=1.0.0 nodemon --config nodemon.json --inspect ./src/app.js",
     "start:local:de": "npm run start:local -- ./config/env-local-de.json",
-    "start:local:et": "npm run start:local -- ./config/env-local-et.json",
     "start:local:eu": "npm run start:local -- ./config/env-local-eu.json",
-    "start:local:qt": "npm run start:local -- ./config/env-local-qt.json",
-    "start:local:sb": "npm run start:local -- ./config/env-local-sb.json",
     "start:local:us": "npm run start:local -- ./config/env-local-us.json",
     "clean": "gulp clean:src",
     "clean:release": "rimraf release/*",

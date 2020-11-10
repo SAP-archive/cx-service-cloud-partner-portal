@@ -75,8 +75,6 @@ export class TechnicianDetailsEditorComponent implements OnInit, OnDestroy {
   public isBlocked: boolean;
   public isActive: boolean;
   public crowdTypes: CrowdType[] = ['PARTNER_ADMIN', 'PARTNER_TECHNICIAN'];
-  // @todo ci:feature-flag-cleanup[2020-12-31]:CPB-46059
-  public isChangeRoleEnabled: Promise<boolean> = this.launchDarklyService.canAccess('web-partner-portal-change-role-cpb-46059');
   private isRoleChanged: boolean = false;
 
   constructor(
@@ -89,7 +87,6 @@ export class TechnicianDetailsEditorComponent implements OnInit, OnDestroy {
     private store: Store<RootState>,
     private profileService: TechnicianProfileService,
     private router: Router,
-    private launchDarklyService: LaunchDarklyClientService,
   ) {
     this.editorMode = route.snapshot.data.mode;
   }

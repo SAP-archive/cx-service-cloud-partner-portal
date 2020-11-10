@@ -34,6 +34,8 @@ This repository contains a reference implementation. It is an example on how to 
 
 Put your Google Maps API key and channel into `partner-portal/frontend/src/app/service-area-module/service-area.module.ts` file. 
 
+Replace fake client secret ("partner-portal-test") with your client secret in start:local script.
+
 Run the application backend:
 ```shell
 > cd backend
