@@ -13,7 +13,7 @@
     "test:ci": "cross-env CLIENT_ID=\"partner-portal\" cross-env CLIENT_SECRET=\"partner-portal-test\" multi='mocha-bamboo-reporter=- spec=-' nyc mocha --opts mocha.opts --reporter mocha-multi",
     "posttest-ci": "npm run remove-absolute-path-coverage && npm run clean",
     "remove-absolute-path-coverage": "sed -i.bak 's/SF:.*app\\/backend-build\\//SF:/g' coverage/lcov.info",
-    "build": "node --max_old_space_size=4096 ./node_modules/.bin/gulp --env qt",
+    "build": "node --max_old_space_size=4096 ./node_modules/.bin/gulp --env de",
     "start": "node ./node_modules/typescript/bin/tsc -w",
     "start:local": "cross-env PROMETHEUS_USERNAME=none cross-env PROMETHEUS_PASSWORD=none cross-env LOCAL_TRANSLATIONS=true cross-env CLIENT_ID=\"partner-portal\" cross-env CLIENT_SECRET=\"partner-portal-test\" cross-env APP_VERSION=1.0.0 nodemon --config nodemon.json --inspect ./src/app.js",
     "start:local:de": "npm run start:local -- ./config/env-local-de.json",
