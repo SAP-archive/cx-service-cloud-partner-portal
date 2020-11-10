@@ -18,6 +18,11 @@ export class TechnicianProfileService {
       .pipe(map(response => response.body));
   }
 
+  public delete(id: string): Observable<any> {
+    return this.appBackendService.delete<any>(`/data/technician/${id}`, {}, {responseType: 'text'})
+      .pipe(map(response => response.body));
+  }
+
   public getSkills(technicianExternalId: string): Observable<Skill[]> {
     return this.appBackendService.get<Skill[]>(`/data/technician/${technicianExternalId}/skills`)
       .pipe(map(response => response.body));

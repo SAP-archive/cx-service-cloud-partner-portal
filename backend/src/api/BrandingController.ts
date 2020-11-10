@@ -9,19 +9,32 @@ export class BrandingController {
       .then(settings => {
         res.send(settings);
       })
-      .catch(() => ApiHelper.processError(res));
+      .catch(error => ApiHelper.processError(res, error));
+  }
+
+  public static async getCrowdOwnerName(req: express.Request & UserDataRequest, res: express.Response) {
+    BrandingService.getCrowdOwnerName(req.userData)
+      .then(crowdName => res.send({crowdName}))
+      .catch(error => {
+        if (error.statusCode === StatusCode.NOT_FOUND) {
+          res.sendStatus(StatusCode.NOT_FOUND);
+          return;
+        }
+
+        ApiHelper.processError(res, error);
+      });
   }
 
   public static async getLogo(req: express.Request & UserDataRequest, res: express.Response) {
     BrandingService.getLogo(req.userData)
       .then(logoString => res.send({logoString}))
-      .catch(reason => {
-        if (reason.statusCode === StatusCode.NOT_FOUND) {
+      .catch(error => {
+        if (error.statusCode === StatusCode.NOT_FOUND) {
           res.sendStatus(StatusCode.NOT_FOUND);
           return;
         }
 
-        ApiHelper.processError(res);
+        ApiHelper.processError(res, error);
       });
   }
 }

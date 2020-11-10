@@ -1,4 +1,6 @@
 import { Skill, exampleSkill } from './skill.model';
+import { SyncStatus } from '../../model/sync-status';
+import { CrowdType } from './crowd-type';
 
 export interface TechnicianProfile {
   externalId: string;
@@ -7,6 +9,7 @@ export interface TechnicianProfile {
   email: string;
   mobilePhone: string;
   createdAt: string;
+  syncStatus?: SyncStatus;
   address: {
     id: string;
     streetName: string;
@@ -14,8 +17,11 @@ export interface TechnicianProfile {
     zipCode: string;
     city: string;
     country: string;
+    syncStatus?: SyncStatus;
   };
   skills: Skill[];
+  inactive: boolean;
+  crowdType: CrowdType;
 }
 
 export const emptyTechnicianProfile = (): TechnicianProfile => ({
@@ -34,6 +40,8 @@ export const emptyTechnicianProfile = (): TechnicianProfile => ({
     country: '',
   },
   skills: [],
+  inactive: false,
+  crowdType: ''
 });
 
 export const exampleTechnicianProfile = (externalId = 'ASD123'): TechnicianProfile => ({
@@ -53,5 +61,7 @@ export const exampleTechnicianProfile = (externalId = 'ASD123'): TechnicianProfi
   },
   skills: [
     exampleSkill('DSA1'),
-  ]
+  ],
+  inactive: false,
+  crowdType: 'PARTNER_TECHNICIAN'
 });

@@ -38,8 +38,9 @@ class TestConfigurationService {
     'x-cloud-company-name': 'company-name',
     'x-cloud-user-name': 'user-name',
     'x-cloud-user-id': '3',
-    Authorization: 'bearer myToken',
-    'Content-Type': 'application/json',
+    'x-cloud-host': 'https://my.host',
+    authorization: 'bearer myToken',
+    'content-type': 'application/json',
   };
 
   public static readonly requestQuerySuffix = (prefix: '?' | '&' = '?') =>

@@ -9,10 +9,9 @@ export interface Technician {
   address?: any;
   serviceArea?: any;
   createdAt: string;
-  toBeDeleted?: boolean;
 }
 
-export const exampleTechnician = (externalId = '123213123213', toBeDeleted = false): Technician => ({
+export const exampleTechnician = (externalId = '123213123213'): Technician => ({
   externalId,
   email: 'asdasdsad@asd.de',
   firstName: 'John',
@@ -21,5 +20,4 @@ export const exampleTechnician = (externalId = '123213123213', toBeDeleted = fal
   skills: [],
   businessPartner: 'ASDGSDA',
   createdAt: '2019-11-19T13:13:41Z',
-  toBeDeleted,
 });

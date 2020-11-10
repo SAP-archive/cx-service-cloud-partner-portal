@@ -9,7 +9,6 @@ import * as reportingActions from '../../state/reporting/reporting.actions';
 import { TagService } from '../services/tag.service';
 import { Router } from '@angular/router';
 import { saveAsInjectionToken } from '../injection-tokens';
-import { FileReaderService } from 'src/app/file-uploader/services/file-reader.service';
 
 @Injectable()
 export class TechnicianProfileEffects {
@@ -35,9 +34,13 @@ export class TechnicianProfileEffects {
           skills,
         }).pipe(
           switchMap(createdProfile => {
-            this.router.navigateByUrl(`technician-details/${createdProfile.externalId}`);
-            reportingActions.reportSuccess({ message: 'TECHNICIAN_PROFILE_CREATE_SUCCEED' });
-            return of(TechnicianProfileActions.createTechnicianProfileSuccess({ profile: createdProfile }));
+            setTimeout(() => {
+              this.router.navigateByUrl(`technician-details/${createdProfile.externalId}`);
+            }, 2000);
+            return of(
+              TechnicianProfileActions.createTechnicianProfileSuccess({ profile: createdProfile }),
+              reportingActions.reportSuccess({ message: 'TECHNICIAN_PROFILE_CREATE_SUCCEED' })
+            );
           }),
           catchError(() =>
             of(

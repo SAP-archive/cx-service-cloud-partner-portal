@@ -29,6 +29,7 @@ export const newDocumentSchema: SchemaWithReferences = {
       approvalDecision: {$ref: '/ApprovalDecision'},
       fileContent: {type: 'string'},
       contentType: {type: 'string'},
+      description: {type: 'string'},
     },
     required: ['id', 'name', 'approvalDecision', 'fileContent', 'contentType'],
   },

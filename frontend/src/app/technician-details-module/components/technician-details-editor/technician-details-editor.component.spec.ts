@@ -1,22 +1,27 @@
-
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { TechnicianDetailsEditorComponent, WorkingMode } from './technician-details-editor.component';
-import { exampleTechnicianProfile, TechnicianProfile, emptyTechnicianProfile } from '../../models/technician-profile.model';
+import { emptyTechnicianProfile, exampleTechnicianProfile, TechnicianProfile } from '../../models/technician-profile.model';
 import { FormBuilder, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { TechnicianProfileFacade } from '../../state/technician-profile.facade';
-import { ActivatedRoute, RouterModule, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TechnicianDetailsMaterialModule } from '../../technician-details-material.module';
 import { TranslateModule } from '@ngx-translate/core';
 import { AbbreviatePipeModule } from 'src/app/abbreviate-pipe-module/abbreviate-pipe.module';
 import { RecursivePartial } from 'src/app/utils/recursive-partial';
-import { State, initialState, technicianProfileFeatureKey } from '../../state/technician-profile.reducer';
-import { provideMockStore, MockStore } from '@ngrx/store/testing';
+import { initialState, State, technicianProfileFeatureKey } from '../../state/technician-profile.reducer';
+import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { Store } from '@ngrx/store';
 import { TechnicianProfileService } from '../../services/technician-profile.service';
 import { SkillsCardComponent } from '../skills-card/skills-card.component';
 import { ApprovalDecisionStatusModule } from 'src/app/approval-decision-status-module/approval-decision-status.module';
 import { FileUploaderModule } from 'src/app/file-uploader/file-uploader.module';
+import { HttpClientModule } from '@angular/common/http';
+import { ReportingFacade } from 'src/app/state/reporting/reporting.facade';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { examplePerson } from '../../../model/unified-person.model';
+import { UserState } from '../../../state/user/user.reducer';
+import { omit } from '../../../utils/omit';
 
 interface RouteSnapshot {
   params: {};
@@ -45,7 +50,7 @@ class ActivatedRouteMock {
 }
 
 describe('TechnicianDetailsEditorComponent', () => {
-  type MockedState = RecursivePartial<{ [technicianProfileFeatureKey]: State }>;
+  type MockedState = RecursivePartial<{ [technicianProfileFeatureKey]: State, user: RecursivePartial<UserState> }>;
   let store: MockStore<MockedState>;
   let component: TechnicianDetailsEditorComponent;
   let fixture: ComponentFixture<TechnicianDetailsEditorComponent>;
@@ -58,6 +63,20 @@ describe('TechnicianDetailsEditorComponent', () => {
       ...initialState,
       ...profileState,
     },
+    user: {
+      person: examplePerson()
+    },
+  });
+
+  const mapToTechnicianData = (profile: TechnicianProfile) => ({
+    externalId: undefined,
+    lastName: profile.lastName,
+    firstName: profile.firstName,
+    email: profile.email,
+    mobilePhone: profile.mobilePhone,
+    inactive: profile.inactive,
+    address: profile.address,
+    crowdType: profile.crowdType,
   });
 
   beforeEach((() => {
@@ -80,6 +99,7 @@ describe('TechnicianDetailsEditorComponent', () => {
         TechnicianDetailsMaterialModule,
         ApprovalDecisionStatusModule,
         FileUploaderModule,
+        HttpClientModule,
       ],
       declarations: [
         TechnicianDetailsEditorComponent,
@@ -88,7 +108,12 @@ describe('TechnicianDetailsEditorComponent', () => {
       providers: [
         FormBuilder,
         TechnicianProfileFacade,
-        TechnicianProfileService,
+        {
+          provide: TechnicianProfileService,
+          useValue: jasmine.createSpyObj(TechnicianProfileService, [
+            'get', 'create', 'update', 'getSkills', 'downloadCertificate'
+          ]),
+        },
         provideMockStore({
           initialState: getState({
             isLoadingProfile: true,
@@ -107,8 +132,8 @@ describe('TechnicianDetailsEditorComponent', () => {
     })
     .compileComponents();
 
-    store = TestBed.get(Store);
-    technicianFacade = TestBed.get(TechnicianProfileFacade);
+    store = TestBed.inject(Store) as MockStore<MockedState>;
+    technicianFacade = TestBed.inject(TechnicianProfileFacade);
     fixture = TestBed.createComponent(TechnicianDetailsEditorComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
@@ -125,6 +150,7 @@ describe('TechnicianDetailsEditorComponent', () => {
           profileData: exampleProfile,
         }));
         expect(component.technicianProfile).toEqual(exampleProfile);
+        expect(component.isActive).toEqual(!exampleProfile.inactive);
       });
 
       it('should stop updating technicianProfile after destruction', () => {
@@ -143,8 +169,52 @@ describe('TechnicianDetailsEditorComponent', () => {
         component.ngOnInit();
         expect(spy).toHaveBeenCalledWith(currentTechnicianId);
       });
-    });
 
+      describe('when technician is blocked', () => {
+        it('should set isBlocked to true', () => {
+          component.ngOnInit();
+          const exampleProfile: TechnicianProfile = {
+            ...exampleTechnicianProfile(),
+            syncStatus: 'BLOCKED',
+          };
+          store.setState(getState({
+            isLoadingProfile: false,
+            profileData: exampleProfile,
+          }));
+          expect(component.isBlocked).toEqual(true);
+        });
+
+        it('should report warning', () => {
+          const reportingFacade = TestBed.inject(ReportingFacade);
+          const spy = spyOn(reportingFacade, 'reportWarning');
+          component.ngOnInit();
+          const exampleProfile: TechnicianProfile = {
+            ...exampleTechnicianProfile(),
+            syncStatus: 'BLOCKED',
+          };
+          store.setState(getState({
+            isLoadingProfile: false,
+            profileData: exampleProfile,
+          }));
+          expect(spy).toHaveBeenCalled();
+        });
+      });
+
+      describe('when technician is not blocked', () => {
+        it('should set isBlocked to false', () => {
+          component.ngOnInit();
+          const exampleProfile: TechnicianProfile = {
+            ...exampleTechnicianProfile(),
+            syncStatus: 'IN_CLOUD',
+          };
+          store.setState(getState({
+            isLoadingProfile: false,
+            profileData: exampleProfile,
+          }));
+          expect(component.isBlocked).toEqual(false);
+        });
+      });
+    });
 
     describe('getFullName()', () => {
       it('should return the full name', () => {
@@ -170,11 +240,80 @@ describe('TechnicianDetailsEditorComponent', () => {
           done();
         });
       });
+
+      describe('should check if role changed', () => {
+        it('should clear crowdType attribute if role not changed', (done) => {
+          store.setState(getState({
+            profileData: exampleTechnicianProfile(),
+          }));
+          component.ngOnInit();
+          const spy = spyOn(technicianFacade, 'saveProfile');
+          component.onSubmit().then(() => {
+            expect(spy).toHaveBeenCalledWith({
+              ...mapToTechnicianData(exampleTechnicianProfile()),
+              crowdType: ''
+            });
+            done();
+          });
+        });
+
+        it('should keep crowdType attribute if role changed', (done) => {
+          store.setState(getState({
+            profileData: exampleTechnicianProfile(),
+          }));
+          component.ngOnInit();
+          component.onRoleChanged('PARTNER_ADMIN');
+          const spy = spyOn(technicianFacade, 'saveProfile');
+          component.onSubmit().then(() => {
+            expect(spy).toHaveBeenCalledWith({...mapToTechnicianData(exampleTechnicianProfile())});
+            done();
+          });
+        });
+      });
+    });
+
+    describe('onToggleActive()', () => {
+      it('should toggle active and mark form as dirty', () => {
+        component.ngOnInit();
+        component.isActive = true;
+        component.person = {
+          id: '111',
+          firstName: 'firstName',
+          lastName: 'lastName',
+          inactive: false,
+        };
+        component.technicianProfile = exampleTechnicianProfile('123');
+        component.onToggleActive();
+        expect(component.isActive).toEqual(false);
+        expect(component.profileForm.dirty).toEqual(true);
+      });
+
+      it('should not toggle active if technician is current logged in user', () => {
+        component.ngOnInit();
+        component.isActive = true;
+        component.person = {
+          id: '111',
+          firstName: 'firstName',
+          lastName: 'lastName',
+          inactive: false,
+        };
+        component.technicianProfile = exampleTechnicianProfile('111');
+        component.onToggleActive();
+        expect(component.isActive).toEqual(true);
+        expect(component.profileForm.dirty).toEqual(false);
+      });
     });
 
     describe('ngOnDestroy()', () => {
       it('calls facade to clear form data', () => {
         const spy = spyOn(technicianFacade, 'clearProfileData');
+        component.ngOnDestroy();
+        expect(spy).toHaveBeenCalled();
+      });
+
+      it('dismisses snack bar', () => {
+        const snackBar = TestBed.inject(MatSnackBar);
+        const spy = spyOn(snackBar, 'dismiss');
         component.ngOnDestroy();
         expect(spy).toHaveBeenCalled();
       });
@@ -201,6 +340,19 @@ describe('TechnicianDetailsEditorComponent', () => {
         const spy = spyOn(technicianFacade, 'createProfile');
         component.onSubmit().then(() => {
           expect(spy).toHaveBeenCalled();
+          done();
+        });
+      });
+
+      it('should remove .crowdType and .address.id attribute', (done) => {
+        store.setState(getState({
+          profileData: exampleTechnicianProfile(),
+        }));
+        component.ngOnInit();
+        const spy = spyOn(technicianFacade, 'createProfile');
+        component.onSubmit().then(() => {
+          let profile = mapToTechnicianData(exampleTechnicianProfile());
+          expect(spy).toHaveBeenCalledWith(omit({...profile, address: omit(profile.address, 'id')}, 'crowdType'));
           done();
         });
       });

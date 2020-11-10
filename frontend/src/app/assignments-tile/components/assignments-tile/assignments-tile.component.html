@@ -1,0 +1,29 @@
+<a routerLink="assignments">
+  <mat-card>
+    <mat-card-title class="side-padded" translate>DASHBOARD_ASSIGNMENTS_STATS_TILE_TITLE</mat-card-title>
+    <mat-card-content>
+      <div class="flex-horizontal">
+        <div class="counter">
+          <h1 *ngIf="isLoading | async" class="new">--</h1>
+          <h1 *ngIf="!(isLoading | async)" class="new">{{(assignmentsStats | async).newCount | truncateNumber}}</h1>
+          <span class="title-tile-text" translate>DASHBOARD_ASSIGNMENTS_STATS_TILE_NEW</span>
+        </div>
+        <div class="counter">
+          <h1 *ngIf="isLoading | async" class="ready-to-plan">--</h1>
+          <h1 *ngIf="!(isLoading | async)" class="ready-to-plan">{{(assignmentsStats | async).readyToPlanCount | truncateNumber}}</h1>
+          <span class="title-tile-text" translate>DASHBOARD_ASSIGNMENTS_STATS_TILE_READY_TO_PLAN</span>
+        </div>
+        <div class="counter">
+          <h1 *ngIf="isLoading | async">--</h1>
+          <h1 *ngIf="!(isLoading | async)">{{(assignmentsStats | async).ongoingCount | truncateNumber}}</h1>
+          <span class="title-tile-text" translate>DASHBOARD_ASSIGNMENTS_STATS_TILE_ONGOING</span>
+        </div>
+        <div class="counter">
+          <h1 *ngIf="isLoading | async" class="closed">--</h1>
+          <h1 *ngIf="!(isLoading | async)" class="closed">{{(assignmentsStats | async).closedCount | truncateNumber}}</h1>
+          <span class="title-tile-text" translate>DASHBOARD_ASSIGNMENTS_STATS_TILE_CLOSED</span>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</a>

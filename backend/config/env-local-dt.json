@@ -3,7 +3,7 @@
   "dataCloudPort": 443,
   "listenPort": 8000,
   "mode": "development",
-  "directoryService": "https://dt.dev.coresuite.com",
+  "directoryService": "https://qt.dev.coresuite.com",
   "logLevel": "debug",
   "realTimeRetries": 2,
   "realTimeServerSocketEnabled": true,

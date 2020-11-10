@@ -1,4 +1,4 @@
-export const omit = <T>(object: T, ...keys: Array<keyof T>): Partial<T> => { // todo: once Angular is compatible with TS 3.5 we can use Omit type
+export const omit = <T>(object: T, ...keys: Array<keyof T>): Omit<T, keyof T> => {
   return keys.reduce(
     (previous, key) => {
       const {[key]: omitted, ...rest} = previous;

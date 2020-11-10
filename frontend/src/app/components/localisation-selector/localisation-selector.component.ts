@@ -4,8 +4,8 @@ import { select, Store } from '@ngrx/store';
 import * as fromRoot from '../../state';
 import * as selectFromUser from '../../state/user/user.selectors';
 import { Observable } from 'rxjs';
-import { localisations } from './localisations';
-import { changeLocalisation } from '../../state/user/user.actions';
+import { localisations, findLocalisation } from './localisations';
+import { selectLocalisation } from '../../state/user/user.actions';
 
 @Component({
   selector: 'pp-localisation-selector',
@@ -25,8 +25,6 @@ export class LocalisationSelectorComponent implements OnInit {
   }
 
   public selectLanguage(code: Localisation['code']) {
-    this.store.dispatch(changeLocalisation({
-      localisation: this.localisations.find(localisation => localisation.code === code)
-    }));
+    this.store.dispatch(selectLocalisation({ localisation: findLocalisation(code) }));
   }
 }

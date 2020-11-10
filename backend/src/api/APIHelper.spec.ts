@@ -4,6 +4,7 @@ import * as express from 'express';
 import { clientConfigService, ClientConfiguration } from '@modules/common';
 import sinon = require('sinon');
 import { ClientError } from 'interfaces/ClientError';
+import logger = require('../services/LoggerService');
 
 const exampleConfiguration = (): ClientConfiguration => ({
   backendClusterDomain: 'google.com',
@@ -65,11 +66,11 @@ describe('APIHelper', () => {
 
     it('logs some message to the console', () => {
       const error: ClientError = {code: 400, message: 'Test error'};
-      const consoleSpy = sinon.spy(console, 'error');
+      const loggerSpy = sinon.spy(logger, 'error');
       ApiHelper.processError(mockResponse as any, error, false);
-      assert(consoleSpy.called, 'console.error has not been called');
-      assert.deepEqual(consoleSpy.lastCall.args, ['An error occurred'], 'console.error not called with correct message');
-      consoleSpy.restore();
+      assert(loggerSpy.called, 'console.error has not been called');
+      assert.deepEqual(loggerSpy.lastCall.args, ['Unexpected Internal Error'], 'console.error not called with correct message');
+      loggerSpy.restore();
     });
   });
 

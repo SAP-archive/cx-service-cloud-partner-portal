@@ -3,6 +3,7 @@ export interface IBaseClientConfiguration {
   clusterName: string;
   enableClusterRedirect: boolean;
   cnIcpNumber: string;
+  launchdarklyKey: string;
 }
 
 class ClientConfiguration {
@@ -10,6 +11,7 @@ class ClientConfiguration {
   private static readonly APP_CLUSTER_KEY = 'CLIENT_APP_CLUSTER';
   private static readonly ENABLE_CLUSTER_REDIRECT_KEY = 'CLIENT_ENABLE_CLUSTER_REDIRECT';
   private static readonly CN_ICP_NUMBER_KEY = 'CN_ICP_NUMBER';
+  private static readonly LAUNCH_DARKLY_KEY = 'LAUNCH_DARKLY_KEY';
 
   private configProvided: boolean;
   private config: NodeJS.ProcessEnv | undefined;
@@ -38,6 +40,10 @@ class ClientConfiguration {
     return this.getProperty(ClientConfiguration.CN_ICP_NUMBER_KEY);
   }
 
+  public get launchdarklyKey() {
+    return this.getProperty(ClientConfiguration.LAUNCH_DARKLY_KEY);
+  }
+
   public setConfiguration(env: NodeJS.ProcessEnv) {
     this.config = env;
     this.configProvided = true;
@@ -49,6 +55,7 @@ class ClientConfiguration {
       clusterName: this.clusterName || '',
       enableClusterRedirect: this.enableClusterRedirect,
       cnIcpNumber: this.cnIcpNumber,
+      launchdarklyKey: this.launchdarklyKey,
     };
   }
 

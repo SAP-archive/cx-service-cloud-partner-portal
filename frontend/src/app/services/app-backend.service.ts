@@ -3,7 +3,7 @@ import { Observable, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { HttpClient, HttpResponse } from '@angular/common/http';
 import { AuthData } from '../auth-module/model/auth-data.model';
-import { AuthFacade } from '../auth-module/state/auth.facade';
+import { AuthFacade } from '../auth-module/state/auth/auth.facade';
 import { ConfigFacade } from '../state/config/config.facade';
 import { AppConfig } from '../model/app-config.model';
 import { environment } from '../../environments/environment';

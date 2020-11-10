@@ -10,6 +10,7 @@ import {
 declare const require: any;
 
 (window as any).CS_EMBEDDED_CONFIG = {
+  launchdarklyKey: 'fake-launch-darkly-key',
 };
 
 // First, initialize the Angular testing environment.

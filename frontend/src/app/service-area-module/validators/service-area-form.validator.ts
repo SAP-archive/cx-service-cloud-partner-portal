@@ -19,12 +19,12 @@ export function isServiceAreaValid(area: ServiceArea): Boolean {
   }
 
   if (!area.googlePlaceId) {
-    if (area.radius.value === null || area.radius.value >= 1 ) {
+    if (area.radius.value === null || area.radius.value >= 0 ) {
       return valid;
     }
     return invalid;
   } else {
-    if (isNaN(area.radius.value) || area.radius.value === null || area.radius.value < 1) {
+    if (isNaN(area.radius.value) || area.radius.value < 0) {
       return invalid;
     }
     return valid;

@@ -11,15 +11,11 @@ import { CommonModule } from '@angular/common';
 import { FakeDataModule } from '../fake-data-module/fake-data.module';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { RemovalConfirmationDialogComponent } from './components/removal-confirmation-dialog/removal-confirmation-dialog.component';
+import { InfiniteScrollModule } from 'ngx-infinite-scroll';
 
 @NgModule({
   declarations: [
     TechniciansListComponent,
-    RemovalConfirmationDialogComponent,
-  ],
-  entryComponents: [
-    RemovalConfirmationDialogComponent,
   ],
   imports: [
     CommonModule,
@@ -30,6 +26,7 @@ import { RemovalConfirmationDialogComponent } from './components/removal-confirm
     translateModule,
     StoreModule.forFeature(fromTechnicians.techniciansFeatureKey, fromTechnicians.reducer),
     EffectsModule.forFeature([TechniciansEffects]),
+    InfiniteScrollModule,
   ],
   exports: [
     TechniciansListComponent,

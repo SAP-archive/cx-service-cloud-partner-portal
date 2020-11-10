@@ -16,19 +16,9 @@ export class CompanyProfileController {
   public static read(req: express.Request & UserDataRequest, res: express.Response) {
     const {userData} = req;
 
-    UnifiedPersonDao.findPartnerIdForCurrentUser(userData)
-      .then(partnerId => {
-        if (!!partnerId) {
-          return CompanyProfileService.read(userData, partnerId);
-        } else {
-          ApiHelper.processError(res, {
-            code: StatusCode.FORBIDDEN,
-            message: 'FORBIDDEN',
-          });
-        }
-      })
+    return CompanyProfileService.read(userData)
       .then(result => res.json(result))
-      .catch(() => ApiHelper.processError(res));
+      .catch((error) => ApiHelper.processError(res, error));
   }
 
   @validateBody({
@@ -60,6 +50,6 @@ export class CompanyProfileController {
     UnifiedPersonDao.findPartnerIdForCurrentUser(userData)
       .then(partnerId => CompanyProfileService.save(userData, partnerId, body))
       .then(result => res.json(result))
-      .catch(() => ApiHelper.processError(res));
+      .catch((error) => ApiHelper.processError(res, error));
   }
 }

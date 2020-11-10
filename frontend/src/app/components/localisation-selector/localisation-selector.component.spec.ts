@@ -3,7 +3,7 @@ import { async } from '@angular/core/testing';
 import { LocalisationSelectorComponent } from './localisation-selector.component';
 import { Localisation } from './localisation';
 import { cold } from 'jasmine-marbles';
-import { changeLocalisation } from '../../state/user/user.actions';
+import { selectLocalisation } from '../../state/user/user.actions';
 
 describe('LocalisationSelectorComponent', () => {
   let component: LocalisationSelectorComponent;
@@ -49,7 +49,7 @@ describe('LocalisationSelectorComponent', () => {
       });
       component.selectLanguage(localisation().code);
 
-      expect(spy).toHaveBeenCalledWith(changeLocalisation({localisation: localisation()}));
+      expect(spy).toHaveBeenCalledWith(selectLocalisation({localisation: localisation()}));
     });
   });
 });

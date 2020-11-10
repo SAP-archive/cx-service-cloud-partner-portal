@@ -1,0 +1,41 @@
+.assignment-details-title {
+    display: flex;
+    flex-direction: column;
+
+    .title-text {
+        font-size: 24px;
+    }
+}
+
+.assignment-details-content {
+    overflow-y: auto;
+    min-width: 450px;
+    min-height: 450px;
+}
+
+.assignment-fields-title {
+    margin: 12px 0px;
+}
+
+.assignment-fields-row {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.assignment-fields-column {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.assignment-read-only-field {
+    font-size: 14px;
+    margin-bottom: 12px;
+}
+
+.title-with-no-margin {
+    margin: 0;
+}

@@ -6,7 +6,7 @@ import { ApiHelper } from './APIHelper';
 export class DocumentsController {
   public static download(req: express.Request & UserDataRequest, res: express.Response) {
     const {userData} = req;
-    DocumentsService.download(userData, req.param('id'))
+    DocumentsService.download(userData, req.params.id)
     .on('error', () => ApiHelper.processError(res))
     .pipe(res);
   }

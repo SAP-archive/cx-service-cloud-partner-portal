@@ -1,27 +1,25 @@
-import { Component, OnInit } from '@angular/core';
-import { BehaviorSubject, combineLatest, Observable } from 'rxjs';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { BehaviorSubject, Observable, Subject } from 'rxjs';
 import { Technician } from '../../models/technician.model';
 import { TechniciansFacade } from '../../state/technicians.facade';
-import { filter, map } from 'rxjs/operators';
+import { filter, takeUntil, debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { MatDialog } from '@angular/material/dialog';
-import { RemovalConfirmationDialogComponent } from '../removal-confirmation-dialog/removal-confirmation-dialog.component';
 import { UnifiedPerson } from 'src/app/model/unified-person.model';
 import { Store, select } from '@ngrx/store';
 import { RootState } from 'src/app/state';
 import { selectPerson } from 'src/app/state/user/user.selectors';
+import { loadTechnicians } from '../../state/technicians.actions';
 
 @Component({
   styleUrls: ['technicians-list.component.scss'],
   templateUrl: 'technicians-list.component.html',
   selector: 'technicians-list',
 })
-export class TechniciansListComponent implements OnInit {
-  public loadingTechnicians: Observable<boolean>;
-  public technicians: Observable<Technician[]>;
+export class TechniciansListComponent implements OnInit, OnDestroy {
   public searchQuery: string;
   public person: Observable<UnifiedPerson>;
   private queryObservable = new BehaviorSubject<string>('');
-
+  private onDestroy: Subject<undefined> = new Subject();
 
   constructor(
     public techniciansFacade: TechniciansFacade,
@@ -31,21 +29,19 @@ export class TechniciansListComponent implements OnInit {
   }
 
   public ngOnInit() {
-    this.technicians = combineLatest([
-      this.techniciansFacade.technicians,
-      this.queryObservable,
-    ]).pipe(
-      map(([technicians, searchQuery]) => technicians.filter(technician =>
-        this.getFullTechnicianName(technician).toLowerCase()
-          .includes(searchQuery.toLowerCase()),
-      )),
-    );
+    this.queryObservable
+      .pipe(takeUntil(this.onDestroy), debounceTime(300), distinctUntilChanged())
+      .subscribe(() => this.techniciansFacade.searchTechnicians(this.searchQuery));
+    this.person = this.store.pipe(select(selectPerson), filter(person => !!person));
+  }
 
-    this.techniciansFacade.loadTechnicians();
-    this.person = this.store.pipe(
-      select(selectPerson),
-      filter(person => !!person),
-    );
+  public ngOnDestroy(): void {
+    this.onDestroy.next();
+    this.onDestroy.complete();
+  }
+
+  public fetchNextPage(): void {
+    this.store.dispatch(loadTechnicians());
   }
 
   public getFullTechnicianName(technician: Technician): string {
@@ -59,17 +55,5 @@ export class TechniciansListComponent implements OnInit {
   public resetSearchQuery() {
     this.searchQuery = '';
     this.onQueryChange();
-  }
-
-  public deleteTechnician(technician: Technician) {
-    this.dialog.open<RemovalConfirmationDialogComponent, string, boolean>(
-      RemovalConfirmationDialogComponent,
-      {
-        data: this.getFullTechnicianName(technician),
-      },
-    )
-      .afterClosed()
-      .pipe(filter(confirmed => !!confirmed))
-      .subscribe(() => this.techniciansFacade.deleteTechnician(technician));
   }
 }

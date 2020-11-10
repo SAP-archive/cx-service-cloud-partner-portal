@@ -3,8 +3,9 @@ import { TechnicianService } from '../services/TechnicianService';
 import { ApiHelper, StatusCode } from './APIHelper';
 import { UserDataRequest } from './middleware/sessiondata';
 import { validateBody } from '@modules/common/utils';
-import { TechnicianDto, Skill } from '@modules/data-access/models';
+import { Skill, TechnicianDto } from '@modules/data-access/models';
 import { NewSkillCertificate } from '@modules/data-access/models/SkillCertificate';
+import { TechniciansCreationCounterService } from '../metrics/technicians-creation/TechniciansCreationCounterService';
 
 export interface UpdateTechnicianRequest extends express.Request {
   body: {
@@ -24,13 +25,47 @@ export class TechnicianController {
   public static readAll(req: express.Request & UserDataRequest, res: express.Response) {
     TechnicianService.readAll(req.userData)
       .then(result => res.json(result))
-      .catch(() => ApiHelper.processError(res));
+      .catch((error) => ApiHelper.processError(res, error));
+  }
+
+  @validateBody({
+    schema: {
+      type: 'object',
+      properties: {
+        name: {
+          type: 'string',
+        },
+        externalId: {
+          type: 'string',
+        },
+        page: {
+          type: 'integer',
+          minimum: 0,
+        },
+        size: {
+          type: 'integer',
+          minimum: 1,
+        },
+      },
+      additionalProperties: false,
+      required: [
+        'page',
+        'size',
+      ],
+    },
+  })
+  public static search(req: express.Request & UserDataRequest, res: express.Response) {
+    TechnicianService.search(req.userData, req.body)
+      .then(result => {
+        res.json(result);
+      })
+      .catch((error) => ApiHelper.processError(res, error));
   }
 
   public static remove(req: express.Request & UserDataRequest, res: express.Response) {
     TechnicianService.remove(req.userData, req.params.technicianId)
       .then(() => res.sendStatus(200))
-      .catch(() => ApiHelper.processError(res));
+      .catch((error) => ApiHelper.processError(res, error));
   }
 
   @validateBody({
@@ -43,7 +78,6 @@ export class TechnicianController {
           required: [
             'firstName',
             'lastName',
-            'mobilePhone',
             'email',
             'address',
           ],
@@ -55,37 +89,34 @@ export class TechnicianController {
               type: 'string',
             },
             mobilePhone: {
-              type: 'string',
+              type: ['string', 'null'],
             },
             email: {
               type: 'string',
             },
+            inactive: {
+              type: 'boolean',
+            },
             address: {
               type: 'object',
+              additionalProperties: false,
               properties: {
                 city: {
-                  type: 'string',
+                  type: ['string', 'null'],
                 },
                 zipCode: {
-                  type: 'string',
+                  type: ['string', 'null'],
                 },
                 country: {
-                  type: 'string',
+                  type: ['string', 'null'],
                 },
                 streetName: {
-                  type: 'string',
+                  type: ['string', 'null'],
                 },
                 number: {
-                  type: 'string',
+                  type: ['string', 'null'],
                 },
               },
-              required: [
-                'city',
-                'zipCode',
-                'country',
-                'streetName',
-                'number',
-              ]
             },
           },
         },
@@ -113,7 +144,7 @@ export class TechnicianController {
                 type: 'string',
               },
               viewModelId: {
-                type: ['string', 'null']
+                type: ['string', 'null'],
               },
             },
           },
@@ -157,7 +188,7 @@ export class TechnicianController {
               type: ['object', 'null'],
             },
             viewModelId: {
-              type: ['string', 'null']
+              type: ['string', 'null'],
             },
           },
         },
@@ -167,9 +198,13 @@ export class TechnicianController {
   public static create(req: express.Request & UserDataRequest, res: express.Response) {
     TechnicianService.create(req.userData, req.body)
       .then((profile) => {
+        TechniciansCreationCounterService.countCreation({
+          crowdAccountId: req.header('X-Cloud-Account-Id'),
+          cloudHost: req.header('X-Cloud-Host'),
+        });
         res.json(profile);
       })
-      .catch(reason => ApiHelper.processError(res));
+      .catch(error => ApiHelper.processError(res, error));
   }
 
   @validateBody({
@@ -183,9 +218,9 @@ export class TechnicianController {
             'externalId',
             'firstName',
             'lastName',
-            'mobilePhone',
             'email',
             'address',
+            'crowdType',
           ],
           properties: {
             externalId: {
@@ -198,9 +233,15 @@ export class TechnicianController {
               type: 'string',
             },
             mobilePhone: {
-              type: 'string',
+              type: ['string', 'null'],
             },
             email: {
+              type: 'string',
+            },
+            inactive: {
+              type: 'boolean',
+            },
+            crowdType: {
               type: 'string',
             },
             address: {
@@ -210,29 +251,22 @@ export class TechnicianController {
                   type: 'string',
                 },
                 city: {
-                  type: 'string',
+                  type: ['string', 'null'],
                 },
                 zipCode: {
-                  type: 'string',
+                  type: ['string', 'null'],
                 },
                 country: {
-                  type: 'string',
+                  type: ['string', 'null'],
                 },
                 streetName: {
-                  type: 'string',
+                  type: ['string', 'null'],
                 },
                 number: {
-                  type: 'string',
+                  type: ['string', 'null'],
                 },
               },
               additionalProperties: false,
-              required: [
-                'city',
-                'zipCode',
-                'country',
-                'streetName',
-                'number',
-              ]
             },
           },
         },
@@ -266,7 +300,7 @@ export class TechnicianController {
             remove: {
               type: 'array',
               items: {
-                type: '#/definitions/skill'
+                type: '#/definitions/skill',
               },
             },
           },
@@ -285,7 +319,7 @@ export class TechnicianController {
           type: 'object',
           properties: {
             viewModelId: {
-              type: ['string', 'null']
+              type: ['string', 'null'],
             },
             uuid: {
               type: ['string', 'null'],
@@ -320,10 +354,10 @@ export class TechnicianController {
           type: 'object',
           properties: {
             viewModelId: {
-              type: ['string', 'null']
+              type: ['string', 'null'],
             },
             skillId: {
-              type: ['string', 'null']
+              type: ['string', 'null'],
             },
             fileName: {
               type: 'string',
@@ -347,7 +381,7 @@ export class TechnicianController {
     },
   })
   public static update(req: UpdateTechnicianRequest & UserDataRequest, res: express.Response) {
-    const { technicianId } = req.params;
+    const {technicianId} = req.params;
 
     if (!technicianId) {
       ApiHelper.processError(res, {
@@ -357,13 +391,12 @@ export class TechnicianController {
     }
 
     TechnicianService.update(req.userData, technicianId, req.body)
-      .then(([, profile, address]) => {
+      .then(profile => {
         res.json({
           ...profile,
-          address,
         } as TechnicianDto);
       })
-      .catch(() => ApiHelper.processError(res));
+      .catch((error) => ApiHelper.processError(res, error));
   }
 
   @validateBody({
@@ -381,7 +414,7 @@ export class TechnicianController {
     },
   })
   public static assignSkill(req: express.Request & UserDataRequest, res: express.Response) {
-    const { technicianId } = req.params;
+    const {technicianId} = req.params;
 
     if (!technicianId) {
       ApiHelper.processError(res, {
@@ -390,15 +423,15 @@ export class TechnicianController {
       });
     }
 
-    const { tagExternalId } = req.body;
+    const {tagExternalId} = req.body;
 
     TechnicianService.assignSkill(req.userData, technicianId, tagExternalId)
       .then(skill => res.json(skill))
-      .catch(reason => ApiHelper.processError(res));
+      .catch(error => ApiHelper.processError(res, error));
   }
 
   public static readSkills(req: express.Request & UserDataRequest, res: express.Response) {
-    const { technicianId } = req.params;
+    const {technicianId} = req.params;
 
     if (!technicianId) {
       ApiHelper.processError(res, {
@@ -407,15 +440,15 @@ export class TechnicianController {
       });
     }
 
-    const { tagExternalId } = req.body;
+    const {tagExternalId} = req.body;
 
     TechnicianService.readSkills(req.userData, technicianId, tagExternalId)
       .then(skills => res.json(skills))
-      .catch(reason => ApiHelper.processError(res));
+      .catch(error => ApiHelper.processError(res, error));
   }
 
   public static removeSkill(req: express.Request & UserDataRequest, res: express.Response) {
-    const { technicianId, skillId } = req.params;
+    const {technicianId, skillId} = req.params;
 
     if (!technicianId || !skillId) {
       ApiHelper.processError(res, {
@@ -425,12 +458,12 @@ export class TechnicianController {
     }
 
     TechnicianService.removeSkill(req.userData, technicianId, skillId)
-      .then(result => res.send())
-      .catch(reason => ApiHelper.processError(res));
+      .then(() => res.send())
+      .catch(error => ApiHelper.processError(res, error));
   }
 
   public static read(req: express.Request & UserDataRequest, res: express.Response) {
-    const { technicianId } = req.params;
+    const {technicianId} = req.params;
 
     if (!technicianId) {
       ApiHelper.processError(res, {
@@ -441,6 +474,6 @@ export class TechnicianController {
 
     TechnicianService.read(req.userData, technicianId)
       .then(result => res.json(result))
-      .catch(reason => ApiHelper.processError(res));
+      .catch(error => ApiHelper.processError(res, error));
   }
 }

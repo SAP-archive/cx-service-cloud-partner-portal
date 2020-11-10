@@ -1,29 +1,49 @@
-import { BarndingSettingDao } from '@modules/data-access/daos/BrandingDao';
+import { BrandingSettingDao } from '@modules/data-access/daos/BrandingDao';
 import { UserData } from '@modules/common/types';
-import { BrandingSettingKey } from '@modules/data-access/types/BrandingSettingKey';
+import { BrandingSettingKey } from '../modules/data-access/types/BrandingSettingKey';
 
 export interface CrowdOwnerContactInfo {
   name: string;
   emailAddress: string;
-  phoneNumber:  string;
+  phoneNumber: string;
 }
 
-export class BrandingService {
-  public static async getCrowdOwnerContact(userData: UserData): Promise<CrowdOwnerContactInfo> {
-    return BarndingSettingDao.readAll(userData).then(settings => {
-      const getSetting = (keyName: BrandingSettingKey): string =>
-        settings.find(setting => setting.key === keyName)?.value;
+export const emptyCrowdOwnerContactInfo = (): CrowdOwnerContactInfo => ({
+  name: '',
+  emailAddress: '',
+  phoneNumber: '',
+});
 
-      return {
-        name: getSetting('CrowdOwner.Contact.Name'),
-        emailAddress: getSetting('CrowdOwner.Contact.EMail'),
-        phoneNumber: getSetting('CrowdOwner.Contact.PhoneNumber'),
-      };
-    });
+export class BrandingService {
+
+  public static getSettingValue(userData: UserData, settingKey: BrandingSettingKey, defaultValue: any = undefined): Promise<any | undefined> {
+    return BrandingSettingDao.get(userData, settingKey)
+      .then(setting => {
+        if (setting.type !== 'CLOUD_IDENTIFIER' && Array.isArray(setting.value)) {
+          return '';
+        }
+        return setting.value;
+      })
+      .catch(() => defaultValue);
+  }
+
+  public static async getCrowdOwnerContact(userData: UserData): Promise<CrowdOwnerContactInfo> {
+    return Promise.all([
+      BrandingService.getSettingValue(userData, 'CrowdOwner.Contact.Name', ''),
+      BrandingService.getSettingValue(userData, 'CrowdOwner.Contact.EMail', ''),
+      BrandingService.getSettingValue(userData, 'CrowdOwner.Contact.PhoneNumber', ''),
+    ]).then(([name, emailAddress, phoneNumber]) => ({
+      name,
+      emailAddress,
+      phoneNumber,
+    }));
   }
 
   public static async getLogo(userData: UserData): Promise<string> {
-    return BarndingSettingDao.get(userData, 'CrowdOwner.Logo')
-      .then(setting => setting.value);
+    return BrandingService.getSettingValue(userData, 'CrowdOwner.Logo');
+  }
+
+  public static async getCrowdOwnerName(userData: UserData): Promise<string> {
+    return BrandingService.getSettingValue(userData, 'CrowdOwner.About.Title');
   }
 }

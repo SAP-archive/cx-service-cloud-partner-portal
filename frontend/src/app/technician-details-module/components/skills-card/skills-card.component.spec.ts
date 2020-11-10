@@ -16,6 +16,9 @@ import { FileUploaderModule } from 'src/app/file-uploader/file-uploader.module';
 import { FileReaderService } from 'src/app/file-uploader/services/file-reader.service';
 import { exampleSkillViewModel } from '../../models/skill-view.model';
 import { ReportingFacade } from 'src/app/state/reporting/reporting.facade';
+import { LocalisationService } from 'src/app/services/localisation.service';
+import { ChangeDetectorRef } from '@angular/core';
+import SpyObj = jasmine.SpyObj;
 
 describe('SkillsCardComponent', () => {
   type MockedState = RecursivePartial<{ [fromTechnicianProfile.technicianProfileFeatureKey]: fromTechnicianProfile.State }>;
@@ -24,6 +27,8 @@ describe('SkillsCardComponent', () => {
   let fixture: ComponentFixture<SkillsCardComponent>;
   let profileFacade: jasmine.SpyObj<TechnicianProfileFacade>;
   let reportingFacade: jasmine.SpyObj<ReportingFacade>;
+  let localisationService: jasmine.SpyObj<LocalisationService>;
+  let cd: jasmine.SpyObj<ChangeDetectorRef>;
   let fileReaderService: jasmine.SpyObj<FileReaderService>;
 
   const getState = (profileState: RecursivePartial<fromTechnicianProfile.State> =
@@ -56,7 +61,7 @@ describe('SkillsCardComponent', () => {
               TechnicianProfileFacade,
               ['removeSkill', 'addSkill', 'downloadCertificate', 'addCertificateUpload',
                 'removeCertificateUpload', 'deleteCertificate', 'undoCertificateDeletion',
-                'toggleSkillDetailsView'],
+                'toggleSkillDetailsView', 'collapseTagDetailsView'],
             ),
             skillViewModels: of(),
           },
@@ -69,20 +74,79 @@ describe('SkillsCardComponent', () => {
           provide: FileReaderService,
           useValue: jasmine.createSpyObj(FileReaderService, ['readContents']),
         },
+        {
+          provide: LocalisationService,
+          useValue: jasmine.createSpyObj(LocalisationService, ['getInitialLocalisation']),
+        },
+        {
+          provide: ChangeDetectorRef,
+          useValue: jasmine.createSpyObj(ChangeDetectorRef, ['detectChanges']),
+        },
       ],
     })
       .compileComponents();
 
-    store = TestBed.get(Store);
-    profileFacade = TestBed.get(TechnicianProfileFacade);
-    reportingFacade = TestBed.get(ReportingFacade);
-    fileReaderService = TestBed.get(FileReaderService);
+    store = TestBed.inject(Store) as MockStore<MockedState>;
+    profileFacade = TestBed.inject(TechnicianProfileFacade) as SpyObj<TechnicianProfileFacade>;
+    reportingFacade = TestBed.inject(ReportingFacade) as SpyObj<ReportingFacade>;
+    fileReaderService = TestBed.inject(FileReaderService) as SpyObj<FileReaderService>;
+    localisationService = TestBed.inject(LocalisationService) as SpyObj<LocalisationService>;
+    cd = TestBed.inject(ChangeDetectorRef) as SpyObj<ChangeDetectorRef>;
   }));
 
   beforeEach(() => {
     fixture = TestBed.createComponent(SkillsCardComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
+  });
+
+  describe('isLinkVisible()', () => {
+    it('should return false, expanded is null, remarks text is short, ' +
+      'no need to show expand and collapse button', () => {
+      const skillViewModel = {...exampleSkillViewModel(), expanded: null};
+
+      const element = document.createElement('div');
+      spyOnProperty(element, 'offsetHeight', 'get').and.returnValue(20);
+      window.getComputedStyle = jasmine.createSpy().and.returnValue({'lineHeight': '20px'});
+      const result = component.isLinkVisible(skillViewModel, element);
+      expect(result).toBe(false);
+    });
+
+    it('should return true, expanded is null, remarks text is long,' +
+      'need to show expand button and collapse the text', () => {
+      const skillViewModel = {...exampleSkillViewModel(), expanded: null};
+      const element = document.createElement('div');
+      spyOnProperty(element, 'offsetHeight', 'get').and.returnValue(60);
+      window.getComputedStyle = jasmine.createSpy().and.returnValue({'lineHeight': '20px'});
+      const result = component.isLinkVisible(skillViewModel, element);
+
+      expect(profileFacade.collapseTagDetailsView).toHaveBeenCalledWith(skillViewModel);
+      expect(result).toBe(true);
+    });
+
+    it('should return true, expanded is not null, show expand button and collapse the text', () => {
+      const skillViewModel = {...exampleSkillViewModel(), expanded: true};
+      const element = document.createElement('div');
+      const result = component.isLinkVisible(skillViewModel, element);
+      expect(result).toBe(true);
+    });
+
+  });
+
+  describe('formatDate()', () => {
+
+    it('should return N/A', () => {
+      localisationService.getInitialLocalisation = jasmine.createSpy().and.returnValue({code: 'en-gb'});
+      expect(component.formatDate(null) === 'N/A').toBeTrue();
+    });
+    it('should return Invalid Date', () => {
+      localisationService.getInitialLocalisation = jasmine.createSpy().and.returnValue({code: 'en-gb'});
+      expect(component.formatDate('test date string') === 'Invalid Date').toBeTrue();
+    });
+    it('should return valid date string', () => {
+      localisationService.getInitialLocalisation = jasmine.createSpy().and.returnValue({code: 'en-gb'});
+      expect(component.formatDate('2020-12-01') === '01/12/2020').toBeTrue();
+    });
   });
 
   describe('toggleTag()', () => {
@@ -153,7 +217,6 @@ describe('SkillsCardComponent', () => {
 
   describe('deleteCertificate()', () => {
     it('calls facade service', () => {
-      const skill = exampleSkill();
       component.deleteCertificate(exampleSkillViewModel());
       expect(profileFacade.deleteCertificate).toHaveBeenCalledWith(exampleSkillViewModel().id);
     });
@@ -161,7 +224,6 @@ describe('SkillsCardComponent', () => {
 
   describe('undoCertificateDeletion()', () => {
     it('calls facade service', () => {
-      const skill = exampleSkill();
       component.undoCertificateDeletion(exampleSkillViewModel());
       expect(profileFacade.undoCertificateDeletion).toHaveBeenCalledWith(exampleSkillViewModel().id);
     });

@@ -11,7 +11,7 @@
       </div>
       <div>
         <button mat-raised-button type="submit" color="primary" *ngIf="profileForm.dirty"
-          [disabled]="profileForm.invalid">{{saveButtonLabel | async | translate}}</button>
+          [disabled]="isBlocked || profileForm.invalid">{{saveButtonLabel | async | translate}}</button>
       </div>
     </div>
     <mat-divider></mat-divider>
@@ -89,7 +89,7 @@
     </div>
     <div class="footer">
       <button mat-raised-button type="submit" color="primary"
-        [disabled]="profileForm.invalid || (isSaving | async)">{{saveButtonLabel | async | translate}}</button>
+        [disabled]="isBlocked || profileForm.invalid || (isSaving | async)">{{saveButtonLabel | async | translate}}</button>
     </div>
   </div>
 </form>

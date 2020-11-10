@@ -1,5 +1,5 @@
 import { isServiceAreaValid, serviceAreaFormValidator } from './service-area-form.validator';
-import { exampleServiceArea, ServiceArea } from '../../model/service-area.model';
+import { exampleServiceArea, ServiceArea, emptyServiceArea } from '../../model/service-area.model';
 import { AbstractControl } from '@angular/forms';
 
 describe('serviceAreaFormValidator()', () => {
@@ -23,6 +23,11 @@ describe('serviceAreaFormValidator()', () => {
     expect(serviceAreaFormValidator(control as AbstractControl)).toEqual({serviceAreaIsNotValid: true});
   });
 
+  it('should return object with serviceAreaIsValid for area with 0 radius value', () => {
+    const control = {value: {...exampleServiceArea(), radius: {value: 0, unit: 'km'}}};
+    expect(serviceAreaFormValidator(control as AbstractControl)).toEqual({});
+  });
+
   it('should return true for valid area', () => {
     const area = exampleServiceArea();
     expect(isServiceAreaValid(area)).toEqual(true);
@@ -30,6 +35,11 @@ describe('serviceAreaFormValidator()', () => {
 
   it('should return true for empty area', () => {
     const area = null;
+    expect(isServiceAreaValid(area)).toEqual(true);
+  });
+
+  it('should return true for area with empty googlePlaceId and empty radius', () => {
+    const area = emptyServiceArea();
     expect(isServiceAreaValid(area)).toEqual(true);
   });
 

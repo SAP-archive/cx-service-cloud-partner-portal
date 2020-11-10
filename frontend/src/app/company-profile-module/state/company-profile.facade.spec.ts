@@ -30,8 +30,8 @@ describe('CompanyProfileFacade', () => {
       ],
     });
 
-    store = TestBed.get(Store);
-    facade = TestBed.get(CompanyProfileFacade);
+    store = TestBed.inject(Store) as MockStore<MockedState>;
+    facade = TestBed.inject(CompanyProfileFacade);
   });
 
   describe('isProfileLoaded', () => {
@@ -127,4 +127,13 @@ describe('CompanyProfileFacade', () => {
       expect(spy).toHaveBeenCalledWith(CompanyProfileActions.downloadDocument({document: exampleDocument()}));
     });
   });
+
+  describe('terminateRelationship()', () => {
+    it('should dispatch terminateRelationship action', () => {
+      const spy = spyOn(store, 'dispatch');
+      facade.terminateRelationship();
+      expect(spy).toHaveBeenCalledWith(CompanyProfileActions.terminateRelationship());
+    });
+  });
+
 });

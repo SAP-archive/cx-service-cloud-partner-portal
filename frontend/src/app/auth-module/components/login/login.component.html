@@ -29,4 +29,6 @@
           color="primary">
     {{'LOGIN' | translate}}
   </button>
+  <span *ngIf="!!credentials.accountName" class="link-button" (click)="forgotPassword()">{{'Forgot password' | translate | uppercase}}</span>
+  <span *ngIf="!!credentials.accountName" class="link-button" (click)="forgotAccount()">{{'Login with another account' | translate | uppercase}}</span>
 </form>

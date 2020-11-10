@@ -14,9 +14,16 @@ export class ReportingFacade {
     private store: Store<State>,
   ) {
   }
+
   public reportError(message: string) {
     this.store.dispatch(ReportingActions.reportError({message}));
   }
+
+  public reportWarning(message: string) {
+    this.store.dispatch(ReportingActions.reportWarning({message}));
+  }
+
+  public reportSuccess(message: string) {
+    this.store.dispatch(ReportingActions.reportSuccess({message}));
+  }
 }
-
-

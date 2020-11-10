@@ -15,10 +15,12 @@ import { NewDocumentsFacadeMockBuilder } from '../../state/new-documents/new-doc
 import { emptyServiceArea, exampleServiceArea } from '../../../model/service-area.model';
 import { emptyContact, exampleContact } from '../../model/contact.model';
 import { emptyAddress, exampleAddress } from '../../model/address.model';
-import { of } from 'rxjs';
+import { of, Observable } from 'rxjs';
 import SpyObj = jasmine.SpyObj;
 
 describe('CompanyProfileEditorComponent', () => {
+  const snackBar: any = { dismiss: jasmine.createSpy() };
+  const reportingFacade: any = { reportWarning: jasmine.createSpy() };
   const componentFactory = (
     companyProfileFacadeMock: SpyObj<CompanyProfileFacade>,
     newDocumentsFacadeMock?: SpyObj<NewDocumentsFacade>,
@@ -31,6 +33,8 @@ describe('CompanyProfileEditorComponent', () => {
       removedDocumentsFacadeMock,
       new FormBuilder(),
       dialog,
+      snackBar,
+      reportingFacade,
     );
 
   it('should share a name observable from company profile facade', () => {
@@ -95,6 +99,47 @@ describe('CompanyProfileEditorComponent', () => {
         ),
         name: exampleCompanyDetails().name
       });
+    });
+
+    describe('when company is blocked', () => {
+      let component: CompanyProfileEditorComponent;
+
+      beforeEach(() => {
+        const companyDetails = {
+          ...exampleCompanyDetails(),
+          syncStatus: 'BLOCKED',
+        };
+        component = componentFactory(new CompanyProfileFacadeMockBuilder().setCompanyDetails(of(companyDetails)).build());
+        component.ngOnInit();
+      });
+
+      it('should set isBlocked to true', () => {
+        expect(component.isBlocked).toEqual(true);
+      });
+
+      it('should report warning', () => {
+        expect(reportingFacade.reportWarning).toHaveBeenCalled();
+      });
+    });
+
+    describe('when company is not blocked', () => {
+      it('should set isBlocked to false', () => {
+        const companyDetails = {
+          ...exampleCompanyDetails(),
+          syncStatus: 'IN_CLOUD',
+        };
+        const component = componentFactory(new CompanyProfileFacadeMockBuilder().setCompanyDetails(of(companyDetails)).build());
+        component.ngOnInit();
+        expect(component.isBlocked).toEqual(false);
+      });
+    });
+  });
+
+  describe('ngOnDestroy', () => {
+    it('should dismiss snack bar', () => {
+      const component = componentFactory(new CompanyProfileFacadeMockBuilder().build());
+      component.ngOnDestroy();
+      expect(snackBar.dismiss).toHaveBeenCalled();
     });
   });
 

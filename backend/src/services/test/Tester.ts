@@ -116,11 +116,11 @@ export class Tester {
         try {
           parsedResponse = response
           && response.headers['content-type']
-          && response.headers['content-type'].indexOf('html') > -1
-            ? body
-            : body
+          && response.headers[`content-type`].indexOf('json') > -1
+            ? (body
               ? JSON.parse(body)
-              : parsedResponse;
+              : parsedResponse)
+            : body;
 
         } catch (ex) {
 

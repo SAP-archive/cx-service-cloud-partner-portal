@@ -1,9 +1,15 @@
 <div class="header">
   <div class="horizontal">
     <img class="logo" alt="SAP logo" src="https://cdn.coresystems.net/graphics-files/sap-logo.svg">
-    <div class="title">Partner Portal</div>
+    <div class="title" translate="PARTNER_PORTAL"></div>
   </div>
-  <button mat-button (click)="logout()">{{'LOG_OUT' | translate}}</button>
+  <div>
+    <button mat-icon-button type="button" (click)="openTerminateDialog()">
+      <mat-icon>link_off</mat-icon>
+    </button>
+    <button mat-button (click)="logout()" translate="LOG_OUT"></button>
+  </div>
+ 
 </div>
 <pp-breadcrumbs></pp-breadcrumbs>
 <router-outlet></router-outlet>

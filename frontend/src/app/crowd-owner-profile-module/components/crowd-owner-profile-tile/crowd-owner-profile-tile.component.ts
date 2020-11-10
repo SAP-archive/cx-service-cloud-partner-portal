@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
 import { CrowdOwnerProfileFacade } from '../../state/crowd-owner-profile.facade';
-import { AuthFacade } from 'src/app/auth-module/state/auth.facade';
+import { AuthFacade } from 'src/app/auth-module/state/auth/auth.facade';
 import { map, filter } from 'rxjs/operators';
 
 @Component({
@@ -28,5 +28,6 @@ export class CrowdOwnerProfileTileComponent implements OnInit {
   public ngOnInit() {
     this.crowdOwnerFacade.loadContactInfo();
     this.crowdOwnerFacade.loadCompanyLogo();
+    this.crowdOwnerFacade.loadCrowdName();
   }
 }

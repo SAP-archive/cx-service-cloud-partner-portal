@@ -11,31 +11,20 @@
   <mat-divider></mat-divider>
   <mat-card-content>
     <mat-form-field class="search-form-field">
-      <input matInput
-             [(ngModel)]="searchQuery"
-             (ngModelChange)="onQueryChange()"
-             placeholder="{{'SEARCH' | translate}}">
-      <mat-icon matSuffix class="reset-button"
-                *ngIf="!!searchQuery"
-                (click)="resetSearchQuery()">close</mat-icon>
+      <input matInput [(ngModel)]="searchQuery" (ngModelChange)="onQueryChange()"
+        placeholder="{{'SEARCH' | translate}}">
+      <mat-icon matSuffix class="reset-button" *ngIf="!!searchQuery" (click)="resetSearchQuery()">close</mat-icon>
       <mat-icon matSuffix>search</mat-icon>
     </mat-form-field>
 
-    <div class="list" *ngIf="techniciansFacade.loadingTechnicians | async">
-      <div class="technician">
-        <pp-fake-data [fontSize]="16" [lineHeight]="28"></pp-fake-data>
-      </div>
-      <div class="technician">
-        <pp-fake-data [fontSize]="16" [lineHeight]="28"></pp-fake-data>
-      </div>
-      <div class="technician">
-        <pp-fake-data [fontSize]="16" [lineHeight]="28"></pp-fake-data>
-      </div>
-    </div>
-    <div class="list" *ngIf="!(techniciansFacade.loadingTechnicians | async)">
-      <div
-        class="horizontal-flex"
-        *ngFor="let technician of technicians | async">
+    <div class="list"
+      infinite-scroll
+      infiniteScrollThrottle="300"
+      [infiniteScrollDistance]="1"
+      [infiniteScrollDisabled]="techniciansFacade.hasFetchedAll | async"
+      [scrollWindow]="false"
+      (scrolled)="fetchNextPage()">
+      <div class="horizontal-flex" *ngFor="let technician of techniciansFacade.technicians | async ">
         <div class="technician horizontal-flex" [routerLink]="['technician-details', technician.externalId]">
           <div class="avatar">
             <div class="content">{{getFullTechnicianName(technician) | abbreviate}}</div>
@@ -43,18 +32,31 @@
           <div class="details">
             <div>
               <span class="name">{{getFullTechnicianName(technician)}}</span>
-              <span *ngIf="(person | async).id === technician.externalId" class="current-user">&nbsp;({{'DASHBOARD_TECHNICIAN_LIST_CURRENT_LOGIN_USER' | translate}})</span>
+              <span *ngIf="(person | async).id === technician.externalId"
+                class="current-user">&nbsp;({{'DASHBOARD_TECHNICIAN_LIST_CURRENT_LOGIN_USER' | translate}})</span>
             </div>
             <div class="created-date">{{technician.createdAt | date}}</div>
           </div>
-        </div>
-        <div class="action-buttons" [ngClass]="{'hide-button': (person | async).id === technician.externalId}">
-          <button mat-icon-button *ngIf="!technician.toBeDeleted" (click)="deleteTechnician(technician)">
-            <mat-icon>delete_outline</mat-icon>
-          </button>
-          <mat-spinner [diameter]="40" *ngIf="technician.toBeDeleted"></mat-spinner>
+          <div class="action-buttons">
+            <div class="technician-status" [ngClass]="technician.inactive ? 'inactive' : 'active'">
+              {{ (technician.inactive ? 'TECHNICIAN_LIST_INACTIVE': 'TECHNICIAN_LIST_ACTIVE') | translate}}
+            </div>
+          </div>
         </div>
       </div>
     </div>
+
+    <div *ngIf="techniciansFacade.loadingTechnicians | async">
+      <div class="technician">
+        <pp-fake-data [fontSize]="16" [lineHeight]="28"></pp-fake-data>
+      </div>
+      <div class="technician">
+        <pp-fake-data [fontSize]="16" [lineHeight]="28"></pp-fake-data>
+      </div>
+      <div class="technician">
+        <pp-fake-data [fontSize]="16" [lineHeight]="28"></pp-fake-data>
+      </div>
+    </div>
+
   </mat-card-content>
 </mat-card>

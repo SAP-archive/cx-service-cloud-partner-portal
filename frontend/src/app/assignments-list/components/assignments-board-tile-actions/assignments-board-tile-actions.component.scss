@@ -1,0 +1,51 @@
+.row {
+  height: 40px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-end;
+  overflow: hidden;
+}
+
+.full-row {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.action-button {
+  border: none;
+  text-transform: uppercase;
+}
+
+.accept {
+  color: #107e3e;
+}
+
+.reject {
+  color: #bb0000;
+}
+
+.assign {
+  color: #0A6ED1;
+}
+
+.with-left-margin {
+  margin-left: 8px;
+}
+
+.with-right-margin {
+  margin-right: 8px;
+}
+
+.duration {
+  display: flex;
+  flex-direction: column;
+  margin: 0px 8px;
+}
+
+.date-ime {
+  font-size: 12px;
+}

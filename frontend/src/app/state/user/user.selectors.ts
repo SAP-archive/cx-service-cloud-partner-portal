@@ -13,3 +13,8 @@ export const selectLocalisation = createSelector(
   selectUser,
   (state: fromUser.UserState) => state.localisation,
 );
+
+export const selectIsLocalisationChangeNeeded = createSelector(
+  selectUser,
+  (state: fromUser.UserState) => state.isLocalisationChangeNeeded,
+);

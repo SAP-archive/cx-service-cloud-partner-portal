@@ -5,8 +5,9 @@
     <div class="logo-placeholder">{{name | async | abbreviate}}</div>
     <div class="mat-subheading-2 no-margin side-padded">
       <pp-fake-data *ngIf="!(name | async)" [fontSize]="16" [lineHeight]="28"></pp-fake-data>
-      <div *ngIf="name | async">{{name | async}}</div>
+      <div class="company-name" *ngIf="name | async">{{name | async}}</div>
     </div>
     <div class="mat-subheading-1 side-padded faded" translate>DASHBOARD_PROFILE_TILE_PARTNER</div>
+    <div class="hyperlink-area" (click)="navigateToEditor()" translate>DASHBOARD_PROFILE_TILE_LINK</div>
   </mat-card-content>
 </mat-card>

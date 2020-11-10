@@ -3,6 +3,7 @@
 Partner Portal enables [SAP FSM Crowd](https://apps.coresystems.net/marketplace/) service partners to:
 * maintain their technicians data (skills, certificates, contact information, etc.)
 * upload and maintain company information (e.g. upload certificate documents)
+* manage service assignments (accept/reject, assign, release, close)
 
 This repository contains a reference implementation. It is an example on how to use our public APIs. It helps crowd owners to offer their service partners a customized experience.
 
@@ -14,6 +15,7 @@ This repository contains a reference implementation. It is an example on how to 
   - [Requirements](#requirements)
   - [Installation](#installation)
   - [Configuration](#configuration)
+  - [Logging](#logging)
   - [Known issues](#known-issues)
   - [How to obtain support](#how-to-obtain-support)
   - [Contributing](#contributing)
@@ -29,6 +31,8 @@ This repository contains a reference implementation. It is an example on how to 
 
 
 ## Installation
+
+Put your Google Maps API key and channel into `partner-portal/frontend/src/app/service-area-module/service-area.module.ts` file. 
 
 Run the application backend:
 ```shell
@@ -53,6 +57,9 @@ http://localhost:4200
 
 The application can be started with configuration files as parameters. Those files are located under `/backend/config`. Create new configurations as needed.
 
+## Logging
+
+You may extend LoggerService class with a functionality to report BFF's logs to a 3rd party solution, like ELK or Loggly. 
 
 ## Known issues
 
@@ -98,6 +105,7 @@ The following libraries are utilized:
 The following public APIs are being utilized:
 * Branding Settings Service ([docs](https://de.coresuite.com/cloud-crowd-branding-service/swagger-ui.html))
 * Crowd Service ([docs](https://de.coresuite.com/cloud-crowd-service/swagger-ui.html))
+* Crowd Partner Dispatch Service ([docs](https://de.coresuite.com/cloud-partner-dispatch-service/swagger-ui.html#/))
 * OAuth2 (endpoint `https://de.coresuite.com/api/oauth2/`)
 
 

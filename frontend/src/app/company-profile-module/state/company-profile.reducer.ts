@@ -33,6 +33,12 @@ const companyProfileReducer = createReducer(
 
   on(CompanyProfileActions.saveCompanyProfile, state => ({...state, isSaving: true})),
 
+  on(CompanyProfileActions.terminateRelationship, state => ({...state, isSaving: true})),
+
+  on(CompanyProfileActions.terminateRelationshipSuccess, state => ({...state, isSaving: false})),
+  
+  on(CompanyProfileActions.terminateRelationshipFailure, state => ({...state, isSaving: false})),
+
   on(
     CompanyProfileActions.saveCompanyProfileSuccess,
     (state, {companyDetails, documents}) =>

@@ -57,11 +57,6 @@ export class UnifiedPersonDao {
   }
 
   private static mapDtoToModel(personDto: UnifiedPersonDto): UnifiedPerson {
-    return {
-      id: personDto.id,
-      firstName: personDto.firstName,
-      lastName: personDto.lastName,
-      createDateTime: personDto.createDateTime,
-    };
+    return { ...personDto };
   }
 }

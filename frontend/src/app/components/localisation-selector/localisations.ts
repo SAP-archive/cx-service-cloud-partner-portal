@@ -178,8 +178,24 @@ export const localisations: Localisation[] = [
     locale: 'zh-hk',
     language: 'zh-hans',
     name: 'Chinese (Hong Kong)'
-  }
+  },
+  {
+    code: 'zh',
+    locale: 'zh-cn',
+    language: 'zh-hans',
+    name: 'Chinese (China)'
+  },
 ];
 
-export const findLocalisation = (languageCode: string) => localisations
-  .find(localisation => localisation.code === languageCode);
+export const findLocalisation = (languageCode: string) => {
+  const target = localisations.find(localisation => localisation.code === languageCode);
+  if (target) {
+    return target;
+  }
+
+  return {
+    code: 'en-gb',
+    language: 'en',
+    name: 'English (United Kingdom)'
+  };
+};

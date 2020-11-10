@@ -2,18 +2,30 @@ import { Component, OnDestroy, OnInit, HostListener } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { TechnicianProfileFacade } from '../../state/technician-profile.facade';
 import { Observable, Subject, of } from 'rxjs';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { TechnicianProfile } from '../../models/technician-profile.model';
-import { map, take, takeUntil } from 'rxjs/operators';
+import { filter, map, take, takeUntil } from 'rxjs/operators';
 import { MatDialog } from '@angular/material/dialog';
 import { UnsavedConfirmationDialogComponent } from '../../../components/unsaved-confirmation-dialog/unsaved-confirmation-dialog.component';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { ReportingFacade } from '../../../state/reporting/reporting.facade';
+import { selectPerson } from '../../../state/user/user.selectors';
+import { Store, select } from '@ngrx/store';
+import { RootState } from '../../../state';
+import { UnifiedPerson } from '../../..//model/unified-person.model';
+import { RemovalConfirmationDialogComponent } from '../removal-confirmation-dialog/removal-confirmation-dialog.component';
+import { TechnicianProfileService } from '../../services/technician-profile.service';
+import { CrowdType } from '../../models/crowd-type';
+import { LaunchDarklyClientService } from '../../../services/launch-darkly-client.service';
+import { omit } from '../../../utils/omit';
 
 interface FormDataStructure {
-  contact: {
+  about: {
     firstName: string;
     lastName: string;
     emailAddress: string;
     phoneNumber: string;
+    crowdType: CrowdType;
   };
   address: {
     streetName: string;
@@ -42,28 +54,42 @@ export class TechnicianDetailsEditorComponent implements OnInit, OnDestroy {
   private isWaitingNavigate: boolean;
   public technicianProfile: TechnicianProfile;
   public profileForm: FormGroup = this.formBuilder.group({
-    contact: this.formBuilder.group({
+    about: this.formBuilder.group({
       firstName: ['', [Validators.required]],
       lastName: ['', [Validators.required]],
       emailAddress: ['', [Validators.required, Validators.email]],
-      phoneNumber: ['', [Validators.required]],
+      phoneNumber: [''],
+      crowdType: [''],
     }),
     address: this.formBuilder.group({
-      streetName: ['', [Validators.required]],
-      houseNumber: ['', [Validators.required]],
-      zipCode: ['', [Validators.required]],
-      country: ['', [Validators.required]],
-      city: ['', [Validators.required]],
+      streetName: [''],
+      houseNumber: [''],
+      zipCode: [''],
+      country: [''],
+      city: [''],
     }),
   });
+  public person: UnifiedPerson;
   private destroyed = new Subject<void>();
   private editorMode: WorkingMode;
+  public isBlocked: boolean;
+  public isActive: boolean;
+  public crowdTypes: CrowdType[] = ['PARTNER_ADMIN', 'PARTNER_TECHNICIAN'];
+  // @todo ci:feature-flag-cleanup[2020-12-31]:CPB-46059
+  public isChangeRoleEnabled: Promise<boolean> = this.launchDarklyService.canAccess('web-partner-portal-change-role-cpb-46059');
+  private isRoleChanged: boolean = false;
 
   constructor(
     private formBuilder: FormBuilder,
     private profileFacade: TechnicianProfileFacade,
     private route: ActivatedRoute,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private snackBar: MatSnackBar,
+    private reportingFacade: ReportingFacade,
+    private store: Store<RootState>,
+    private profileService: TechnicianProfileService,
+    private router: Router,
+    private launchDarklyService: LaunchDarklyClientService,
   ) {
     this.editorMode = route.snapshot.data.mode;
   }
@@ -73,7 +99,7 @@ export class TechnicianDetailsEditorComponent implements OnInit, OnDestroy {
       if (this.editorMode === 'EDIT') {
         return this.profileFacade.saveProfile(profile);
       } else if (this.editorMode === 'CREATE') {
-        return this.profileFacade.createProfile(profile);
+        return this.profileFacade.createProfile(omit({...profile, address: omit(profile.address, 'id')}, 'crowdType'));
       }
     });
   }
@@ -88,6 +114,25 @@ export class TechnicianDetailsEditorComponent implements OnInit, OnDestroy {
     return `${firstName} ${lastName}`;
   }
 
+  public isLoggedInUser() {
+    return this.person.id === this.technicianProfile.externalId;
+  }
+
+  public onToggleActive() {
+    if (!this.isLoggedInUser()) {
+      this.isActive = !this.isActive;
+      this.profileForm.markAsDirty();
+    }
+  }
+
+  public onRoleChanged(role: CrowdType) {
+    if (role !== this.technicianProfile.crowdType) {
+      this.isRoleChanged = true;
+    } else {
+      this.isRoleChanged = false;
+    }
+  }
+
   public ngOnInit() {
     if (this.editorMode === 'EDIT') {
       this.profileFacade.fetchTechnicianProfile(this.getTechnicianId());
@@ -99,19 +144,38 @@ export class TechnicianDetailsEditorComponent implements OnInit, OnDestroy {
       .subscribe(technician => {
         this.profileForm.patchValue(this.mapTechnicianToFormData(technician));
         this.profileForm.markAsPristine();
+        this.isRoleChanged = false;
         this.technicianProfile = technician;
+        this.isActive = !technician.inactive;
+
+        this.isBlocked = this.isProfileBlockedBySyncStatus();
+        if (this.isBlocked) {
+          this.reportingFacade.reportWarning('TECHNICIAN_PROFILE_UPDATE_BLOCKED');
+        }
       });
     this.profileFacade.skillsEdited.pipe(
       takeUntil(this.destroyed),
       map(() => this.profileForm.markAsDirty()))
       .subscribe();
     this.profileFacade.isWaitingNavigate.subscribe((navigate: boolean) => this.isWaitingNavigate = navigate);
+    this.store.pipe(
+      select(selectPerson),
+      filter(person => !!person),
+    )
+    .subscribe(person => this.person = person);
+  }
+
+  private isProfileBlockedBySyncStatus(): boolean {
+    const BLOCKED_STATUS = 'BLOCKED';
+    return (this.technicianProfile.syncStatus === BLOCKED_STATUS) ||
+      (this.technicianProfile.address && this.technicianProfile.address.syncStatus === BLOCKED_STATUS);
   }
 
   public ngOnDestroy() {
     this.profileFacade.clearProfileData();
     this.destroyed.next();
     this.destroyed.complete();
+    this.snackBar.dismiss();
   }
 
   private getTechnicianId(): string {
@@ -121,11 +185,12 @@ export class TechnicianDetailsEditorComponent implements OnInit, OnDestroy {
   private mapTechnicianToFormData(technician: TechnicianProfile) {
     const { address } = technician;
     return {
-      contact: {
+      about: {
         firstName: technician.firstName,
         lastName: technician.lastName,
         emailAddress: technician.email,
         phoneNumber: technician.mobilePhone,
+        crowdType: technician.crowdType || '',
       },
       address: !!address
         ? {
@@ -151,10 +216,12 @@ export class TechnicianDetailsEditorComponent implements OnInit, OnDestroy {
       take(1),
       map(address => ({
         externalId: this.getTechnicianId(),
-        lastName: formData.contact.lastName,
-        firstName: formData.contact.firstName,
-        email: formData.contact.emailAddress,
-        mobilePhone: formData.contact.phoneNumber,
+        lastName: formData.about.lastName,
+        firstName: formData.about.firstName,
+        email: formData.about.emailAddress,
+        mobilePhone: formData.about.phoneNumber,
+        inactive: !this.isActive,
+        crowdType: this.isRoleChanged ? formData.about.crowdType : '',
         address: {
           id: !!address ? address.id : undefined,
           city: formData.address.city,
@@ -172,5 +239,21 @@ export class TechnicianDetailsEditorComponent implements OnInit, OnDestroy {
     } else {
       return this.dialog.open(UnsavedConfirmationDialogComponent).afterClosed();
     }
+  }
+
+  public deleteTechnician(): void {
+    this.dialog.open(RemovalConfirmationDialogComponent, { data: this.getFullName()})
+    .afterClosed()
+    .pipe(filter(confirmed => confirmed))
+    .subscribe(() => {
+      this.profileService.delete(this.getTechnicianId())
+      .subscribe(() => {
+        this.router.navigate(['']).then(() => {
+          this.reportingFacade.reportSuccess('DASHBOARD_TECHNICIAN_HAS_BEEN_DELETED');
+        });
+      }, () => {
+        this.reportingFacade.reportError('DASHBOARD_TECHNICIAN_DELETION_FAILED');
+      });
+    });
   }
 }

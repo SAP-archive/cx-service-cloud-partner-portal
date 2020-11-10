@@ -1,0 +1,37 @@
+@import "../../variables";
+
+$background-color: #EFF1F3;
+
+.column {
+  background-color: $background-color;
+  width: calc(25vw - 2 * #{$column-margin});
+  min-width: $min-column-width;
+  margin: 0 $column-margin;
+  border-radius: 8px 8px 0 0;
+}
+
+.viewport {
+  height: calc(100vh - #{$app-header-offset} - #{$app-footer-offset});
+  min-height: calc(2 * #{$row-height});
+  width: 100%;
+}
+
+h2 {
+  margin: 0;
+  padding: 12px calc(16px + #{$column-margin});
+  background-color: $background-color;
+  border-radius: 8px 8px 0 0;
+}
+
+.customizedScrollbar::-webkit-scrollbar{
+  width: 5px;
+  height: 5px;
+}
+.customizedScrollbar::-webkit-scrollbar-thumb{
+  border-radius: 1em;
+  background-color: rgba(50,50,50,.3);
+}
+.customizedScrollbar::-webkit-scrollbar-track{
+  border-radius: 1em;
+  background-color: rgba(50,50,50,.1);
+}

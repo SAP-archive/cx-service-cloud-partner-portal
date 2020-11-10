@@ -14,7 +14,6 @@ import { FakeDataModule } from '../fake-data-module/fake-data.module';
 import { CompanyProfileEditorComponent } from './components/company-profile-editor/company-profile-editor.component';
 import { AvatarModule } from '../avatar/avatar.module';
 import { ReactiveFormsModule } from '@angular/forms';
-import { MatButtonModule } from '@angular/material/button';
 import { DocumentsListComponent } from './components/documents-list/documents-list.component';
 import { saveAsInjectionToken } from './injection-tokens';
 import { saveAs } from 'file-saver';
@@ -22,6 +21,13 @@ import { ApprovalDecisionStatusModule } from '../approval-decision-status-module
 import { FileUploaderModule } from '../file-uploader/file-uploader.module';
 import { companyProfileFeatureKey } from './state/feature.selectors';
 import { ServiceAreaModule } from '../service-area-module/service-area.module';
+import { CompanyProfileService } from './services/company-profile.service';
+import { NewDocumentsFacade } from './state/new-documents/new-documents.facade';
+import { RemovedDocumentsFacade } from './state/removed-documents/removed-documents.facade';
+import { CompanyProfileFacade } from './state/company-profile.facade';
+import { CompanyProfileResolver } from './services/company-profile.resolver';
+import { MatButtonModule } from '@angular/material/button';
+import { MatDialogModule } from '@angular/material/dialog';
 
 @NgModule({
   declarations: [
@@ -44,13 +50,20 @@ import { ServiceAreaModule } from '../service-area-module/service-area.module';
     AvatarModule,
     ReactiveFormsModule,
     MatButtonModule,
+    MatDialogModule,
     ApprovalDecisionStatusModule,
     FileUploaderModule,
     ServiceAreaModule,
   ],
   providers: [
     {provide: saveAsInjectionToken, useValue: saveAs},
+    CompanyProfileService,
+    NewDocumentsFacade,
+    RemovedDocumentsFacade,
+    CompanyProfileFacade,
+    CompanyProfileResolver,
   ],
+  
   exports: [
     CompanyProfileTileComponent,
     CompanyProfileEditorComponent,

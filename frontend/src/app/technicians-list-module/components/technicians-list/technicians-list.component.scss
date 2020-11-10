@@ -29,6 +29,7 @@ h2 {
 
   .action-buttons {
     margin-left: auto;
+    margin-right: 12px;
     display: flex;
     align-items: center;
   }
@@ -39,6 +40,9 @@ h2 {
 }
 
 .list {
+  overflow-y: auto;
+  max-height: 400px;
+
   .technician {
     width: 100%;
     justify-content: flex-start;
@@ -64,6 +68,8 @@ h2 {
 
       .name {
         margin-bottom: 4px;
+        white-space: normal;
+        word-break: break-word;
       }
 
       .current-user {
@@ -84,4 +90,21 @@ h2 {
     color: #6a6d70;
     margin-right: 8px;
   }
+}
+
+.technician-status {
+  color: #ffffff;
+  padding: 4px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 400;
+  width: fit-content;
+}
+
+.active {
+  background-color: #107e3e;
+}
+
+.inactive {
+  background-color: #bb0000;
 }

@@ -3,11 +3,7 @@ import { CrowdServiceApi, CrowdServiceResponse } from '@modules/data-access/serv
 import { Skill } from '../models';
 
 export class SkillDao {
-  public static getAll(
-    userData: UserData,
-    technicianExternalId: string,
-  ): Promise<Skill[]> {
-    return CrowdServiceApi.get<Skill>(userData, `/crowd/v2/technicians/${technicianExternalId}/skills`)
-      .then(response => response.results);
+  public static getByPage(userData: UserData, technicianExternalId: string, page: number, size: number): Promise<CrowdServiceResponse<Skill>> {
+    return CrowdServiceApi.get<Skill>(userData, `/crowd/v2/technicians/${technicianExternalId}/skills`, { page, size });
   }
 }

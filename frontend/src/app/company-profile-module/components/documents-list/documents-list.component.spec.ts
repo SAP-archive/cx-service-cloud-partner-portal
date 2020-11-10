@@ -34,7 +34,9 @@ describe('DocumentsListComponent', () => {
 
     removedDocumentsFacade.isDocumentMarkedForRemoval.and.returnValue(of(true));
 
-    localisationService = { getInitialLocalisation: () => 'en-gb' };
+    localisationService = {
+      getInitialLocalisation: jasmine.createSpy().and.returnValue({code: 'en-gb'})
+    };
 
     component = new DocumentsListComponent(
       companyProfileFacade as any,
@@ -122,7 +124,7 @@ describe('DocumentsListComponent', () => {
 
   describe('formatDate()', () => {
     it('should return valid date string', () => {
-      expect(component.formatDate('2020-12-01') === '12/1/2020').toBeTrue();
+      expect(component.formatDate('2020-12-01') === '01/12/2020').toBeTrue();
     });
   });
 

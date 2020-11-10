@@ -19,7 +19,7 @@ export class DocumentsDao {
     return CrowdServiceApi.stream(userData, `/crowd/v1/documents/${id}/attachments`);
   }
 
-  public static async addDocument(userData: UserData, partnerId: string, newDocument: NewDocument): Promise<string[]> {
+  public static async addDocument(userData: UserData, partnerId: string, newDocument: NewDocument): Promise<Document> {
     const formData = {
       documentDto: {
         value: JSON.stringify({
@@ -46,7 +46,7 @@ export class DocumentsDao {
       },
     };
 
-    return HttpClientService.send<string[]>({
+    return HttpClientService.send<Document>({
       method: 'POST',
       path: `/cloud-crowd-service/api/crowd/v1/documents`,
       data: formData,

@@ -4,4 +4,6 @@ export interface UnifiedPersonDto  {
   readonly lastName: string;
   readonly createDateTime: string;
   readonly businessPartner: string;
+  readonly emailAddress: string;
+  readonly officePhone: string;
 }

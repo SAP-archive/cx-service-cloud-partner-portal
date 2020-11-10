@@ -106,7 +106,7 @@ describe('technicianProfileReducer', () => {
         ...initialState,
         isLoadingProfile: true,
       }, actions.createTechnicianProfileSuccess);
-      expect(result.isLoadingProfile).toBeFalse();
+      expect(result.isLoadingProfile).toBeTrue();
       expect(result.isWaitingNavigate).toBeTrue();
     });
   });
@@ -158,7 +158,7 @@ describe('technicianProfileReducer', () => {
         const assertSkillViewModel = (skillViewModel: SkillViewModel, skill: Skill, tag: Tag) => {
           expect(skillViewModel.skill).toEqual(skill);
           expect(skillViewModel.tag).toEqual(tag);
-          expect(skillViewModel.expanded).toBeTrue();
+          expect(skillViewModel.expanded).toBeNull();
           expect(skillViewModel.selected).toBeTrue();
         };
 
@@ -192,13 +192,13 @@ describe('technicianProfileReducer', () => {
         expect(skillViewModels[0]).toEqual({
           ...skillViewModel1,
           selected: true,
-          expanded: true,
+          expanded: null,
           skill: exampleSkill('Tag1'),
         });
         expect(skillViewModels[1]).toEqual({
           ...skillViewModel2,
           selected: true,
-          expanded: true,
+          expanded: null,
           skill: exampleSkill('Tag2'),
         });
       });

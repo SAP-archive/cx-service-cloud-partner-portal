@@ -12,7 +12,7 @@ export class MapWithCircleAreaComponent {
   @Input() public height: number;
   @Input() public width: number;
   @Input() public showZoomControls: boolean = true;
-  @ViewChild(AgmCircle, {static: false}) public circle: AgmCircle;
+  @ViewChild(AgmCircle) public circle: AgmCircle;
   public bounds: Promise<LatLngBounds>;
 
   public onChange() {

@@ -5,9 +5,8 @@ import PlacesServiceStatus = google.maps.places.PlacesServiceStatus;
 import QueryAutocompletePrediction = google.maps.places.QueryAutocompletePrediction;
 import GeocoderResult = google.maps.GeocoderResult;
 import GeocoderStatus = google.maps.GeocoderStatus;
-import { ServiceAreaModule } from '../service-area.module';
 
-@Injectable({providedIn: ServiceAreaModule})
+@Injectable()
 export class GoogleMapsService extends GoogleMapsAPIWrapper {
   constructor(private __loader: MapsAPILoader, private __zone: NgZone) {
     super(__loader, __zone);
@@ -34,6 +33,23 @@ export class GoogleMapsService extends GoogleMapsAPIWrapper {
     });
   }
 
+  public getAddressFromPosition(position: Position): Promise<GeocoderResult> {
+    return new Promise((resolve, reject) => {
+      this.__loader.load().then(() => {
+        const latlng = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
+        const geocoder = new google.maps.Geocoder();
+        const callback = (results: GeocoderResult[], status: GeocoderStatus) => {
+          if (status !== google.maps.GeocoderStatus.OK) {
+            reject(status);
+            return;
+          }
+          resolve(results[0]);
+        };
+        geocoder.geocode({location: latlng}, callback);
+      });
+    });
+  }
+
   public getPlaceDetails(placeId: string): Promise<PlaceResult> {
     return new Promise((resolve, reject) => {
       this.__loader.load().then(() => {
@@ -48,7 +64,7 @@ export class GoogleMapsService extends GoogleMapsAPIWrapper {
         };
 
         if (placeId) {
-          places.getDetails({placeId: placeId}, callback);
+          places.getDetails({placeId}, callback);
         }
       });
     });
@@ -65,7 +81,7 @@ export class GoogleMapsService extends GoogleMapsAPIWrapper {
           }
           resolve(results[0].place_id);
         };
-        geocoder.geocode({'address': address}, callback);
+        geocoder.geocode({address}, callback);
       });
     });
   }

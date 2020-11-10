@@ -1,0 +1,26 @@
+@import "../../variables";
+
+.tile {
+  display: flex;
+}
+
+.invisible-placeholder {
+  visibility: hidden;
+}
+
+.cdk-drop-list-dragging, .cdk-drop-list-receiving {
+  margin-top: 2px;
+  border-radius: 4px;
+  overflow-y: hidden;
+
+  &.can-receive {
+    background-color: rgba(159, 220, 255, 0.25);
+    .tile {
+      visibility: hidden;
+    }
+  }
+
+  &.same-column {
+    background-color: #eaeaea;
+  }
+}

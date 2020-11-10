@@ -8,11 +8,13 @@ export interface Document {
   validFrom: string | null;
   validTo: string | null;
   approvalDecision: ApprovalDecision;
+  description: string;
 }
 
 export const exampleDocument = (id: string = '123'): Document => ({
   id,
   name: 'filename.jpg',
+  description: 'filename',
   attachmentId: '456',
   state: 'NEW',
   validFrom: '2019-10-16',

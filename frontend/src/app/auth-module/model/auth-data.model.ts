@@ -20,7 +20,7 @@ export const emptyAuthData = (): AuthData => ({
   password: null,
 });
 
-export const exampleAuthData = (password?: string): AuthData => ({
+export const exampleAuthData = (): AuthData => ({
   accountId: 1,
   accountName: 'account',
   companyId: 2,
@@ -28,5 +28,5 @@ export const exampleAuthData = (password?: string): AuthData => ({
   userId: 3,
   userName: 'User',
   authToken: 'token',
-  password,
+  password: 'old-password'
 });

@@ -7,6 +7,7 @@ export interface NewDocument {
   approvalDecision: ApprovalDecision;
   fileContent: string;
   contentType: string;
+  description: string;
 }
 
 export const exampleNewDocument = (id: string = '123'): NewDocument => ({

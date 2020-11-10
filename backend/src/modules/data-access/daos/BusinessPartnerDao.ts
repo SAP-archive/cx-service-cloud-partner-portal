@@ -1,15 +1,11 @@
 import { UserData } from '@modules/common/types';
-import { DataApiService } from '@modules/data-access';
-import { BusinessPartnerDto } from '@modules/data-access/dtos/BusinessPartnerDto';
+import { CrowdServiceApi, CrowdServiceResponse } from '@modules/data-access/services/CrowdServiceApi';
 
 export class BusinessPartnerDao {
-  public static async findById(userData: UserData, id: string): Promise<BusinessPartnerDto> | undefined {
-    return DataApiService.findById<BusinessPartnerDto | any>(userData, 'BusinessPartner', id)
-      .then(entry => !!entry ? {
-        id: entry.id,
-        name: entry.name,
-        remarks: entry.remarks,
-        inactive: entry.inactive,
-      } : undefined);
+
+  public static async terminateGet(userData: UserData, partnerId: string, ): Promise<CrowdServiceResponse<undefined>> {
+    return CrowdServiceApi.get<undefined>(userData,
+      `crowd-partner/v1/partners/${partnerId}/actions/terminate`);
   }
+
 }

@@ -12,6 +12,7 @@ import { FileReaderService } from '../../../file-uploader/services/file-reader.s
 import { of } from 'rxjs';
 import * as ReportingActions from '../../../state/reporting/reporting.actions';
 import { emptyApprovalDecision } from '../../../model/approval-decision';
+import SpyObj = jasmine.SpyObj;
 
 describe('NewDocumentsFacade', () => {
   type MockedState = RecursivePartial<{ [companyProfileFeatureKey]: CompanyProfileFeatureState }>;
@@ -33,8 +34,8 @@ describe('NewDocumentsFacade', () => {
       ],
     });
 
-    store = TestBed.get(Store);
-    facade = TestBed.get(NewDocumentsFacade);
+    store = TestBed.inject(Store) as MockStore<MockedState>;
+    facade = TestBed.inject(NewDocumentsFacade);
   });
 
   describe('documents', () => {
@@ -55,7 +56,7 @@ describe('NewDocumentsFacade', () => {
   describe('addDocument()', () => {
     it('should dispatch removeNewDocument action', () => {
       const spy = spyOn(store, 'dispatch');
-      const fileReader = TestBed.get(FileReaderService);
+      const fileReader = TestBed.inject(FileReaderService) as SpyObj<FileReaderService>;
       const fileContent = 'Secret data';
       const file = (): File => ({name: 'name.jpg', type: 'image/jpeg'} as any);
       fileReader.readContents.withArgs([file()]).and.returnValue(of(fileContent));
@@ -70,6 +71,7 @@ describe('NewDocumentsFacade', () => {
       expect(argument.document.fileContent).toEqual(fileContent);
       expect(argument.document.contentType).toEqual(file().type);
       expect(argument.document.id.length).toEqual(36);
+      expect(argument.document.description).toEqual(file().name.split('.')[0]);
     });
   });
 

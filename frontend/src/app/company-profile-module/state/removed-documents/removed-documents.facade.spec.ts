@@ -28,8 +28,8 @@ describe('RemovedDocumentsFacade', () => {
       ],
     });
 
-    store = TestBed.get(Store);
-    facade = TestBed.get(RemovedDocumentsFacade);
+    store = TestBed.inject(Store) as MockStore<MockedState>;
+    facade = TestBed.inject(RemovedDocumentsFacade);
   });
 
   describe('removedDocumentsIds', () => {

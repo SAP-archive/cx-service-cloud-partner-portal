@@ -1,5 +1,7 @@
 export interface ClientError {
-  code: number;
+  code?: number;
+  statusCode?: number;
   message: string;
   details?: string;
+  values?: string[];
 }

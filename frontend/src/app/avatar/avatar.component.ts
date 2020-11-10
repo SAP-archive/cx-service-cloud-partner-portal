@@ -7,4 +7,6 @@ import { Component, Input } from '@angular/core';
 })
 export class AvatarComponent {
   @Input() public text: string;
+  @Input() public circle: boolean;
+  @Input() public size = 80;
 }

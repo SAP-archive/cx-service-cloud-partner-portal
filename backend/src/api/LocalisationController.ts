@@ -30,6 +30,6 @@ export class LocalisationController {
       CloudStorageItemService.setValue(userData, 'Cockpit_SelectedLanguage', {data: body.language, version: 1}),
     ])
       .then(result => res.json(result))
-      .catch(() => ApiHelper.processError(res));
+      .catch(error => ApiHelper.processError(res, error));
   }
 }

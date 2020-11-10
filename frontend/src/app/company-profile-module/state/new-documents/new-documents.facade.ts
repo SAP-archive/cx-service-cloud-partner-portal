@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { RootState } from '../../../state';
-import { CompanyProfileModule } from '../../company-profile.module';
 import { selectNewDocuments } from './new-documents.selectors';
 import * as NewDocumentsActions from './new-documents.actions';
 import * as ReportingActions from '../../../state/reporting/reporting.actions';
@@ -11,7 +10,7 @@ import { FileReaderService } from '../../../file-uploader/services/file-reader.s
 import { take } from 'rxjs/operators';
 import { emptyApprovalDecision } from '../../../model/approval-decision';
 
-@Injectable({providedIn: CompanyProfileModule})
+@Injectable()
 export class NewDocumentsFacade {
   public newDocuments = this.store.select(selectNewDocuments);
 
@@ -28,7 +27,8 @@ export class NewDocumentsFacade {
           name: file.name,
           approvalDecision: emptyApprovalDecision(),
           fileContent,
-          contentType: file.type
+          contentType: file.type,
+          description: file.name.substring(0, file.name.lastIndexOf('.')) || file.name,
         },
       })));
   }

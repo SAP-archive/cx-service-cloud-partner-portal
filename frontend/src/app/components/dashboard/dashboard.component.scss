@@ -1,7 +1,8 @@
 $tile-width: 328px;
-$tile-margin-top: 24px;
+$tile-margin: 24px;
+$width-breakpoint: 1052px;
 
-.container {
+.header-container {
   height: 429px;
   background-image: url(//d2pqbuqf8h9nmp.cloudfront.net/images/signup/CrowdSignUpHeader.png);
   background-size: cover;
@@ -10,7 +11,7 @@ $tile-margin-top: 24px;
   align-items: center;
 }
 
-.container .column {
+.header-container .column {
   width: 700px;
 
   .header {
@@ -31,7 +32,7 @@ $tile-margin-top: 24px;
 }
 
 @media screen and (max-width: 600px) {
-  .container .column {
+  .header-container .column {
     width: 100vw;
 
     .header {
@@ -49,43 +50,44 @@ $tile-margin-top: 24px;
   }
 }
 
-.content {
-  max-width: 681px;
-  position: relative;
-  top: -160px;
-  margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-}
-
-.tile {
-  margin-top: $tile-margin-top;
+.narrow-column {
   width: $tile-width;
 }
 
-.double-tile {
-  margin-top: $tile-margin-top;
+.wide-column {
+  width: calc(100% - #{$tile-width} - #{$tile-margin});
+}
+
+.cards {
+  width: $width-breakpoint;
+  position: relative;
+  top: -160px;
+  margin: 0 auto;
 }
 
 .side-by-side {
   display: flex;
   flex-direction: row;
-  flex-wrap: wrap;
   justify-content: space-between;
 }
 
-@media screen and (max-width: 700px) {
-  .content {
-    align-items: center;
+.tile {
+  display: block;
+  margin-top: $tile-margin;
+}
+
+@media screen and (max-width: $width-breakpoint) {
+  .cards {
     width: 100vw;
     top: -250px;
   }
 
   .side-by-side {
-    justify-content: center;
+    flex-direction: column;
+    align-items: center;
   }
 
-  .double-tile {
+  .wide-column {
     width: $tile-width;
   }
 }

@@ -16,7 +16,12 @@ export const selectCompanyLogo = createSelector(
   state => state.companyLogo,
 );
 
+export const selectCrowdName = createSelector(
+  selectCrowdOwnerProfileState,
+  state => state.crowdName,
+);
+
 export const selectIsLoading = createSelector(
   selectCrowdOwnerProfileState,
-  state => state.isLoadingContact || state.isLoadingLogo,
+  state => state.isLoadingContact || state.isLoadingLogo || state.isLoadingCrowName,
 );

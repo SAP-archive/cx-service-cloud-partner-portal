@@ -3,7 +3,6 @@ import { CrowdServiceApi } from '@modules/data-access/services/CrowdServiceApi';
 import * as request from 'request-promise-native';
 import { HttpClientService } from '../services';
 import { NewSkillCertificate } from '../models/SkillCertificate';
-import { SkillDto } from '../dtos';
 
 export class SkillCertificateDao {
   public static downloadDocument(userData: UserData, technicianId: string, skillId: string): request.RequestPromise {
@@ -15,7 +14,7 @@ export class SkillCertificateDao {
     technicianExternalId: string,
     skillUUID: string,
     certificate: NewSkillCertificate,
-  ): Promise<string[]> {
+  ): Promise<undefined> {
     const formData = {
       file: {
         value: Buffer.from(certificate.fileContents, 'base64'),
@@ -26,7 +25,7 @@ export class SkillCertificateDao {
       },
     };
 
-    return HttpClientService.send<string[]>({
+    return HttpClientService.send<undefined>({
       method: 'POST',
       path: `/cloud-crowd-service/api/crowd/v2/technicians/${technicianExternalId}/skills/${skillUUID}/certificates`,
       data: formData,

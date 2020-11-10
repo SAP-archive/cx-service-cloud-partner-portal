@@ -27,7 +27,7 @@ export const emptyServiceArea = (): ServiceArea => ({
   longitude: 0,
   radius: {
     unit: 'km',
-    value: 15,
+    value: 0,
   },
 });
 

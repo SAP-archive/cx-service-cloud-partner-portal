@@ -11,7 +11,6 @@ import { translateModule } from '../utils/translate.module';
   declarations: [
     FakeDataComponent,
   ],
-  entryComponents: [],
   exports: [
     FakeDataComponent,
   ],

@@ -37,7 +37,7 @@ describe('TagsController', () => {
       const tag = exampleTag();
       const nockScopes = [
         nock(`https://${TEST_APP_CONFIG.backendClusterDomain}`)
-          .get(`/cloud-crowd-service/api/crowd-partner/v1/tags${TestConfigurationService.requestQuerySuffix()}`)
+          .get(`/cloud-crowd-service/api/crowd-partner/v1/tags${TestConfigurationService.requestQuerySuffix()}&page=0&size=1000`)
           .reply(200, {
             results: [tag],
           } as Partial<CrowdServiceResponse<Tag>>)

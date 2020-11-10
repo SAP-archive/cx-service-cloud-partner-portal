@@ -1,1 +1,3 @@
-<div class="mat-headline">{{text | abbreviate}}</div>
+<div class="mat-headline"
+     [ngClass]="{circle: circle}"
+     [ngStyle]="{'width.px': size, 'height.px': size, 'font-size.px': size/2}">{{text | abbreviate}}</div>

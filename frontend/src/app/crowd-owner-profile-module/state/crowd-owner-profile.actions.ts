@@ -18,6 +18,19 @@ export const loadCompanyLogo = createAction(
   '[CrowdOwnerProfile] Load Company Logo',
 );
 
+export const loadCrowdName = createAction(
+  '[CrowdOwnerProfile] Load Crowd Name',
+);
+
+export const loadCrowdNameSuccess = createAction(
+  '[CrowdOwnerProfile] Load Crowd Name Success',
+  props<{crowdName: string}>(),
+);
+
+export const loadCrowdNameFailure = createAction(
+  '[CrowdOwnerProfile] Load Crowd Name Failure',
+);
+
 export const loadCompanyLogoSuccess = createAction(
   '[CrowdOwnerProfile] Load Company Logo Success',
   props<{companyLogo: string}>(),

@@ -1,0 +1,18 @@
+<div class="dt-picker-container">
+    <mat-form-field class="dt-input-line">
+        <mat-label *ngIf="label">{{ label | translate}}</mat-label>
+        <input matInput class="dt-input" [formControl]="dtControl" (dateChange)="dateTimeChange($event.value)" (click)="picker.open()"
+            [min]="minDate" [max]="maxDate" [ngxMatDatetimePicker]="picker">
+        <mat-error *ngIf="dtControl.hasError('matDatetimePickerMin')">
+            {{'INVALID_DATE_TIME' | translate}}
+        </mat-error>
+        <mat-error *ngIf="dtControl.hasError('matDatetimePickerMax')">
+            {{'INVALID_DATE_TIME' | translate}}
+        </mat-error>
+        <mat-error *ngIf="dtControl.hasError('required')">
+            {{'FIELD_IS_REQUIRED' | translate}}
+        </mat-error>
+        <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+    </mat-form-field>
+    <ngx-mat-datetime-picker #picker [disabled]="disabled"></ngx-mat-datetime-picker>
+</div>

@@ -5,10 +5,11 @@ import { CrowdOwnerProfileTileComponent } from './crowd-owner-profile-tile.compo
 import { CrowdOwnerProfileFacade } from '../../state/crowd-owner-profile.facade';
 import { FakeDataModule } from 'src/app/fake-data-module/fake-data.module';
 import { AbbreviatePipeModule } from 'src/app/abbreviate-pipe-module/abbreviate-pipe.module';
-import { AuthFacade } from 'src/app/auth-module/state/auth.facade';
-import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
+import { AuthFacade } from 'src/app/auth-module/state/auth/auth.facade';
+import { DomSanitizer } from '@angular/platform-browser';
 import { of } from 'rxjs';
 import { dummyBase64Image } from '../../../utils/base64-image';
+import SpyObj = jasmine.SpyObj;
 
 describe('CrowdOwnerProfileTileComponent', () => {
   let profileFacade: jasmine.SpyObj<CrowdOwnerProfileFacade>;
@@ -30,13 +31,13 @@ describe('CrowdOwnerProfileTileComponent', () => {
         {
           provide: CrowdOwnerProfileFacade,
           useValue: {
-            ...jasmine.createSpyObj(CrowdOwnerProfileFacade, ['loadContactInfo', 'loadCompanyLogo']),
-            companyLogo: of(dummyBase64Image)
+            ...jasmine.createSpyObj(CrowdOwnerProfileFacade, ['loadContactInfo', 'loadCompanyLogo', 'loadCrowdName']),
+            companyLogo: of(dummyBase64Image),
           } as CrowdOwnerProfileFacade,
         },
         {
           provide: AuthFacade,
-          useValue:  jasmine.createSpyObj(AuthFacade, ['companyName']),
+          useValue: jasmine.createSpyObj(AuthFacade, ['companyName']),
         },
         {
           provide: DomSanitizer,
@@ -45,8 +46,8 @@ describe('CrowdOwnerProfileTileComponent', () => {
       ],
     });
 
-    profileFacade = TestBed.get(CrowdOwnerProfileFacade);
-    domSanitizer = TestBed.get(DomSanitizer);
+    profileFacade = TestBed.inject(CrowdOwnerProfileFacade) as SpyObj<CrowdOwnerProfileFacade>;
+    domSanitizer = TestBed.inject(DomSanitizer) as SpyObj<DomSanitizer>;
     component = TestBed.createComponent(CrowdOwnerProfileTileComponent).componentInstance;
   });
 

@@ -32,6 +32,12 @@ import { statusMiddleware } from '@modules/status';
 import { LocalisationController } from './api/LocalisationController';
 import { SkillCertificatesController } from './api/SkillCertificatesController';
 import { BrandingController } from './api/BrandingController';
+import { MetricsController } from './metrics/MetricsController';
+import { LocalMetricsService } from './metrics/LocalMetricsService';
+import { CrowdOwnerContactController } from './api/CrowdOwnerContactController';
+import { BusinessPartnerController } from './api/BusinessPartnerController';
+import { AssignmentsController } from './api/AssignmentsController';
+import { requestsLogger } from './api/middleware/requestsLogger';
 
 VaultService.initializeEnvVars();
 
@@ -77,17 +83,25 @@ clientConfigService.setConfig({
 const app: express.Application = express();
 
 app.use(helmet());
-
 app.use(bodyParser.json({limit: '150mb'}));
 app.use(bodyParser.urlencoded());
-app.use(userDataMiddleware({
-  whitelistPaths: [
-    '/portal/status',
-    '/portal/auth/login',
-    '/portal/auth/changePassword',
-    '/portal/getConfig',
-  ],
-}));
+app.use(userDataMiddleware(
+  {
+    whitelistPaths: [
+      '/portal/status',
+      '/portal/metrics',
+      '/portal/auth/login',
+      '/portal/auth/changePassword',
+      '/portal/getConfig',
+      '/portal/auth/resetPassword/userPartialEmailAddress',
+      '/portal/auth/resetPassword/sendVerificationCode',
+      '/portal/auth/resetPassword/verifyVerificationCode',
+      '/portal/auth/resetPassword',
+    ],
+  },
+  logger,
+));
+app.use(requestsLogger(logger));
 
 const env = config.mode || 'development';
 if (env === 'development') {
@@ -98,7 +112,6 @@ if (env === 'development') {
 }
 
 const NODE_LISTEN_PORT: number = parseInt(process.env.PORT, 10) || config.listenPort || 8000;
-const fallbackTranslationsPath = path.resolve(`${__dirname}/resources/i18n/`);
 // routes
 
 app.use(URL_PATH, statusMiddleware(
@@ -107,8 +120,10 @@ app.use(URL_PATH, statusMiddleware(
   `${__dirname}/deployed.json`,
 ));
 
+app.get('/portal/metrics', MetricsController.getMetrics);
 app.get('/portal/getConfig', getConfig);
 
+app.post('/portal/search/technicians', TechnicianController.search);
 app.get('/portal/data/technician', TechnicianController.readAll);
 app.post('/portal/data/technician', TechnicianController.create);
 app.get('/portal/data/technician/:technicianId', TechnicianController.read);
@@ -116,8 +131,9 @@ app.put('/portal/data/technician/:technicianId', TechnicianController.update);
 app.delete('/portal/data/technician/:technicianId', TechnicianController.remove);
 app.get('/portal/data/technician/:technicianId/skills', TechnicianController.readSkills);
 app.get('/portal/data/technician/:technicianId/skills/:skillId/certificate/download', SkillCertificatesController.download);
-app.get('/portal/branding/crowdOwnerContact', BrandingController.getCrowdOwnerContact);
 app.get('/portal/branding/crowdOwnerLogo', BrandingController.getLogo);
+app.get('/portal/branding/crowdOwnerName', BrandingController.getCrowdOwnerName);
+app.get('/portal/branding/crowdOwnerContact', BrandingController.getCrowdOwnerContact);
 
 app.get('/portal/data/tags', TagsController.readAll);
 
@@ -130,6 +146,21 @@ app.delete('/portal/auth/logout', AuthController.logout);
 app.post('/portal/auth/changePassword', AuthController.changePassword);
 
 app.post('/portal/setLocalisation', LocalisationController.setLocalisation);
+
+app.post('/portal/auth/resetPassword/userPartialEmailAddress', AuthController.userPartialEmailAddress);
+app.post('/portal/auth/resetPassword/sendVerificationCode', AuthController.sendVerificationCode);
+app.post('/portal/auth/resetPassword/verifyVerificationCode', AuthController.verifyVerificationCode);
+app.post('/portal/auth/resetPassword', AuthController.resetPassword);
+app.get('/portal/crowdOwnerContact', CrowdOwnerContactController.getContact);
+app.get('/portal/partners/:partnerId/action/terminate', BusinessPartnerController.terminateCrowdPartner);
+
+app.get('/portal/assignments', AssignmentsController.fetchAssignments);
+app.get('/portal/assignments-stats', AssignmentsController.fetchAssignmentsStats);
+app.post('/portal/assignments/:assignmentId/actions/reject', AssignmentsController.rejectAssignment);
+app.post('/portal/assignments/:assignmentId/actions/accept', AssignmentsController.acceptAssignment);
+app.post('/portal/assignments/:assignmentId/actions/update', AssignmentsController.updateAssignment);
+app.post('/portal/assignments/:assignmentId/actions/close', AssignmentsController.closeAssignment);
+app.post('/portal/assignments/:assignmentId/actions/release', AssignmentsController.releaseAssignment);
 
 try {
   app.listen(NODE_LISTEN_PORT, function () {
@@ -147,3 +178,5 @@ const start: Date = new Date();
     `memory: ${JSON.stringify(process.memoryUsage())}`);
   setTimeout(logStatus, 60000);
 })();
+
+LocalMetricsService.bootstrapMetrics();

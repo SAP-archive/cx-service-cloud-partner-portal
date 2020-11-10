@@ -1,0 +1,39 @@
+@import '../../variables';
+
+.tile {
+  width: calc(100% - 2 * #{$column-margin});
+  min-width: calc(#{$min-column-width} - 2 * #{$column-margin});
+  height: auto;
+  min-height: $row-height;
+  margin: 0 $column-margin $column-margin * 2 $column-margin;
+
+  mat-card {
+    width: 100%;
+    padding: 16px 0;
+  }
+
+  mat-card-actions {
+    padding: 0;
+    margin-left: 16px;
+    margin-right: 16px;
+  }
+
+  .content-row {
+    margin: 0 16px;
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+
+    .content-value {
+      margin: $column-margin 0px 0px $column-margin * 2;
+    }
+  }
+}
+
+.tile-title {
+  font-size: 16px;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}

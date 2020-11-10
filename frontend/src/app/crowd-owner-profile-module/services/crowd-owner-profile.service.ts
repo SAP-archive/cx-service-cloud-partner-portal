@@ -1,21 +1,28 @@
-import { AppBackendService } from 'src/app/services/app-backend.service';
-import { Observable } from 'rxjs';
-import { map, delay } from 'rxjs/operators';
+import { AppBackendService } from '../../services/app-backend.service';
+import { Observable} from 'rxjs';
+import { map } from 'rxjs/operators';
 import { Injectable } from '@angular/core';
-import { CrowdOwnerProfileModule } from '../crowd-owner-profile.module';
 import { ContactDetails } from '../model/contact-details';
 
-@Injectable({providedIn: CrowdOwnerProfileModule})
+@Injectable()
 export class CrowdOwnerProfileService {
-  constructor(private appBackendService: AppBackendService) {}
+  constructor(
+    private appBackendService: AppBackendService,
+  ) { }
 
   public getContactInfo(): Observable<ContactDetails> {
-    return this.appBackendService.get<ContactDetails>('/branding/crowdOwnerContact')
-      .pipe(map(response => response.body));
+    return this.appBackendService.get<ContactDetails>('/crowdOwnerContact').pipe(
+      map(response => response.body)
+    );
   }
 
   public getCompanyLogo(): Observable<string> {
-    return this.appBackendService.get<{logoString: string}>('/branding/crowdOwnerLogo')
-      .pipe(map(({body}) => body.logoString));
+    return this.appBackendService.get<{ logoString: string }>('/branding/crowdOwnerLogo')
+      .pipe(map(({ body }) => body.logoString));
+  }
+
+  public getCrowdName(): Observable<string> {
+    return this.appBackendService.get<{ crowdName: string }>('/branding/crowdOwnerName')
+      .pipe(map(({ body }) => body.crowdName));
   }
 }

@@ -10,14 +10,11 @@ import { MatInputModule } from '@angular/material/input';
 import { MapWithCircleAreaComponent } from './components/map-with-circle-area/map-with-circle-area.component';
 import { AgmCoreModule, LazyMapsAPILoaderConfigLiteral } from '@agm/core';
 import { RadiusInMetersPipe } from './pipes/radius-in-meters.pipe';
+import { GoogleMapsService } from './services/google-maps.service';
 
 const agmConfig: LazyMapsAPILoaderConfigLiteral = {
-  /**
-   * This token only works on coresystem.net domains.
-   * Please replace it with your own Google Maps API key.
-   */
-  apiKey: 'AIzaSyArjJMCoH1iCUyi2qP7Pr4MA8jX16v3KdQ',
-  channel: 'FSM-partner-portal',
+  apiKey: '', // put your Google Maps API key here
+  channel: '', // put your Google Maps API channel here
   libraries: ['places'],
 };
 
@@ -37,6 +34,9 @@ const agmConfig: LazyMapsAPILoaderConfigLiteral = {
     ServiceAreaCardComponent,
     MapWithCircleAreaComponent,
     RadiusInMetersPipe,
+  ],
+  providers: [
+    GoogleMapsService,
   ],
   exports: [
     ServiceAreaCardComponent,

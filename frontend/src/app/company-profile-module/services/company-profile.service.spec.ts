@@ -28,6 +28,19 @@ describe('CompanyProfileService', () => {
     });
   });
 
+  describe('terminateRelationship()', () => {
+    it('should terminate relationship', () => {
+      const appBackend = jasmine.createSpyObj(['get']);
+      const partnerId = '12345';
+      appBackend.get.withArgs(`/partners/${partnerId}/action/terminate`).and.returnValue(
+        cold('a', {a: new HttpResponse()}),
+      );
+      const service = new CompanyProfileService(null, appBackend);
+
+      expect(service.terminateRelationship(partnerId)).toBeObservable(cold('a', {a:  new HttpResponse()}));
+    });
+  });
+
   describe('saveProfile()', () => {
     it('should save the profile', () => {
       const appBackend = jasmine.createSpyObj(['put']);

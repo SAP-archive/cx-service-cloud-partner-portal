@@ -9,14 +9,4 @@ describe('Technicians Selectors', () => {
     });
     expect(result).toEqual({} as any);
   });
-
-  it('selectTechnicians should work', () => {
-    const technicians = [exampleTechnician()];
-    const result = selectTechnicians({
-      [fromTechnicians.techniciansFeatureKey]: {
-        technicians,
-      }
-    });
-    expect(result).toEqual(technicians);
-  });
 });

@@ -1,15 +1,19 @@
 import { userDefaultState, userReducer } from './user.reducer';
 import { UnifiedPerson } from '../../model/unified-person.model';
-import { changeLocalisation, setPerson } from './user.actions';
+import {
+  setCurrentLocalisation,
+  selectLocalisation,
+  hasLocalisationBeenChangedBeforeLogin,
+  setPerson
+} from './user.actions';
 import { exampleLocalisation } from '../../components/localisation-selector/localisation';
-import { loginSuccess } from '../../auth-module/state/auth.actions';
+import { loginSuccess } from '../../auth-module/state/auth/auth.actions';
 import { exampleLoginData } from '../../auth-module/model/login-data.model';
 
 describe('UserReducer', () => {
   describe('userReducer()', () => {
     it('should skip irrelevant actions', () => {
       const newState = userReducer(undefined, {} as any);
-
       expect(newState).toEqual(userDefaultState);
     });
 
@@ -26,13 +30,34 @@ describe('UserReducer', () => {
       });
     });
 
-    describe('on changeLocalisation', () => {
+    describe('on setCurrentLocalisation', () => {
       it('should set localisation from action', () => {
         const newState = userReducer(
           undefined,
-          changeLocalisation({localisation: exampleLocalisation()}),
+          setCurrentLocalisation({localisation: exampleLocalisation()}),
         );
         expect(newState.localisation).toEqual(exampleLocalisation());
+      });
+    });
+
+    describe('on selectLocalisation', () => {
+      it('should set localisation from action', () => {
+        const newState = userReducer(
+          undefined,
+          selectLocalisation({localisation: exampleLocalisation()}),
+        );
+        expect(newState.localisation).toEqual(exampleLocalisation());
+      });
+    });
+
+    describe('on set hasLocalisationBeenChangedBeforeLogin', () => {
+      it('should set hasLocalisationBeenChangedBeforeLogin', () => {
+        const isLocalisationChangeNeeded = true;
+        const newState = userReducer(
+          undefined,
+          hasLocalisationBeenChangedBeforeLogin({isLocalisationChangeNeeded}),
+        );
+        expect(newState.isLocalisationChangeNeeded).toEqual(true);
       });
     });
 

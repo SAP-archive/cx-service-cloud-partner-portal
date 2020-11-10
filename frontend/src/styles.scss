@@ -17,6 +17,12 @@ body {
   color: $faded-color;
 }
 
+.warning-snackbar {
+  background-color: #FF9800;
+  background-position: 0% 0%;
+  color: white;
+}
+
 @media (max-width: $desktop-width-breakpoint) {
   .hidden-on-mobile {
     display: none !important;

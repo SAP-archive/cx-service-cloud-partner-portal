@@ -4,11 +4,14 @@ import { Observable } from 'rxjs';
 
 import { UserEffects } from './user.effects';
 import { cold, hot } from 'jasmine-marbles';
-import { changeLocalisation, initLocalisation } from './user.actions';
+import { selectLocalisation, initLocalisation, setCurrentLocalisation } from './user.actions';
 import { EffectsMetadata, getEffectsMetadata } from '@ngrx/effects';
 import { Action } from '@ngrx/store';
 import { LocalisationService } from '../../services/localisation.service';
-import * as fromAuth from '../../auth-module/state/auth.actions';
+import * as fromAuth from '../../auth-module/state/auth/auth.actions';
+import SpyObj = jasmine.SpyObj;
+import { exampleLoginData } from '../../auth-module/model/login-data.model';
+import { loginSuccess } from '../../auth-module/state/auth/auth.actions';
 
 describe('UserEffects', () => {
   let actions$: Observable<Action>;
@@ -20,11 +23,18 @@ describe('UserEffects', () => {
       providers: [
         UserEffects,
         provideMockActions(() => actions$),
-        {provide: LocalisationService, useValue: jasmine.createSpyObj<LocalisationService>(['getInitialLocalisation', 'setLocalisation'])},
+        {
+          provide: LocalisationService,
+          useValue: jasmine.createSpyObj<LocalisationService>([
+            'getInitialLocalisation',
+            'selectLocalisation',
+            'setLocalLocalisation',
+            'setLocalisationWhenLoginSuccess'])
+        },
       ],
     });
 
-    effects = TestBed.get(UserEffects);
+    effects = TestBed.inject(UserEffects);
     metadata = getEffectsMetadata(effects);
   });
 
@@ -35,9 +45,9 @@ describe('UserEffects', () => {
         language: 'pl',
         name: 'Polish',
       };
-      TestBed.get(LocalisationService).getInitialLocalisation.and.returnValue(localisation);
+      (TestBed.inject(LocalisationService) as SpyObj<LocalisationService>).getInitialLocalisation.and.returnValue(localisation);
       actions$ = hot('--a-b', {a: initLocalisation(), b: fromAuth.logoutSuccess});
-      const expectedAction = changeLocalisation({
+      const expectedAction = setCurrentLocalisation({
         localisation,
       });
       const expected = cold('--a-b', {
@@ -49,9 +59,27 @@ describe('UserEffects', () => {
     });
   });
 
-  describe('changeLocalisation', () => {
+  describe('setCurrentLocalisation', () => {
+    it('should call setLocalLocalisation of LocalisationService', () => {
+      const localisationService = TestBed.inject(LocalisationService) as SpyObj<LocalisationService>;
+      const localisation = {
+        code: 'pl',
+        language: 'pl',
+        name: 'Polish',
+      };
+      const action = () => setCurrentLocalisation({ localisation });
+      actions$ = hot('a', {a: action()});
+      const expected = () => cold('b', {b: undefined});
+      localisationService.setLocalLocalisation.and.returnValue(expected());
+
+      expect(effects.setCurrentLocalisation).toBeObservable(expected());
+      expect(localisationService.setLocalLocalisation).toHaveBeenCalledWith(localisation);
+    });
+  });
+
+  describe('selectLocalisation', () => {
     it('should not dispatch any further actions', () => {
-      const action = () => changeLocalisation({
+      const action = () => selectLocalisation({
         localisation: {
           code: 'pl',
           language: 'pl',
@@ -60,26 +88,50 @@ describe('UserEffects', () => {
       });
       actions$ = hot('a', {a: action()});
       const expected = () => cold('b', {b: undefined});
-      TestBed.get(LocalisationService).setLocalisation.and.returnValue(expected());
+      (TestBed.inject(LocalisationService) as SpyObj<LocalisationService>).selectLocalisation.and.returnValue(expected());
 
-      expect(effects.changeLocalisation).toBeObservable(expected());
-      expect(metadata.changeLocalisation.dispatch).toBe(false);
+      expect(effects.selectLocalisation).toBeObservable(expected());
+      expect(metadata.selectLocalisation.dispatch).toBe(false);
     });
 
     it('should set new localisation', () => {
-      const localisationService = TestBed.get(LocalisationService);
+      const localisationService = TestBed.inject(LocalisationService) as SpyObj<LocalisationService>;
       const newLocalisation = () => ({
         code: 'pl',
         language: 'pl',
         name: 'Polish',
       });
-      const action = () => changeLocalisation({localisation: newLocalisation()});
+      const action = () => selectLocalisation({localisation: newLocalisation()});
       actions$ = hot('a', {a: action()});
       const expected = () => cold('b', {b: undefined});
-      localisationService.setLocalisation.and.returnValue(expected());
+      localisationService.selectLocalisation.and.returnValue(expected());
 
-      expect(effects.changeLocalisation).toBeObservable(expected());
-      expect(localisationService.setLocalisation).toHaveBeenCalledWith(action().localisation);
+      expect(effects.selectLocalisation).toBeObservable(expected());
+      expect(localisationService.selectLocalisation).toHaveBeenCalledWith(action().localisation);
     });
   });
+
+  describe('loginSuccess', () => {
+    it('should set new localisation', () => {
+      const localisationService = TestBed.inject(LocalisationService) as SpyObj<LocalisationService>;
+      const newLocalisation = {
+        code: 'pl',
+        language: 'pl',
+        name: 'Polish',
+      };
+      const action = () => loginSuccess({
+        loginData: {
+          ...exampleLoginData(),
+          localisation: newLocalisation
+        }
+      });
+      actions$ = hot('a', {a: action()});
+      const expected = () => cold('b', {b: undefined});
+      localisationService.setLocalisationWhenLoginSuccess.and.returnValue(expected());
+
+      expect(effects.loginSuccess).toBeObservable(expected());
+      expect(localisationService.setLocalisationWhenLoginSuccess).toHaveBeenCalledWith(newLocalisation);
+    });
+  });
+
 });

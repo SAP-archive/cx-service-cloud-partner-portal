@@ -1,5 +1,5 @@
 import * as fromConfig from './config.reducer';
-import { loginSuccess } from '../../auth-module/state/auth.actions';
+import { loginSuccess } from '../../auth-module/state/auth/auth.actions';
 
 describe('Config Reducer', () => {
   describe('an unknown action', () => {

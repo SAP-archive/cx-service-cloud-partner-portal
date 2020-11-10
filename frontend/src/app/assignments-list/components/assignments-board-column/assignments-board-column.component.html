@@ -1,0 +1,35 @@
+<div class="column">
+  <h2 class="mat-h3">{{columnName | translate}} ({{(assignments | async).length || 0}})</h2>
+  <cdk-virtual-scroll-viewport itemSize="200"
+                               class="viewport"
+                               [ngClass]="{
+                               'can-receive': canReceiveDraggedAssignment | async,
+                               'same-column': isOriginalColumnOfDraggedAssignment | async
+                               }"
+                               [ngClass]="{'customizedScrollbar': isWindows()}"
+                               (scrolledIndexChange)="scrolledIndexChange()"
+                               cdkDropList
+                               cdkDropListSortingDisabled
+                               [cdkDropListEnterPredicate]="enterPredicate.bind(this)"
+                               (cdkDropListDropped)="onDrop($event)">
+    <div id="assignment-list-draggable" *ngIf="deviceDetectorService.isDesktop()">
+      <pp-assignments-board-tile
+        [assignment]="assignment"
+        *cdkVirtualFor="let assignment of assignments | async"
+        cdkDrag
+        (cdkDragStarted)="onDragStart($event)"
+        (cdkDragEnded)="onDragEnd()"
+        [cdkDragStartDelay]="dragTimeout"
+        [cdkDragData]="assignment">
+      <div class="invisible-placeholder" *cdkDragPlaceholder></div>
+    </pp-assignments-board-tile>
+    </div>
+    <div id="assignment-list" *ngIf="deviceDetectorService.isMobile()">
+      <pp-assignments-board-tile
+      [assignment]="assignment"
+      *cdkVirtualFor="let assignment of assignments | async">
+    </pp-assignments-board-tile>
+    </div>
+    <pp-assignments-board-fake-tile *ngIf="isLoading | async"></pp-assignments-board-fake-tile>
+  </cdk-virtual-scroll-viewport>
+</div>

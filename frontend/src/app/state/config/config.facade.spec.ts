@@ -25,8 +25,8 @@ describe('ConfigFacade', () => {
       ],
     });
 
-    store = TestBed.get(Store);
-    facade = TestBed.get(ConfigFacade);
+    store = TestBed.inject(Store) as MockStore<MockedState>;
+    facade = TestBed.inject(ConfigFacade);
   });
 
   describe('appConfig', () => {

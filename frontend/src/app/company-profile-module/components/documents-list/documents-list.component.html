@@ -16,14 +16,14 @@
             </label>
             <span>{{formatDate(document.validTo)}}</span>
           </div>
-          <div class="line-space">
+          <div class="line-space" *ngIf="document?.approvalDecision?.reason">
             <label class="label-style">{{'COMPANY_PROFILE_EDITOR_DOCUMENTS_REMARKS' | translate}}: </label>
             <span id="document-reason">{{document.approvalDecision.reason}}</span>
           </div>
         </div>
         <div *ngIf="removedDocumentsFacade.isDocumentMarkedForRemoval(document) | async">
           <del class="line-space">{{document.name}}</del>
-          <div class="expiration-date deleted-text line-space">
+          <div class="deleted-text line-space">
             {{'COMPANY_PROFILE_EDITOR_DOCUMENTS_EXPIRATION_WARNING' | translate}}
           </div>
         </div>
@@ -31,12 +31,12 @@
       <div id="right-title">
         <pp-approval-decision-status class="document-status" [approvalDecision]="document.approvalDecision"></pp-approval-decision-status>
         <button mat-icon-button *ngIf="!(removedDocumentsFacade.isDocumentMarkedForRemoval(document) | async)"
-          type="button" class="delete-button" title="{{'DELETE' | translate }}"
+          type="button" id="compdoc-delete-button-{{i}}" title="{{'DELETE' | translate }}"
           (click)="deleteDocument(document, $event)">
           <mat-icon>delete_outline</mat-icon>
         </button>
         <button mat-icon-button *ngIf="removedDocumentsFacade.isDocumentMarkedForRemoval(document) | async"
-          type="button" class="delete-button" title="{{'UNDO_REMOVAL' | translate }}"
+          type="button" id="compdoc-undo-button-{{i}}" title="{{'UNDO_REMOVAL' | translate }}"
           (click)="undoDocumentDelete(document, $event)">
           <mat-icon>undo</mat-icon>
         </button>

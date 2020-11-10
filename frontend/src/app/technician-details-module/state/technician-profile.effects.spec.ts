@@ -6,19 +6,20 @@ import { TechnicianProfileEffects } from './technician-profile.effects';
 import { TechnicianProfileService } from '../services/technician-profile.service';
 import { TagService } from '../services/tag.service';
 import { RecursivePartial } from 'src/app/utils/recursive-partial';
-import { State, initialState, technicianProfileFeatureKey } from './technician-profile.reducer';
+import { initialState, State, technicianProfileFeatureKey } from './technician-profile.reducer';
 import * as profileActions from './technician-profile.actions';
 import { provideMockStore } from '@ngrx/store/testing';
 import { translateModule } from '../../utils/translate.module';
 import { HttpClientModule } from '@angular/common/http';
 import { AppBackendService } from 'src/app/services/app-backend.service';
-import { TechnicianProfile, exampleTechnicianProfile } from '../models/technician-profile.model';
-import { reportSuccess, reportError } from 'src/app/state/reporting/reporting.actions';
+import { exampleTechnicianProfile, TechnicianProfile } from '../models/technician-profile.model';
+import { reportError, reportSuccess } from 'src/app/state/reporting/reporting.actions';
 import { exampleSkill } from '../models/skill.model';
 import { exampleTag } from '../models/tag.model';
 import { take, toArray } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { saveAsInjectionToken } from '../injection-tokens';
+import SpyObj = jasmine.SpyObj;
 
 describe('TechnicianProfileEffects', () => {
   type MockedState = RecursivePartial<{ [technicianProfileFeatureKey]: State }>;
@@ -66,10 +67,10 @@ describe('TechnicianProfileEffects', () => {
       ],
     });
 
-    effects = TestBed.get<TechnicianProfileEffects>(TechnicianProfileEffects);
-    technicianProfileMockService = TestBed.get<TechnicianProfileService>(TechnicianProfileService);
-    appBackendMockService = TestBed.get<AppBackendService>(AppBackendService);
-    tagService = TestBed.get(TagService);
+    effects = TestBed.inject<TechnicianProfileEffects>(TechnicianProfileEffects);
+    technicianProfileMockService = TestBed.inject(TechnicianProfileService) as SpyObj<TechnicianProfileService>;
+    appBackendMockService = TestBed.inject(AppBackendService) as SpyObj<AppBackendService>;
+    tagService = TestBed.inject(TagService) as SpyObj<TagService>;
   });
 
   describe('loadTechnicianProfiles$', () => {
@@ -157,13 +158,15 @@ describe('TechnicianProfileEffects', () => {
         skills: [],
         certificates: [],
       }));
-      effects.createTechnicianProfile$.subscribe(profile => {
+      effects.createTechnicianProfile$.subscribe((results: any) => {
         expect(technicianProfileMockService.create).toHaveBeenCalledWith({
           profile: technician,
           skills: [],
           certificates: [],
         });
-        expect(profile).toEqual(profileActions.createTechnicianProfileSuccess({profile: technician} as any));
+        if (results.profile) {
+          expect(results.profile).toEqual(technician);
+        }
         done();
       });
     });

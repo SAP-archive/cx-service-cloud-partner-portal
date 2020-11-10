@@ -8,6 +8,7 @@ class AppConfiguration {
   private static _portalClientId: string;
   private static _docsUrl: string;
   private static _directoryService: string;
+  private static _logLevel: string;
 
   public static get dataCloudHost(): string {
     return this._dataCloudHost;
@@ -29,6 +30,10 @@ class AppConfiguration {
     return this._directoryService;
   }
 
+  public static get logLevel(): string {
+    return this._logLevel;
+  }
+
   public static loadFromFile(filepath: string): void {
     if (AppConfiguration._loaded) {
       throw new Error('configuration already loaded.');
@@ -46,6 +51,7 @@ class AppConfiguration {
     AppConfiguration._loaded = true;
     AppConfiguration._portalClientId = config.portalClientId || 'PARTNER_PORTAL';
     AppConfiguration._docsUrl = config.docsUrl;
+    AppConfiguration._logLevel = config.logLevel || 'info';
   }
 }
 

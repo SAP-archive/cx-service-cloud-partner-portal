@@ -1,0 +1,49 @@
+a {
+  text-decoration: none;
+}
+
+mat-card-content {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.side-padded {
+  $padding: 16px;
+  padding-right: $padding;
+}
+
+.flex-horizontal {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  flex-wrap: wrap;
+}
+
+.counter {
+  text-align: center;
+  word-break: break-all;
+
+  h1 {
+    font-size: 48px;
+    font-weight: lighter;
+  }
+
+  .title-tile-text {
+    font-size: 14px;
+    color: #6A6D70;
+  }
+}
+
+.new {
+  color: red;
+}
+
+.ready-to-plan {
+  color: orange;
+}
+
+.closed {
+  color: green;
+}

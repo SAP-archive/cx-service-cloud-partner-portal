@@ -1,17 +1,25 @@
 <div *ngIf="isLoading | async" class="spinner-container">
   <mat-spinner></mat-spinner>
 </div>
-<form *ngIf="!(isLoading | async)" [formGroup]="profileForm" (ngSubmit)="onSubmit()">
+<form *ngIf="!(isLoading | async)" [formGroup]="profileForm">
   <mat-card class="header">
     <div class="first-line">
       <mat-card-title>{{getFullName()}}</mat-card-title>
       <div class="action-buttons">
         <button
           *ngIf="profileForm.dirty"
-          [disabled]="profileForm.invalid"
-          class="save-button"
+          [disabled]="isBlocked || profileForm.invalid"
+          class="save-button action-button"
           mat-flat-button color="primary"
-          type="submit">Save</button>
+          (click)="onSubmit()">
+          <span translate>SAVE</span>
+        </button>
+        <button mat-stroked-button *ngIf="editorMode === 'EDIT'" color="primary" (click)="deleteTechnician()" class="action-button"
+          [disabled]="isLoggedInUser()"
+          [ngClass]="isLoggedInUser() ? 'technician-delete-button-disabled' : 'technician-delete-button'">
+          <span translate>DELETE</span>
+        </button>
+        <mat-divider vertical="true" class="divider"></mat-divider>
         <mat-icon routerLink="/" class="button close">clear</mat-icon>
       </div>
     </div>
@@ -30,67 +38,79 @@
   <div class="editor-content">
     <div class="flex-horizontal grow-evenly">
       <div class="flex-vertical">
-        <mat-card formGroupName="contact">
+        <mat-card formGroupName="about">
           <mat-card-title translate>TECHNICIAN_PROFILE_ABOUT_TITLE</mat-card-title>
           <mat-card-content>
             <mat-form-field>
-              <input matInput
+              <input matInput id="tech-detail-firstName"
                 [placeholder]="'TECHNICIAN_PROFILE_ABOUT_FIRST_NAME' | translate"
                 required
                 formControlName="firstName">
             </mat-form-field>
             <mat-form-field>
-              <input matInput
+              <input matInput id="tech-detail-lastName"
                 [placeholder]="'TECHNICIAN_PROFILE_ABOUT_LAST_NAME' | translate"
                 required
                 formControlName="lastName">
             </mat-form-field>
             <mat-form-field>
-              <input matInput
+              <input matInput id="tech-detail-emailAddress"
                 type="email"
                 [placeholder]="'TECHNICIAN_PROFILE_ABOUT_EMAIL_ADDRESS' | translate"
                 required
                 formControlName="emailAddress">
             </mat-form-field>
             <mat-form-field>
-              <input matInput
+              <input matInput id="tech-detail-phoneNumber"
                 [placeholder]="'TECHNICIAN_PROFILE_ABOUT_PHONE_NUMBER' | translate"
-                required
                 formControlName="phoneNumber">
             </mat-form-field>
+            <mat-form-field *ngIf="(isChangeRoleEnabled | async) && editorMode === 'EDIT'">
+              <mat-select id="tech-detail-role" 
+                (selectionChange)="onRoleChanged($event.value)"
+                placeholder="{{'CROWD_USER_TYPE' | translate}}"
+                [disabled]="isLoggedInUser()"
+                formControlName="crowdType">
+                <mat-option *ngFor="let type of crowdTypes" [value]="type">
+                  {{ type | translate }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+            <div><label class="active-label">{{ 'TECHNICIAN_PROFILE_ABOUT_ACTIVE' | translate }}</label></div>
+            <div class="pp-technician-detail-active">
+              <mat-checkbox [disabled]="isLoggedInUser()" 
+                [checked]="!technicianProfile.inactive" 
+                (click)="onToggleActive()">
+              </mat-checkbox>
+            </div>
           </mat-card-content>
         </mat-card>
         <mat-card formGroupName="address">
           <mat-card-title translate>TECHNICIAN_PROFILE_ADDRESS_TITLE</mat-card-title>
           <mat-card-content>
             <mat-form-field>
-              <input matInput
+              <input matInput id="tech-detail-streetName"
                 [placeholder]="'TECHNICIAN_PROFILE_ADDRESS_LABEL_STREET_NAME' | translate"
-                required
                 formControlName="streetName">
             </mat-form-field>
             <mat-form-field>
-              <input matInput
+              <input matInput id="tech-detail-houseNumber"
                 [placeholder]="'TECHNICIAN_PROFILE_ADDRESS_LABEL_HOUSE_NUMBER' | translate"
-                required
                 formControlName="houseNumber">
             </mat-form-field>
             <mat-form-field>
-              <input matInput
+              <input matInput id="tech-detail-zipCode"
                 [placeholder]="'TECHNICIAN_PROFILE_ADDRESS_LABEL_ZIP_CODE' | translate"
-                required
                 formControlName="zipCode">
             </mat-form-field>
             <mat-form-field>
-              <input matInput
+              <input matInput id="tech-detail-city"
                 [placeholder]="'TECHNICIAN_PROFILE_ADDRESS_LABEL_CITY' | translate"
-                required
                 formControlName="city">
             </mat-form-field>
             <mat-form-field>
-              <input matInput
+              <input matInput id="tech-detail-country"
                 [placeholder]="'TECHNICIAN_PROFILE_ADDRESS_LABEL_COUNTRY' | translate"
-                required
                 formControlName="country">
             </mat-form-field>
           </mat-card-content>
@@ -102,7 +122,7 @@
   <div class="action-buttons-bottom mobile-only">
     <button
       *ngIf="profileForm.dirty"
-      [disabled]="!profileForm.valid"
+      [disabled]="isBlocked || profileForm.invalid"
       class="save-button"
       mat-flat-button color="primary"
       type="submit">Save</button>

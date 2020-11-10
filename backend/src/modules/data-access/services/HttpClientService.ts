@@ -16,7 +16,7 @@ export class HttpClientService {
   }): Promise<T> {
     const clientConfig = clientConfigService.getConfig();
     const pathSeparator = (options.path.indexOf('/') === 0) ? '' : '/';
-    const dataPart = options.useFormData ? {formData: options.data} : {body: options.data, json: true};
+    const dataPart = options.useFormData ? {formData: options.data, json: true} : {body: options.data, json: true};
     return request(
       `https://${clientConfig.backendClusterDomain}${pathSeparator}${options.path}`,
       {

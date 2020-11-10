@@ -15,6 +15,8 @@ import { emptyContact } from '../../model/contact.model';
 import { MatDialog } from '@angular/material/dialog';
 import { UnsavedConfirmationDialogComponent } from '../../../components/unsaved-confirmation-dialog/unsaved-confirmation-dialog.component';
 import { emptyAddress } from '../../model/address.model';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { ReportingFacade } from 'src/app/state/reporting/reporting.facade';
 
 @Component({
   selector: 'pp-company-profile-editor',
@@ -54,13 +56,16 @@ export class CompanyProfileEditorComponent implements OnInit, OnDestroy {
   );
   public companyDetails: CompanyDetails;
   private destroyed$: Subject<undefined> = new Subject();
+  public isBlocked: boolean;
 
   constructor(
     private companyProfileFacade: CompanyProfileFacade,
     private newDocumentsFacade: NewDocumentsFacade,
     private removedDocumentsFacade: RemovedDocumentsFacade,
     private formBuilder: FormBuilder,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private snackBar: MatSnackBar,
+    private reportingFacade: ReportingFacade,
   ) {
   }
 
@@ -71,12 +76,25 @@ export class CompanyProfileEditorComponent implements OnInit, OnDestroy {
         this.companyDetails = companyDetails;
         this.profileForm.setValue(this.companyDetailsToFormData(companyDetails));
         this.profileForm.markAsPristine();
+
+        this.isBlocked = this.isProfileBlockedBySyncStatus();
+        if (this.isBlocked) {
+          this.reportingFacade.reportWarning('COMPANY_PROFILE_UPDATE_BLOCKED');
+        }
       });
+  }
+
+  private isProfileBlockedBySyncStatus(): boolean {
+    const BLOCKED_STATUS = 'BLOCKED';
+    return (this.companyDetails.syncStatus === BLOCKED_STATUS) ||
+      (this.companyDetails.address && this.companyDetails.address.syncStatus === BLOCKED_STATUS) ||
+      (this.companyDetails.contact && this.companyDetails.contact.syncStatus === BLOCKED_STATUS);
   }
 
   public ngOnDestroy(): void {
     this.destroyed$.next();
     this.destroyed$.complete();
+    this.snackBar.dismiss();
   }
 
   public onSubmit(): void {

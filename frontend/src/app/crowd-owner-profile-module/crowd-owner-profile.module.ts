@@ -10,8 +10,9 @@ import { CrowdOwnerProfileEffects } from './state/crowd-owner-profile.effects';
 import { FakeDataModule } from '../fake-data-module/fake-data.module';
 import { crowdOwnerProfileFeatureKey } from './state/feature.selectors';
 import { AbbreviatePipeModule } from '../abbreviate-pipe-module/abbreviate-pipe.module';
-import { CrowdOwnerProfileFacade } from './state/crowd-owner-profile.facade';
 import { AuthModule } from '../auth-module/auth.module';
+import { CrowdOwnerProfileService } from './services/crowd-owner-profile.service';
+import { CrowdOwnerProfileFacade } from './state/crowd-owner-profile.facade';
 
 @NgModule({
   declarations: [
@@ -28,6 +29,10 @@ import { AuthModule } from '../auth-module/auth.module';
       companyProfile: fromCompanyProfile.reducer,
     }),
     EffectsModule.forFeature([CrowdOwnerProfileEffects]),
+  ],
+  providers: [
+    CrowdOwnerProfileService,
+    CrowdOwnerProfileFacade,
   ],
   exports: [
     CrowdOwnerProfileTileComponent,

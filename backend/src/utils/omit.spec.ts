@@ -8,4 +8,10 @@ describe('omit()', () => {
 
     assert.deepEqual(omit(input, 'a', 'c'), output);
   });
+  it('should return null when the object is null', () => {
+    const input = null;
+    const output = null;
+
+    assert.deepEqual(omit(input, 'a', 'c'), output);
+  });
 });

@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { TechnicianDetailsEditorComponent } from './components/technician-details-editor/technician-details-editor.component';
+import { RemovalConfirmationDialogComponent } from './components/removal-confirmation-dialog/removal-confirmation-dialog.component';
 import { TechnicianDetailsMaterialModule } from './technician-details-material.module';
 import { StoreModule } from '@ngrx/store';
 import * as fromTechnicianProfile from './state/technician-profile.reducer';
@@ -37,6 +38,7 @@ import { FileUploaderModule } from '../file-uploader/file-uploader.module';
   ],
   declarations: [
     TechnicianDetailsEditorComponent,
+    RemovalConfirmationDialogComponent,
     SkillsCardComponent,
   ],
   providers: [

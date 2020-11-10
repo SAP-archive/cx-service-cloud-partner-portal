@@ -3,12 +3,12 @@ import { StoreDevtoolsModule } from '@ngrx/store-devtools';
 import { reducers, RootState } from '../state';
 import { environment } from '../../environments/environment';
 import { localStorageSync } from 'ngrx-store-localstorage';
-import * as AuthActions from '../auth-module/state/auth.actions';
+import * as AuthActions from '../auth-module/state/auth/auth.actions';
 
 export function localStorageSyncReducer(reducer: ActionReducer<RootState>): ActionReducer<RootState> {
   return localStorageSync({
     keys: [
-      {auth: ['authUserData']},
+      {authRoot: {auth: ['authUserData']}},
       {user: ['person']},
       {config: ['maxAttachmentSize']},
     ],

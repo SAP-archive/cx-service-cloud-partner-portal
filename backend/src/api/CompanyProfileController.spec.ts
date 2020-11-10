@@ -17,7 +17,7 @@ import { exampleDocument } from '../models/Document';
 import { exampleSaveCompanyProfileData } from '../models/SaveCompanyProfileData';
 import { CompanyProfile, exampleCompanyProfile } from '../models/CompanyProfile';
 import { TEST_APP_CONFIG } from '../testAppConfig';
-import { exampleServiceArea } from '../models/ServiceArea';
+import { emptyServiceArea, exampleServiceArea } from '../models/ServiceArea';
 
 const PORT = getNewTestServerPort();
 const server = express()
@@ -32,6 +32,15 @@ const tester = new Tester({
   port: PORT,
 });
 
+const partnerId = '456';
+
+const companyDetails = {
+  ...exampleBusinessPartnerDto(partnerId),
+  address: exampleAddress(),
+  contact: exampleContact(),
+  serviceArea: exampleServiceArea(),
+};
+
 after(() => server.close());
 
 beforeEach(() => {
@@ -39,39 +48,45 @@ beforeEach(() => {
 });
 
 describe('CompanyProfileController', () => {
+
   describe('read()', () => {
-    it('works', done => {
-      const partnerId = '456';
+    it('works for normal data', done => {
       const nockScopes = [
         nock(`https://${TEST_APP_CONFIG.backendClusterDomain}`)
-          .post(`/api/query/v1?dtos=${DtoVersionProvider.getVersionsParameter(['UnifiedPerson'])}${TestConfigurationService.requestQuerySuffix('&')}`)
+          .get(`/cloud-crowd-service/api/crowd-partner/v1/partners${TestConfigurationService.requestQuerySuffix()}`)
           .reply(200, {
-            data: [{
-              person: {
-                id: '123',
-                businessPartner: partnerId,
-              },
+            results: [{...companyDetails, contacts: [exampleContact()]}],
+          }),
+        nock(`https://${TEST_APP_CONFIG.backendClusterDomain}`)
+          .get(`/cloud-crowd-service/api/crowd/v1/documents${TestConfigurationService.requestQuerySuffix()}`)
+          .reply(200, {
+            results: [exampleDocument()],
+          }),
+      ];
+
+      tester.get('/portal/companyProfile/read')
+        .expectStatus(200)
+        .with('headers', TestConfigurationService.HEADERS)
+        .assertResponse((response) => {
+          nockScopes.forEach(scope => assert(scope.isDone(), 'Not all nock scopes have been called!'));
+          assert.deepEqual(response,
+            {
+              companyDetails,
+              documents: [exampleDocument()],
+            } as CompanyProfile);
+          done();
+        });
+    });
+    it('should replace null service area with empty service area object', done => {
+      const nockScopes = [
+        nock(`https://${TEST_APP_CONFIG.backendClusterDomain}`)
+          .get(`/cloud-crowd-service/api/crowd-partner/v1/partners${TestConfigurationService.requestQuerySuffix()}`)
+          .reply(200, {
+            results: [{
+              ...companyDetails,
+              serviceArea: null,
+              contacts: [exampleContact()]
             }],
-          }),
-        nock(`https://${TEST_APP_CONFIG.backendClusterDomain}`)
-          .get(`/api/data/v4/BusinessPartner/${partnerId}?dtos=${DtoVersionProvider.getVersionsParameter(['BusinessPartner'])}${TestConfigurationService.requestQuerySuffix('&')}`)
-          .reply(200, {
-            data: [{businessPartner: exampleBusinessPartnerDto(partnerId)}],
-          }),
-        nock(`https://${TEST_APP_CONFIG.backendClusterDomain}`)
-          .get(`/cloud-crowd-service/api/crowd-partner/v1/partners/${partnerId}/addresses${TestConfigurationService.requestQuerySuffix()}`)
-          .reply(200, {
-            results: [exampleAddress()],
-          }),
-        nock(`https://${TEST_APP_CONFIG.backendClusterDomain}`)
-          .get(`/cloud-crowd-service/api/crowd-partner/v1/partners/${partnerId}/contacts${TestConfigurationService.requestQuerySuffix()}`)
-          .reply(200, {
-            results: [exampleContact()],
-          }),
-        nock(`https://${TEST_APP_CONFIG.backendClusterDomain}`)
-          .get(`/cloud-crowd-service/api/crowd-partner/v1/partners/${partnerId}/service-areas${TestConfigurationService.requestQuerySuffix()}`)
-          .reply(200, {
-            results: [exampleServiceArea()],
           }),
         nock(`https://${TEST_APP_CONFIG.backendClusterDomain}`)
           .get(`/cloud-crowd-service/api/crowd/v1/documents${TestConfigurationService.requestQuerySuffix()}`)
@@ -88,35 +103,11 @@ describe('CompanyProfileController', () => {
           assert.deepEqual(response,
             {
               companyDetails: {
-                ...exampleBusinessPartnerDto(partnerId),
-                address: exampleAddress(),
-                contact: exampleContact(),
-                serviceArea: exampleServiceArea(),
+                ...companyDetails,
+                serviceArea: emptyServiceArea(),
               },
               documents: [exampleDocument()],
             } as CompanyProfile);
-          done();
-        });
-    });
-
-    it('forbidden to read as a technician', done => {
-      const nockScopes = [
-        nock(`https://${TEST_APP_CONFIG.backendClusterDomain}`)
-          .post(`/api/query/v1?dtos=${DtoVersionProvider.getVersionsParameter(['UnifiedPerson'])}${TestConfigurationService.requestQuerySuffix('&')}`)
-          .reply(200, {
-            data: [],
-          })
-      ];
-
-      tester.get('/portal/companyProfile/read')
-        .expectStatus(403)
-        .with('headers', TestConfigurationService.HEADERS)
-        .assertResponse((response) => {
-          nockScopes.forEach(scope => assert(scope.isDone(), 'Not all nock scopes have been called!'));
-          assert.deepEqual(response,
-            {
-              message: 'FORBIDDEN',
-            });
           done();
         });
     });
@@ -124,7 +115,6 @@ describe('CompanyProfileController', () => {
 
   describe('save()', () => {
     it('works', done => {
-      const partnerId = '456';
       const removedDocumentId = exampleSaveCompanyProfileData().removedDocumentsIds[0];
       const nockScopes = [
         nock(`https://${TEST_APP_CONFIG.backendClusterDomain}`)

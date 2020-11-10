@@ -1,14 +1,13 @@
 import { Injectable } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { RootState } from '../../state';
-import { selectDocuments, selectIsProfileLoaded, selectIsSaving, selectIsLoading, selectName, selectCompanyDetails } from './company-profile.selectors';
-import { CompanyProfileModule } from '../company-profile.module';
+import { selectCompanyDetails, selectDocuments, selectIsProfileLoaded, selectIsSaving, selectIsLoading, selectName } from './company-profile.selectors';
 import { take } from 'rxjs/operators';
 import * as CompanyProfileActions from './company-profile.actions';
 import { Document } from '../model/document.model';
 import { SaveCompanyProfileData } from '../model/save-company-profile-data';
 
-@Injectable({providedIn: CompanyProfileModule})
+@Injectable()
 export class CompanyProfileFacade {
   public companyDetails = this.store.select(selectCompanyDetails);
   public isSaving = this.store.select(selectIsSaving);
@@ -41,4 +40,9 @@ export class CompanyProfileFacade {
   public downloadDocument(document: Document) {
     this.store.dispatch(CompanyProfileActions.downloadDocument({document}));
   }
+
+  public terminateRelationship() {
+    this.store.dispatch(CompanyProfileActions.terminateRelationship());
+  }
+
 }

@@ -8,6 +8,8 @@ export interface State extends EntityState<Document> {
   contactDetails: ContactDetails;
   isLoadingLogo: boolean;
   companyLogo: string;
+  crowdName: string;
+  isLoadingCrowName: boolean;
 }
 
 export const documentsAdapter: EntityAdapter<Document> = createEntityAdapter<Document>();
@@ -17,6 +19,8 @@ export const initialState: State = documentsAdapter.getInitialState({
   contactDetails: emptyContactDetails(),
   isLoadingLogo: false,
   companyLogo: null,
+  crowdName: null,
+  isLoadingCrowName: false,
 });
 
 const crowdOwnerProfileReducer = createReducer(
@@ -38,6 +42,13 @@ const crowdOwnerProfileReducer = createReducer(
       ...state,
       isLoadingLogo: false,
       companyLogo,
+    })),
+  on(crowdOwnerProfileActions.loadCrowdName, state => ({...state, isLoadingCrowName: true})),
+  on(crowdOwnerProfileActions.loadCrowdNameFailure, state => ({...state, isLoadingCrowName: false})),
+  on(crowdOwnerProfileActions.loadCrowdNameSuccess, (state, {crowdName}) => ({
+      ...state,
+      isLoadingCrowName: false,
+      crowdName,
     })),
 );
 

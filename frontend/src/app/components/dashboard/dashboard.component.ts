@@ -1,12 +1,11 @@
 import { Component } from '@angular/core';
 import { select, Store } from '@ngrx/store';
-import { RootState } from 'src/app/state';
+import { RootState } from '../../state';
 import { Observable } from 'rxjs';
 import { UnifiedPerson } from '../../model/unified-person.model';
 import { selectPerson } from '../../state/user/user.selectors';
-import { filter, take } from 'rxjs/operators';
-import { setPerson } from '../../state/user/user.actions';
-import { AuthFacade } from '../../auth-module/state/auth.facade';
+import { filter } from 'rxjs/operators';
+import { CrowdOwnerProfileFacade } from '../../crowd-owner-profile-module/state/crowd-owner-profile.facade';
 
 @Component({
   styleUrls: ['dashboard.component.scss'],
@@ -14,17 +13,18 @@ import { AuthFacade } from '../../auth-module/state/auth.facade';
 })
 export class DashboardComponent {
   public person: Observable<UnifiedPerson>;
-  public companyName: Observable<string>;
+  public crowdName: Observable<string>;
+  public showAssignmentsCard: Promise<boolean>;
 
   constructor(
     private store: Store<RootState>,
-    private authFacade: AuthFacade,
+    private crowdOwnerProfileFacade: CrowdOwnerProfileFacade,
   ) {
-    this.person = store.pipe(
+    this.person = this.store.pipe(
       select(selectPerson),
       filter(person => !!person),
     );
 
-    this.companyName = this.authFacade.companyName;
+    this.crowdName = this.crowdOwnerProfileFacade.crowdName;
   }
 }

@@ -1,0 +1,19 @@
+<mat-form-field>
+    <mat-label *ngIf="label">{{ label | translate}}</mat-label>
+    <input matInput class="auto-complete-input" matAutocompleteTrigger id="pp-name-auto-complete-input" [formControl]="formControl"
+        [matAutocomplete]="auto" #autoInput>
+    <button mat-button matSuffix mat-icon-button [disabled]="!autoInput.value" (click)="clearInput()">
+        <mat-icon *ngIf="autoInput.value">close</mat-icon>
+    </button>
+    <mat-autocomplete autoActiveFirstOption (closed)="changeResponsiblePerson(autoInput.value)" #auto="matAutocomplete">
+        <mat-option *ngFor="let option of filteredOptions | async" [value]="option">
+            {{option}}
+        </mat-option>
+    </mat-autocomplete>
+    <mat-error *ngIf="formControl.hasError('invalidInput')">
+        {{'NO_MATCHED_TECHNICIAN' | translate}}
+    </mat-error>
+    <mat-error *ngIf="formControl.hasError('required')">
+        {{'FIELD_IS_REQUIRED' | translate}}
+    </mat-error>
+</mat-form-field>

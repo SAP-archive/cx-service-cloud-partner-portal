@@ -20,6 +20,7 @@ const server = express()
   .use(sessionDataMiddleware())
   .get('/portal/branding/crowdOwnerContact', BrandingController.getCrowdOwnerContact)
   .get('/portal/branding/crowdOwnerLogo', BrandingController.getLogo)
+  .get('/portal/branding/crowdOwnerName', BrandingController.getCrowdOwnerName)
   .listen(PORT);
 
 const tester = new Tester({
@@ -59,10 +60,14 @@ describe('BrandingController', () => {
 
       const nockScopes = [
         nock(`https://${TEST_APP_CONFIG.backendClusterDomain}`)
-          .get(`/cloud-crowd-branding-service/api/branding/v1/settings${TestConfigurationService.requestQuerySuffix()}`)
-          .reply(200, {
-            results: exampleSettings,
-          }),
+          .get(`/cloud-crowd-branding-service/api/branding/v1/settings/CrowdOwner.Contact.EMail${TestConfigurationService.requestQuerySuffix()}`)
+          .reply(200, exampleSettings[0]),
+        nock(`https://${TEST_APP_CONFIG.backendClusterDomain}`)
+          .get(`/cloud-crowd-branding-service/api/branding/v1/settings/CrowdOwner.Contact.PhoneNumber${TestConfigurationService.requestQuerySuffix()}`)
+          .reply(200, exampleSettings[1]),
+        nock(`https://${TEST_APP_CONFIG.backendClusterDomain}`)
+          .get(`/cloud-crowd-branding-service/api/branding/v1/settings/CrowdOwner.Contact.Name${TestConfigurationService.requestQuerySuffix()}`)
+          .reply(200, exampleSettings[2]),
       ];
 
       tester.get('/portal/branding/crowdOwnerContact')
@@ -100,7 +105,7 @@ describe('BrandingController', () => {
         });
     });
 
-    it('returns a 404 if setting was not found', done => {
+    it('returns 200 with default value when setting not found', done => {
       const nockScopes = [
         nock(`https://${TEST_APP_CONFIG.backendClusterDomain}`)
           .get(`/cloud-crowd-branding-service/api/branding/v1/settings/${'CrowdOwner.Logo' as BrandingSettingKey}${TestConfigurationService.requestQuerySuffix()}`)
@@ -108,11 +113,50 @@ describe('BrandingController', () => {
       ];
 
       tester.get(`/portal/branding/crowdOwnerLogo`)
-        .expectStatus(404)
-        .assertResponse(() => {
+        .expectStatus(200)
+        .assertResponse((response) => {
           assertAllDone(nockScopes);
+          assert.deepEqual(response, {});
           done();
         });
     });
   });
+
+  describe('getCrowdName()', () => {
+    it('fetches setting and returns value only', done => {
+      const exampleSetting = exampleBrandingSetting('CrowdOwner.About.Title');
+
+      const nockScopes = [
+        nock(`https://${TEST_APP_CONFIG.backendClusterDomain}`)
+          .get(`/cloud-crowd-branding-service/api/branding/v1/settings/${'CrowdOwner.About.Title' as BrandingSettingKey}${TestConfigurationService.requestQuerySuffix()}`)
+          .reply(200, exampleSetting),
+      ];
+
+      tester.get(`/portal/branding/crowdOwnerName`)
+        .expectStatus(200)
+        .with('headers', TestConfigurationService.HEADERS)
+        .assertResponse((response) => {
+          assertAllDone(nockScopes);
+          assert.deepEqual(response, {crowdName: exampleSetting.value});
+          done();
+        });
+    });
+
+    it('returns 200 with default value when setting not found', done => {
+      const nockScopes = [
+        nock(`https://${TEST_APP_CONFIG.backendClusterDomain}`)
+          .get(`/cloud-crowd-branding-service/api/branding/v1/settings/${'CrowdOwner.About.Title' as BrandingSettingKey}${TestConfigurationService.requestQuerySuffix()}`)
+          .reply(404),
+      ];
+
+      tester.get(`/portal/branding/crowdOwnerName`)
+        .expectStatus(200)
+        .assertResponse((response) => {
+          assertAllDone(nockScopes);
+          assert.deepEqual(response, {});
+          done();
+        });
+    });
+  });
+
 });

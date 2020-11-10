@@ -11,7 +11,7 @@ export interface Skill {
   viewModelId?: string;
 }
 
-export const exampleSkill = (tagExternalId: string = 'TAG123'): Skill => ({
+export const exampleSkill = (tagExternalId: string = 'TAG123', viewModelId: string = '001'): Skill => ({
   uuid: 'e5d8c473-3056-414f-92b2-40f94cd865e5',
   externalId: 'FKHSAHDUIZR1232',
   tagExternalId,
@@ -24,4 +24,5 @@ export const exampleSkill = (tagExternalId: string = 'TAG123'): Skill => ({
     reason: 'Dunno',
   },
   certificate: {},
+  viewModelId: viewModelId
 });

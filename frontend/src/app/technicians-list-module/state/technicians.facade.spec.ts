@@ -22,28 +22,33 @@ describe('TechniciansFacade', () => {
     TestBed.configureTestingModule({
       providers: [
         TechniciansFacade,
-        provideMockStore<State>({
-          initialState: {
-            isLoading: false,
-            technicians: null,
-          },
-        }),
+        provideMockStore<State>({initialState}),
       ],
     });
 
-    facadeService = TestBed.get(TechniciansFacade);
-    store = TestBed.get(Store);
+    facadeService = TestBed.inject(TechniciansFacade);
+    store = TestBed.inject(Store) as MockStore<MockedState>;
   });
 
   describe('technicians', () => {
     it('emits list of technicians', () => {
-      store.setState(getState({technicians: [exampleTechnician()] as any}));
+      store.setState(getState({
+        isLoading: false,
+        fetchingParams: {
+          pagesLoaded: 0,
+          totalPages: 0,
+          totalElements: 0,
+          name: '',
+        },
+        ids: [exampleTechnician().externalId],
+        entities: { [exampleTechnician().externalId]: exampleTechnician() }
+      }));
       expect(facadeService.technicians).toBeObservable(cold('a', {a: [exampleTechnician()]}));
     });
 
     it('emits nothing if list of technicians is not defined', () => {
-      store.setState(getState({technicians: null}));
-      expect(facadeService.technicians).toBeObservable(cold('-'));
+      store.setState(getState(initialState));
+      expect(facadeService.technicians).toBeObservable(cold('a', {a: []}));
     });
   });
   describe('loadingTechnicians', () => {
@@ -62,14 +67,6 @@ describe('TechniciansFacade', () => {
       spyOn(store, 'dispatch');
       facadeService.loadTechnicians();
       expect(store.dispatch).toHaveBeenCalledWith(techniciansActions.loadTechnicians());
-    });
-  });
-
-  describe('deleteTechnician()', () => {
-    it('emits dispatch deleteTechnician action', () => {
-      spyOn(store, 'dispatch');
-      facadeService.deleteTechnician(exampleTechnician());
-      expect(store.dispatch).toHaveBeenCalledWith(techniciansActions.deleteTechnician({technician: exampleTechnician()}));
     });
   });
 });

@@ -77,6 +77,39 @@ describe('CompanyProfile Reducer', () => {
     });
   });
 
+  describe('on terminateRelationship', () => {
+    it('should set isSaving to true', () => {
+      const result = reducer(
+        {...initialState, isSaving: false},
+        CompanyProfileActions.terminateRelationship(),
+      );
+
+      expect(result.isSaving).toBeTrue();
+    });
+  });
+
+  describe('on terminateRelationshipSuccess', () => {
+    it('should set isSaving to false', () => {
+      const result = reducer(
+        {...initialState, isSaving: false},
+        CompanyProfileActions.terminateRelationshipSuccess(),
+      );
+
+      expect(result.isSaving).toBeFalse();
+    });
+  });
+
+  describe('on terminateRelationshipFailure', () => {
+    it('should set isSaving to false', () => {
+      const result = reducer(
+        {...initialState, isSaving: false},
+        CompanyProfileActions.terminateRelationshipFailure(),
+      );
+
+      expect(result.isSaving).toBeFalse();
+    });
+  });
+
   describe('on saveCompanyProfileSuccess', () => {
     it('should set isSaving to false', () => {
       const result = reducer(

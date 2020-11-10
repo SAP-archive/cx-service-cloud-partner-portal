@@ -1,158 +1,101 @@
-@import '../../../../breakpoints';
 
-:host {
-  display: block;
-}
+#technician-skill-list {
+  border: #cccccc solid 1px;
+  border-bottom: none;
+  max-height: 608px;
+  overflow-y: auto;
 
-.tag-list .tag {
-  border-top: 1px solid #ededed;
-  padding-top: 10px;
+  .remarks-collapse {
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
 
-  .main {
+  // common class
+  .block-space {
+    margin: 12px 0px 12px 0px;
+  }
+
+  .break-word {
+    word-break: break-word;
+  }
+
+  .text-break {
+    white-space:normal;
+    word-break: break-word !important;
+  }
+
+  .action-button {
+    cursor: pointer;
+    margin-left: 20px;
+  }
+
+  .gray-text {
+    color: gray;
+  }
+
+  .smaller-font-size {
+    font-size: smaller;
+  }
+
+  .align-header {
+    margin-left: 24px;
+  }
+
+  .certificate-area {
     display: flex;
+    align-items: center;
+    width: fit-content;
+    border-radius: 6px;
+    border: #cccccc solid 1px;
+    padding: 8px;
+  }
+
+  .blue-link {
+    cursor: pointer;
+    color: #0a6ed1;
+  }
+  // id
+
+  #skill-card {
+    border-bottom: #cccccc solid 1px;
+  }
+  #skill-card-container {
+    margin: 20px;
     justify-content: space-between;
 
-    .tag-name {
-      flex-basis: 40%;
-    }
-
-    .expire-date {
-      flex-basis: 40%;
-      line-height: 12px;
-      margin-top: 6px;
-    }
-
-    .action-button {
-      cursor: pointer;
-    }
-  }
-
-  .details-panel {
-    display: flex;
-    justify-content: stretch;
-    justify-items: stretch;
-    padding: 10px 0 15px;
-
-    & > * {
-      flex: 1;
-    }
-
-    .description {
-      flex-basis: 40%;
-      padding-right:  10px;
-
-      .label {
-        color: #6a6d70;
-      }
-    }
-
-    .certificate {
+    #skill-card-header {
       display: flex;
-      align-items: center;
-      flex-basis: 40%;
-      min-width: 40%;
 
-      .file {
-        display: flex;
-        align-items: center;
-        cursor: pointer;
-        min-width: 40%;
-        word-wrap: break-word;
-
-        .icon {
-          text-decoration: none !important;
+      #left-title {
+        width: 100%;
+        .tag-name {
+          width: 100%;
         }
-
-        .metadata {
-          padding-left: 8px;
-          min-width: 40%;
-        }
-
-        &.deleted {
-          color: darkred;
-
-          .metadata {
-            text-decoration: line-through;
-          }
+        .skill-description {
+          width: 100%;
+          color: gray;
+          font-size: smaller;
+          margin-left: 25px;
         }
       }
-
-      .action-button {
-        cursor: pointer;
-        margin-left: 20px;
-      }
+    }
+    .deleted-text {
+      color: red;
     }
 
-    .certificate-upload {
-      display: flex;
-      align-items: center;
-      flex-basis: 40%;
-      min-width: 40%;
-
-      .selected-file {
-        display: flex;
-        align-items: center;
-        color: darkgreen;
-        min-width: 40%;
-
-        .file-name {
-          padding-left: 8px;
-          min-width: 40%;
-          word-wrap: break-word;
-        }
-      }
-
-      .action-button {
-        margin-left: 20px;
-        cursor: pointer;
-      }
-
-      pp-file-uploader {
-        display: block;
-      }
+    .remarks {
+      line-height: 20px;
+      width: 100%;
+      display: inline-block;
+      white-space: initial;
+      overflow: visible;
+      word-break: break-word;
     }
 
-    .approval-status {
-      display: flex;
-      align-items: center;
-      padding-left: 10px;
-
-      &.hidden {
-        visibility: hidden;
-      }
-
-      pp-approval-decision-status {
-        display: inline-block;
-      }
-    }
-  }
-
-  .remarks-label {
-    color: #6a6d70;
-  }
-}
-
-@media screen and (max-width: $mobile-width-breakpoint) {
-  .tag-list .tag .details-panel {
-    flex-direction: column;
-
-    & > div {
-      margin: 10px 0;
-    }
-
-    .approval-status {
-      order: 1;
-      padding-left: 25px;
-    }
-
-    .description {
-      order: 2;
-      padding-left: 25px;
-    }
-
-    .certificate, .certificate-upload {
-      order: 3;
-      padding-left: 25px;
+    #certificate-upload {
+      margin-left: 24px;
+      margin-top: 24px;
     }
   }
 }

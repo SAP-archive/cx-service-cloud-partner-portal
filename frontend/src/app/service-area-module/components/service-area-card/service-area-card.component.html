@@ -4,12 +4,13 @@
     <mat-form-field>
       <input type="text" matInput formControlName="searchInput"
              [matAutocomplete]="auto"
+             (click)="ifStartInputFromNull()"
              placeholder="{{'SERVICE_AREA_AREA' | translate}}">
     </mat-form-field>
 
     <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayAutocompletePrediction">
-      <mat-option *ngFor="let place of autocompleteValues | async" [value]="place">
-        {{place.description}}
+      <mat-option *ngFor="let place of autoCompleteValues" [value]="place">
+        {{place.description || place.formatted_address}}
       </mat-option>
     </mat-autocomplete>
 
@@ -17,7 +18,6 @@
       <mat-form-field class="radius-value">
         <input type="number" matInput
                formControlName="radiusValue"
-               min="1"
                placeholder="{{'SERVICE_AREA_RADIUS' | translate}}">
       </mat-form-field>
 

@@ -3,6 +3,7 @@ export interface BusinessPartnerDto {
   readonly name: string;
   readonly remarks: string | null;
   readonly inactive: boolean;
+  readonly syncStatus: string | null;
 }
 
 export const exampleBusinessPartnerDto = (id: string = '1'): BusinessPartnerDto => ({
@@ -10,4 +11,5 @@ export const exampleBusinessPartnerDto = (id: string = '1'): BusinessPartnerDto 
   name: 'A Company Ltd.',
   remarks: 'A solid partner',
   inactive: false,
+  syncStatus: 'IN_CLOUD',
 });

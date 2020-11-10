@@ -1,0 +1,68 @@
+<div class="row">
+  <ng-container *ngIf="assignment?.partnerDispatchingStatus === 'NOTIFIED'">
+    <button mat-stroked-button
+            id="assignment-{{assignment?.code}}-accept-button"
+            class="action-button accept"
+            (click)="acceptAssignment()">{{ 'ASSIGNMENTS_LIST_ASSIGNMENT_ACCEPT' | translate }}</button>
+
+    <button mat-stroked-button
+            id="assignment-{{assignment?.code}}-reject-button"
+            class="action-button reject"
+            (click)="rejectAssignment()">{{ 'ASSIGNMENTS_LIST_ASSIGNMENT_REJECT' | translate }}</button>
+  </ng-container>
+
+  <ng-container *ngIf="assignment?.partnerDispatchingStatus === 'ACCEPTED' && assignment?.serviceAssignmentState === 'ASSIGNED'">
+    <button mat-stroked-button
+            id="assignment-{{assignment?.code}}-assign-button"
+            class="action-button assign">{{ 'ASSIGNMENTS_LIST_ASSIGNMENT_ASSIGN' | translate }}</button>
+  </ng-container>
+
+  <div class="full-row" *ngIf="assignment?.serviceAssignmentState === 'RELEASED'">
+    <div class="row" title="{{'ASSIGNMENTS_LIST_END_DATE' | translate}}">
+      <mat-icon>query_builder</mat-icon>
+      <div class="duration">
+        <span class="date-ime">{{assignment?.startDateTime | localDateTimeFormat}}</span>
+        <span class="date-ime">{{assignment?.endDateTime | localDateTimeFormat}}</span>
+      </div>
+      <pp-avatar
+        class="with-left-margin with-right-margin"
+        [title]="technicianName"
+        [circle]="true" [size]="30"
+        [text]="technicianName | abbreviate"></pp-avatar>
+    </div>
+    <div class="row">
+      <button mat-icon-button
+              id="assignment-{{assignment?.code}}-close-button"
+              title="{{'ASSIGNMENTS_LIST_CLOSE' | translate}}"
+              class="action-button"
+              (click)="closeAssignment()">
+        <mat-icon class="assign">check_circle_outline</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <div class="full-row" *ngIf="assignment?.serviceAssignmentState === 'CLOSED'">
+    <div class="row" title="{{'ASSIGNMENTS_LIST_END_DATE' | translate}}">
+      <mat-icon>query_builder</mat-icon>
+      <div class="duration">
+        <span class="date-ime">{{assignment?.startDateTime | localDateTimeFormat}}</span>
+        <span class="date-ime">{{assignment?.endDateTime | localDateTimeFormat}}</span>
+      </div>
+      <pp-avatar
+        class="with-left-margin with-right-margin"
+        [title]="technicianName"
+        [circle]="true" [size]="30" [text]="technicianName | abbreviate"></pp-avatar>
+    </div>
+    <div class="row">
+      <button mat-icon-button
+              id="assignment-{{assignment?.code}}-closed-button"
+              class="action-button">
+        <mat-icon class="accept">check_circle_two_tone</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <ng-container *ngIf="isFake">
+      <mat-icon>hourglass_empty</mat-icon>
+  </ng-container>
+</div>

@@ -35,6 +35,19 @@ export const downloadDocument = createAction(
   props<{ document: Document }>(),
 );
 
+export const terminateRelationship = createAction(
+  '[CompanyProfile] Terminate Relationship',
+);
 
 
+export const terminateRelationshipConfirm = createAction(
+  '[CompanyProfile] Terminate Relationship',
+);
 
+export const terminateRelationshipSuccess = createAction(
+  '[CompanyProfile] Terminate Relationship Success',
+);
+
+export const terminateRelationshipFailure = createAction(
+  '[CompanyProfile] Terminate Relationship Failure',
+);

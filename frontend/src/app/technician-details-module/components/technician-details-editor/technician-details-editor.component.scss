@@ -34,6 +34,23 @@
 
 mat-card {
   margin: 1em;
+
+  mat-card-title {
+    white-space: normal;
+    word-break: break-word;
+  }
+
+  .active-label {
+    font-size: 0.75em;
+    color: rgba(50, 54, 58, 0.54);
+    font-weight: 400;
+    font-family: Roboto;
+    letter-spacing: 1px;
+  }
+
+  .checkbox-padding {
+    padding: 0.4375em 0;
+  }
 }
 
 pp-skills-card {
@@ -50,8 +67,16 @@ pp-skills-card {
     .action-buttons {
       display: flex;
 
-      .save-button {
-        margin-right: 10px;
+      .action-button {
+        margin-right: 16px;
+      }
+
+      .technician-delete-button {
+        border-color: #0a6ed1;
+      }
+
+      .divider {
+        margin-right: 8px;
       }
     }
 
@@ -63,7 +88,7 @@ pp-skills-card {
 
   .second-line {
     display: flex;
-    justify-content: start;
+    justify-content: flex-start;
 
     .avatar {
       background-color: #0f828f;
@@ -114,6 +139,7 @@ pp-skills-card {
   .header .action-buttons {
     .button.close {
       display: none;
+      margin-right: 16px;
     }
   }
 

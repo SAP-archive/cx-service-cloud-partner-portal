@@ -1,51 +1,36 @@
 import { TestBed } from '@angular/core/testing';
 import { TechnicianService } from './technicians.service';
 import { AppBackendService } from 'src/app/services/app-backend.service';
-import { of } from 'rxjs';
-import { exampleTechnician } from '../models/technician.model';
+import { exampleSearchTechniciansResult } from '../models/crowd-api-response.model';
 import { HttpResponse } from '@angular/common/http';
 import { cold } from 'jasmine-marbles';
+import { TechniciansFacadeMockBuilder } from '../state/technicians.facade.mock.spec';
 
 describe('TechniciansService', () => {
   let techniciansService: TechnicianService;
   let appBackendMockService: jasmine.SpyObj<AppBackendService>;
+  let mockTechniciansFacade: any = new TechniciansFacadeMockBuilder().build();
 
   beforeEach(() => {
-    appBackendMockService = jasmine.createSpyObj(AppBackendService, ['get', 'delete']);
-    appBackendMockService.get.and.returnValue(of(undefined));
-
-    TestBed.configureTestingModule({
-      providers: [
-        TechnicianService,
-        {
-          provide: AppBackendService,
-          useValue: appBackendMockService,
-        },
-      ],
-    });
-
-    techniciansService = TestBed.get(TechnicianService);
+    appBackendMockService = jasmine.createSpyObj(AppBackendService, ['post']);
+    techniciansService = new TechnicianService(appBackendMockService, mockTechniciansFacade);
   });
 
-  describe('getAll()', () => {
+  describe('loadTechnicians()', () => {
     it('calls the backend service', () => {
-      appBackendMockService.get
-        .withArgs(`/data/technician`)
-        .and.returnValue(cold('a', {a: new HttpResponse({body: 'response'})}));
+      appBackendMockService.post
+        .and.returnValue(cold('a|', {a: new HttpResponse({body: exampleSearchTechniciansResult()})}));
 
-      expect(techniciansService.getAll()).toBeObservable(cold('a', {a: 'response'}));
+      expect(techniciansService.loadTechnicians()).toBeObservable(cold('a|', {a: exampleSearchTechniciansResult()}));
     });
   });
 
-  describe('deleteTechnician()', () => {
-    it('calls the backend service to delete a technician', () => {
-      appBackendMockService.delete
-        .withArgs(`/data/technician/${exampleTechnician().externalId}`, {}, {responseType: 'text'})
-        .and.returnValue(cold('a', {a: new HttpResponse({body: 'response'})}));
+  describe('searchTechnicians()', () => {
+    it('calls the backend service', () => {
+      appBackendMockService.post
+        .and.returnValue(cold('a|', {a: new HttpResponse({body: exampleSearchTechniciansResult()})}));
 
-      const result = techniciansService.deleteTechnician(exampleTechnician());
-
-      expect(result).toBeObservable(cold('a', {a: 'response'}));
+      expect(techniciansService.searchTechnicians('first name')).toBeObservable(cold('a|', {a: exampleSearchTechniciansResult()}));
     });
   });
 });

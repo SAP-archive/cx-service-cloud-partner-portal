@@ -1,4 +1,4 @@
-FROM node:10.16.0-alpine AS builder
+FROM node:12.19.0-alpine3.11 AS builder
 
 RUN apk --no-cache upgrade \
       && apk add --no-cache \

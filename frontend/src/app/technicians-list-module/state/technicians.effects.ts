@@ -14,26 +14,20 @@ export class TechniciansEffects {
     return this.actions$.pipe(
       ofType(TechniciansActions.loadTechnicians),
       concatMap(() =>
-        this.technicianService.getAll().pipe(
-          map(data => TechniciansActions.loadTechniciansSuccess({data})),
-          catchError((response) => of(ReportingActions.reportError({message: response.message})))),
+        this.technicianService.loadTechnicians().pipe(
+          map(data => TechniciansActions.loadTechniciansSuccess(data)),
+          catchError((response) => of(ReportingActions.reportError({ message: response.message })))),
       ),
     );
   });
 
-  public deleteTechnician$ = createEffect(() => {
+  public searchTechnicians$ = createEffect(() => {
     return this.actions$.pipe(
-      ofType(TechniciansActions.deleteTechnician),
-      concatMap(({technician}) =>
-        this.technicianService.deleteTechnician(technician).pipe(
-          switchMap(() => of(
-            TechniciansActions.deleteTechnicianSuccess({technician}),
-            ReportingActions.reportSuccess({message: 'DASHBOARD_TECHNICIAN_HAS_BEEN_DELETED'}),
-          )),
-          catchError((response: { error: { message: string } }) => of(
-            TechniciansActions.deleteTechnicianFailure({technician}),
-            ReportingActions.reportError({message: 'DASHBOARD_TECHNICIAN_DELETION_FAILED'}),
-          ))),
+      ofType(TechniciansActions.searchTechnicians),
+      concatMap(({name}) =>
+      this.technicianService.searchTechnicians(name).pipe(
+          map(data => TechniciansActions.searchTechniciansSuccess(data)),
+          catchError((response) => of(ReportingActions.reportError({ message: response.message })))),
       ),
     );
   });

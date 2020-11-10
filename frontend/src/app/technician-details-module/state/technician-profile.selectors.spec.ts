@@ -1,10 +1,9 @@
 import * as fromTechnicianProfile from './technician-profile.reducer';
 import { selectSkillViewModels, selectTechnicianProfileState } from './technician-profile.selectors';
 import { exampleSkillViewModel } from '../models/skill-view.model';
-import { async, TestBed } from '@angular/core/testing';
-import { fakeAsync, tick } from '@angular/core/testing';
+import { async, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { Store } from '@ngrx/store';
-import { provideMockStore, MockStore } from '@ngrx/store/testing';
+import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { RecursivePartial } from 'src/app/utils/recursive-partial';
 import { take } from 'rxjs/operators';
 import { skillViewModelsAdapter } from 'src/app/technician-details-module/state/technician-profile.reducer';
@@ -29,7 +28,7 @@ describe('TechnicianProfile Selectors', () => {
       ],
     });
 
-    store = TestBed.get(Store);
+    store = TestBed.inject(Store) as MockStore<MockedState>;
   }));
 
   it('should select the feature state', () => {

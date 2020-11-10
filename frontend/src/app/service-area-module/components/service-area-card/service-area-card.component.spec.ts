@@ -25,6 +25,7 @@ describe('ServiceAreaCardComponent', () => {
     const googleMapsService = jasmine.createSpyObj<GoogleMapsService>([
       'getPlaceDetails',
       'getSuggestions',
+      'getAddressFromPosition'
     ]);
     googleMapsService.getPlaceDetails.withArgs(exampleServiceArea().googlePlaceId)
       .and.returnValue(Promise.resolve(placeResult() as PlaceResult));
@@ -68,7 +69,7 @@ describe('ServiceAreaCardComponent', () => {
 
   describe('ngOnInit()', () => {
     describe('autocomplete', () => {
-      const autocompleteValues = (): QueryAutocompletePrediction[] => [
+      const autoCompleteValues = (): QueryAutocompletePrediction[] => [
         {
           description: 'Gdańsk City',
           place_id: '1',
@@ -86,18 +87,17 @@ describe('ServiceAreaCardComponent', () => {
       it('should be initialized on searchInput field and set value of component to null', (done) => {
         const {component, googleMapsService, onChange} = createComponentWithDependencies();
         const query = 'Gdańsk';
-        googleMapsService.getSuggestions.withArgs(query).and.returnValue(Promise.resolve(autocompleteValues()));
+        googleMapsService.getSuggestions.withArgs(query).and.returnValue(Promise.resolve(autoCompleteValues()));
 
         component.ngOnInit();
 
-        component.autocompleteValues.pipe(take(1))
-          .subscribe(values => {
-            expect(values).toEqual(autocompleteValues());
-            expect(onChange).toHaveBeenCalledWith(null);
-            done();
-          });
-
         component.searchInput.setValue(query);
+        setTimeout(() => {
+          expect(component.autoCompleteValues).toEqual(autoCompleteValues());
+          expect(onChange).toHaveBeenCalledWith(null);
+          done();
+        });
+
       });
 
       it('should swallow errors and keep observable going', (done) => {
@@ -105,42 +105,58 @@ describe('ServiceAreaCardComponent', () => {
         const spy = googleMapsService.getSuggestions;
         spy.and.returnValues(
           Promise.reject('ZERO_RESULTS'),
-          Promise.resolve(autocompleteValues()),
+          Promise.resolve(autoCompleteValues()),
         );
 
         component.ngOnInit();
 
-        component.autocompleteValues.pipe(take(1))
-          .subscribe(values => {
-            expect(values).toEqual(autocompleteValues());
-            expect(onChange).toHaveBeenCalledWith(null);
-            done();
-          });
-
         component.searchInput.setValue('something out of this planet');
         component.searchInput.setValue('Gdańsk');
+
+        setTimeout(() => {
+          expect(component.autoCompleteValues).toEqual(autoCompleteValues());
+          expect(onChange).toHaveBeenCalledWith(null);
+          done();
+        });
+
       });
     });
 
-    it('should save place changes to area and change component value', fakeAsync(() => {
-      const {component, onChange} = createComponentWithDependencies();
-      const queryAutocompletePrediction: QueryAutocompletePrediction = {
-        description: 'Gdańsk City',
-        place_id: exampleServiceArea().googlePlaceId,
-        matched_substrings: [],
-        terms: [],
-      };
+    describe('savePlaceChanges', () => {
+      it('should save place changes to area and change component value', fakeAsync(() => {
+        const {component, onChange} = createComponentWithDependencies();
+        const queryAutocompletePrediction: QueryAutocompletePrediction = {
+          description: 'Gdańsk City',
+          place_id: exampleServiceArea().googlePlaceId,
+          matched_substrings: [],
+          terms: [],
+        };
 
-      component.ngOnInit();
+        component.ngOnInit();
 
-      component.searchInput.setValue(queryAutocompletePrediction);
-      tick();
+        component.searchInput.setValue(queryAutocompletePrediction);
+        tick();
 
-      expect(component.area.googlePlaceId).toEqual(exampleServiceArea().googlePlaceId);
-      expect(component.area.longitude).toEqual(exampleServiceArea().longitude);
-      expect(component.area.latitude).toEqual(exampleServiceArea().latitude);
-      expect(onChange).toHaveBeenCalledWith(component.area);
-    }));
+        expect(component.area.googlePlaceId).toEqual(exampleServiceArea().googlePlaceId);
+        expect(component.area.longitude).toEqual(exampleServiceArea().longitude);
+        expect(component.area.latitude).toEqual(exampleServiceArea().latitude);
+        expect(onChange).toHaveBeenCalledWith(component.area);
+      }));
+
+      it('should save place changes to empty and change component value', fakeAsync(() => {
+        const {component, onChange} = createComponentWithDependencies();
+
+        component.ngOnInit();
+
+        component.searchInput.setValue('');
+        tick();
+
+        expect(component.area.googlePlaceId).toEqual('');
+        expect(component.area.longitude).toEqual(0);
+        expect(component.area.latitude).toEqual(0);
+        expect(onChange).toHaveBeenCalledWith(component.area);
+      }));
+    });
 
     describe('radius', () => {
       it('should be saved to area and component value should be changed', fakeAsync(() => {
@@ -154,6 +170,17 @@ describe('ServiceAreaCardComponent', () => {
 
         expect(component.area.radius.value).toEqual(5);
         expect(onChange).toHaveBeenCalledWith(component.area);
+      }));
+
+      it('should replace Null radius inputs with 0', fakeAsync(() => {
+        const {component} = createComponentWithDependencies();
+
+        component.writeValue(exampleServiceArea());
+        component.ngOnInit();
+
+        component.radiusValueInput.setValue(null);
+        tick();
+        expect(component.area.radius.value).toEqual(0);
       }));
 
       it('should replace invalid radius inputs with NaN', fakeAsync(() => {
@@ -187,13 +214,13 @@ describe('ServiceAreaCardComponent', () => {
   });
 
   describe('radius value field', () => {
-    it('should be marked as invalid if value is less than 0.1', () => {
+    it('should be marked as invalid if value is less than 0', () => {
       const {component} = createComponentWithDependencies();
 
-      component.radiusValueInput.setValue('0.1');
+      component.radiusValueInput.setValue('0.01');
       expect(component.radiusValueInput.valid).toBeTrue();
 
-      component.radiusValueInput.setValue('0.09');
+      component.radiusValueInput.setValue('-0.01');
       expect(component.radiusValueInput.valid).toBeFalse();
       expect(component.radiusValueInput.errors.min).toBeDefined();
     });

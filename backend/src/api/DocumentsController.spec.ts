@@ -5,7 +5,7 @@ import assert = require('assert');
 import TestConfigurationService = require('../services/test/TestConfigurationService');
 import { getNewTestServerPort } from '../utils/getNewTestServerPort';
 import { Tester } from '../services/test/Tester';
-import { clientConfigService, ClientConfiguration } from '@modules/common';
+import { clientConfigService } from '@modules/common';
 import sessionDataMiddleware from './middleware/sessiondata';
 import { DocumentsController } from './DocumentsController';
 import { TEST_APP_CONFIG } from '../testAppConfig';

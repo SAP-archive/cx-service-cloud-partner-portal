@@ -1,7 +1,11 @@
 import { NgModule } from '@angular/core';
-import { MatSelectModule, MatSnackBarModule, MatCardModule, MatDividerModule } from '@angular/material';
+import { MatCardModule } from '@angular/material/card';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatSelectModule } from '@angular/material/select';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialogModule } from '@angular/material/dialog';
+import { MatBottomSheetModule } from '@angular/material/bottom-sheet';
 
 const modules = [
   MatSnackBarModule,
@@ -9,7 +13,8 @@ const modules = [
   MatButtonModule,
   MatCardModule,
   MatDividerModule,
-  MatDialogModule
+  MatDialogModule,
+  MatBottomSheetModule,
 ];
 
 @NgModule({

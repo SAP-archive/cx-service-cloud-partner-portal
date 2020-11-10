@@ -13,7 +13,6 @@ import { effects } from './state/effects';
 import { ngrxStoreModules } from './utils/get-ngrx-store-modules';
 import { translateModule } from './utils/translate.module';
 import { PageNotFoundComponentComponent } from './components/page-not-found-component/page-not-found-component.component';
-import { AgmCoreModule, LazyMapsAPILoaderConfigLiteral } from '@agm/core';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { UnifiedPersonService } from './services/unified-person.service';
 import { AuthModule } from './auth-module/auth.module';
@@ -26,6 +25,11 @@ import { TechniciansListModule } from './technicians-list-module/technicians-lis
 import { TechnicianDetailsModule } from './technician-details-module/technician-details.module';
 import { CrowdOwnerProfileModule } from './crowd-owner-profile-module/crowd-owner-profile.module';
 import { UnsavedConfirmationDialogComponent } from './components/unsaved-confirmation-dialog/unsaved-confirmation-dialog.component';
+import { TerminateAletDialogComponent } from './components/user-cockpit/terminateDialog/terminate-alert-dialog.component';
+import { MatIconModule } from '@angular/material/icon';
+import { AssignmentsListModule } from './assignments-list/assignments-list.module';
+import { AssignmentsTileModule } from './assignments-tile/assignments-tile.module';
+import { LocalDateTimePipeModule } from './local-date-time-pipe-module';
 
 @NgModule({
   declarations: [
@@ -36,6 +40,7 @@ import { UnsavedConfirmationDialogComponent } from './components/unsaved-confirm
     UserCockpitComponent,
     BreadcrumbsComponent,
     UnsavedConfirmationDialogComponent,
+    TerminateAletDialogComponent
   ],
   imports: [
     AuthModule,
@@ -56,6 +61,10 @@ import { UnsavedConfirmationDialogComponent } from './components/unsaved-confirm
     TechniciansListModule,
     TechnicianDetailsModule,
     CrowdOwnerProfileModule,
+    MatIconModule,
+    AssignmentsListModule,
+    AssignmentsTileModule,
+    LocalDateTimePipeModule,
   ],
   providers: [
     {
@@ -67,6 +76,7 @@ import { UnsavedConfirmationDialogComponent } from './components/unsaved-confirm
   ],
   entryComponents: [
     UnsavedConfirmationDialogComponent,
+    TerminateAletDialogComponent
   ],
   bootstrap: [PartnerPortalComponent],
 })

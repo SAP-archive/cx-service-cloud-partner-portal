@@ -2,9 +2,9 @@ import { TestBed } from '@angular/core/testing';
 import { TechnicianProfileService } from './technician-profile.service';
 import { AppBackendService } from 'src/app/services/app-backend.service';
 import { of } from 'rxjs';
-import { exampleTag } from '../models/tag.model';
 import { exampleTechnicianProfile } from '../models/technician-profile.model';
 import { omit } from 'src/app/utils/omit';
+import SpyObj = jasmine.SpyObj;
 
 describe('TechnicianProfileService', () => {
   let appBackendMockService: jasmine.SpyObj<AppBackendService>;
@@ -21,8 +21,8 @@ describe('TechnicianProfileService', () => {
       ],
     });
 
-    service = TestBed.get(TechnicianProfileService);
-    appBackendMockService = TestBed.get(AppBackendService);
+    service = TestBed.inject(TechnicianProfileService);
+    appBackendMockService = TestBed.inject(AppBackendService) as SpyObj<AppBackendService>;
   });
 
   describe('get()', () => {

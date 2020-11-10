@@ -1,4 +1,4 @@
-import { SyncStatus } from './sync-status';
+import { SyncStatus } from '../../model/sync-status';
 
 export interface Address {
   id: string | null;

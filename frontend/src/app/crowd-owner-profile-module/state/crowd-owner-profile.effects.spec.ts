@@ -9,6 +9,7 @@ import * as actions from './crowd-owner-profile.actions';
 import { toArray } from 'rxjs/operators';
 import * as ReportingActions from '../../state/reporting/reporting.actions';
 import { dummyBase64Image } from '../../utils/base64-image';
+import SpyObj = jasmine.SpyObj;
 
 describe('CompanyProfileEffects', () => {
   let actions$: Observable<any>;
@@ -27,8 +28,8 @@ describe('CompanyProfileEffects', () => {
       ],
     });
 
-    effects = TestBed.get<CrowdOwnerProfileEffects>(CrowdOwnerProfileEffects);
-    profileService = TestBed.get(CrowdOwnerProfileService);
+    effects = TestBed.inject<CrowdOwnerProfileEffects>(CrowdOwnerProfileEffects);
+    profileService = TestBed.inject(CrowdOwnerProfileService) as SpyObj<CrowdOwnerProfileService>;
   });
 
   describe('loadContactDetails', () => {

@@ -1,0 +1,21 @@
+<div class="tile">
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title><pp-fake-data [lineHeight]="24"></pp-fake-data></mat-card-title>
+      <mat-card-subtitle><pp-fake-data></pp-fake-data></mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="content-row">
+        <mat-icon aria-label="Due date time">alarm</mat-icon>
+        <span class="content-value"><pp-fake-data></pp-fake-data></span>
+      </div>
+      <div class="content-row">
+        <mat-icon aria-label="Address">location_on</mat-icon>
+        <span class="content-value"><pp-fake-data></pp-fake-data></span>
+      </div>
+    </mat-card-content>
+    <mat-card-actions>
+      <pp-assignments-board-tile-actions [isFake]="true"></pp-assignments-board-tile-actions>
+    </mat-card-actions>
+  </mat-card>
+</div>

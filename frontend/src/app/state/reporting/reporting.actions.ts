@@ -9,3 +9,8 @@ export const reportSuccess = createAction(
   '[Reporting] Report Success',
   props<{ message?: string }>(),
 );
+
+export const reportWarning = createAction(
+  '[Reporting] Report Warning',
+  props<{ message?: string }>(),
+);

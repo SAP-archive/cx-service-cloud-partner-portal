@@ -44,7 +44,7 @@ const updateOrCreateSkillViewModelsWithSkill = ({skillViewModels, tags}: State, 
       skillViewModels = skillViewModelsAdapter.updateOne(
         {
           id: existingSkillViewModel.id,
-          changes: {skill, selected: true, expanded: true},
+          changes: {skill, selected: true, expanded: null},
         },
         skillViewModels,
       );
@@ -53,7 +53,7 @@ const updateOrCreateSkillViewModelsWithSkill = ({skillViewModels, tags}: State, 
         {
           ...emptySkillViewModel(skill, tags && tags.find(tag => tag.externalId === skill.tagExternalId)),
           selected: true,
-          expanded: true,
+          expanded: null,
         },
         skillViewModels,
       );
@@ -234,7 +234,7 @@ const technicianProfileReducer = createReducer(
   on(TechnicianProfileActions.createTechnicianProfileSuccess, state => ({
     ...state,
     isWaitingNavigate: true,
-    isLoadingProfile: false,
+    isLoadingProfile: true,
   })),
 
   on(TechnicianProfileActions.createTechnicianProfileFailure, state => ({

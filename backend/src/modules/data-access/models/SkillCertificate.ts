@@ -6,10 +6,10 @@ export interface NewSkillCertificate {
   skillId?: string;
 }
 
-export const exampleNewSkillCertificate = (skillId = 'TAG123'): NewSkillCertificate => ({
+export const exampleNewSkillCertificate = (skillId = 'TAG123', viewModelId: string = 'VIEWMODEL123'): NewSkillCertificate => ({
   fileName: 'dummy.pdf',
   fileContents: 'I am a dummy',
   skillId,
   contentType: 'application/pdf',
-  viewModelId: 'VIEWMODEL123',
+  viewModelId: viewModelId,
 });

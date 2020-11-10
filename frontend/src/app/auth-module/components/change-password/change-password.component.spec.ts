@@ -3,16 +3,26 @@ import { FormBuilder } from '@angular/forms';
 import { PasswordsErrorStateMatcher } from './passwords-error-state.matcher';
 import { cold } from 'jasmine-marbles';
 import { of } from 'rxjs';
+import { exampleClientError } from '../../../model/client-error';
 
 describe('ChangePasswordComponent', () => {
-  const componentFactory = (authFacade = {isBusy: of(false)}): ChangePasswordComponent =>
-    new ChangePasswordComponent(new FormBuilder(), authFacade as any);
+  const authFacadeMock = {isBusy: of(false)};
+  const authServiceMock = { getTranslatedPolicyError: of('message') };
+  const componentFactory = (authFacade = authFacadeMock, authService = authServiceMock): ChangePasswordComponent =>
+    new ChangePasswordComponent(new FormBuilder(), authFacade as any, authService as any);
 
   it('should share isBusy observable from Auth Facade', () => {
     const busyObservable = () => cold('ab', {a: true, b: false});
     const component = componentFactory({isBusy: busyObservable()} as any);
 
     expect(component.isBusy).toBeObservable(busyObservable());
+  });
+
+  it('should share error observable from Auth Facade', () => {
+    const errorObservable = () => cold('a', {a: null, b: exampleClientError()});
+    const component = componentFactory({passwordPolicyError: errorObservable()} as any);
+
+    expect(component.error).toBeObservable(errorObservable());
   });
 
   describe('onSubmit()', () => {

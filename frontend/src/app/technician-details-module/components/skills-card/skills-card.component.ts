@@ -1,4 +1,4 @@
-import { Component, OnDestroy } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { Observable, Subject } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { TechnicianProfileFacade } from '../../state/technician-profile.facade';
@@ -7,13 +7,14 @@ import { FileReaderService } from 'src/app/file-uploader/services/file-reader.se
 import { ConfigFacade } from '../../../state/config/config.facade';
 import { SkillViewModel } from '../../models/skill-view.model';
 import { ReportingFacade } from 'src/app/state/reporting/reporting.facade';
+import { LocalisationService } from 'src/app/services/localisation.service';
 
 @Component({
   selector: 'pp-skills-card',
   templateUrl: './skills-card.component.html',
   styleUrls: ['./skills-card.component.scss'],
 })
-export class SkillsCardComponent implements OnDestroy {
+export class SkillsCardComponent implements OnInit, OnDestroy {
   public skillViewModels: Observable<SkillViewModel[]>;
   public destroyed = new Subject();
   public selectedSkillsCount = 0;
@@ -22,10 +23,17 @@ export class SkillsCardComponent implements OnDestroy {
     private techniciansFacade: TechnicianProfileFacade,
     private reportingFacade: ReportingFacade,
     private fileReader: FileReaderService,
+    private localisationService: LocalisationService,
+    private cd: ChangeDetectorRef,
     public configFacade: ConfigFacade,
   ) {
-    this.skillViewModels = techniciansFacade.skillViewModels.pipe(
-      tap(tags => this.selectedSkillsCount = tags.filter(tag => tag.selected).length));
+  }
+
+  public ngOnInit() {
+    this.skillViewModels = this.techniciansFacade.skillViewModels;
+    this.skillViewModels.pipe(
+      tap(tags => this.selectedSkillsCount = tags.filter(tag => tag.selected).length),
+    );
   }
 
   public ngOnDestroy() {
@@ -33,8 +41,33 @@ export class SkillsCardComponent implements OnDestroy {
     this.destroyed.complete();
   }
 
+  public isLinkVisible(skillViewModel: SkillViewModel, element: HTMLElement) {
+    if (!element) {
+      return false;
+    }
+    if (skillViewModel.expanded === null) {
+      let divHeight = element.offsetHeight;
+      let lineHeight = parseInt(window.getComputedStyle(element).lineHeight, 10);
+      if (lineHeight && divHeight >= 2 * lineHeight) {
+        this.techniciansFacade.collapseTagDetailsView(skillViewModel);
+        this.detectChanges();
+        return true;
+      }
+      return false;
+    }
+    return true;
+  }
+
   public downloadCertificate(skill: Skill) {
     this.techniciansFacade.downloadCertificate(skill);
+  }
+
+  public formatDate(sDate: string) {
+    if (sDate) {
+      return (new Date(sDate)).toLocaleDateString(
+        this.localisationService.getInitialLocalisation().code);
+    }
+    return 'N/A';
   }
 
   public addCertificateUpload(file: File, skillViewModel: SkillViewModel) {
@@ -75,5 +108,11 @@ export class SkillsCardComponent implements OnDestroy {
 
   public toggleTagDetails(skillViewModel: SkillViewModel) {
     this.techniciansFacade.toggleSkillDetailsView(skillViewModel);
+  }
+
+  private detectChanges() {
+    if (!this.cd[`destroyed`]) {
+      this.cd.detectChanges();
+    }
   }
 }

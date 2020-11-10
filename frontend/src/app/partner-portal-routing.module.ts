@@ -9,6 +9,7 @@ import { CompanyProfileEditorComponent } from './company-profile-module/componen
 // tslint:disable-next-line: max-line-length
 import { TechnicianDetailsEditorComponent, WorkingMode } from './technician-details-module/components/technician-details-editor/technician-details-editor.component';
 import { UnsavedGuard } from './services/guard/unsaved.guard';
+import { AssignmentsBoardComponent } from './assignments-list/components/assignments-board/assignments-board.component';
 
 interface TechnicianEditorParameters {
   mode: WorkingMode;
@@ -50,6 +51,10 @@ const routes: Routes = [
           mode: 'CREATE',
         } as TechnicianEditorParameters,
         canDeactivate: [UnsavedGuard],
+      },
+      {
+        path: 'assignments',
+        component: AssignmentsBoardComponent,
       },
     ],
   },

@@ -6,18 +6,33 @@ import { HttpResponse } from '@angular/common/http';
 import createSpyObj = jasmine.createSpyObj;
 
 describe('LocalisationService', () => {
+  let translateService: any;
+  let appBackendService: any;
+  let authFacade: any;
+  let userFacade: any;
+  let localisationService: LocalisationService;
+
+  beforeEach(() => {
+    translateService = createSpyObj(['setDefaultLang', 'getBrowserLang', 'use', 'get']);
+    appBackendService = createSpyObj(['post']);
+    userFacade = createSpyObj([
+      'currentLocalisation',
+      'isLocalisationChangeNeeded',
+      'setIsLocalisationChangeNeeded',
+      'setCurrentLocalisation']);
+    authFacade = createSpyObj(['isLoggedIn']);
+    localisationService = new LocalisationService(translateService, appBackendService, authFacade, userFacade);
+  });
+
   describe('getInitialLocalisation()', () => {
     describe('if localisation is not set in local storage', () => {
       it('should guess the localisation from the browser', () => {
-        const translateServiceMock = createSpyObj(['setDefaultLang', 'getBrowserLang']);
         const browserLocalisation = (): Localisation => ({
           code: 'pl',
           language: 'pl',
           name: 'Polish',
         });
-        translateServiceMock.getBrowserLang.and.returnValue(browserLocalisation().code);
-        const localisationService = new LocalisationService(null, translateServiceMock, null, null);
-
+        translateService.getBrowserLang.and.returnValue(browserLocalisation().code);
         localisationService.localisation = null;
         const result = localisationService.getInitialLocalisation();
         expect(result).toEqual(browserLocalisation());
@@ -26,12 +41,8 @@ describe('LocalisationService', () => {
 
     describe('if localisation is set in local storage', () => {
       it('should take value from local storage', () => {
-        const translateServiceMock = createSpyObj(['setDefaultLang']);
-        const localisationService = new LocalisationService(null, translateServiceMock, null, null);
         localisationService.localisation = exampleLocalisation();
-
         const result = localisationService.getInitialLocalisation();
-
         expect(result).toEqual(exampleLocalisation());
       });
     });
@@ -39,57 +50,85 @@ describe('LocalisationService', () => {
 
   describe('translate()', () => {
     it('should translate using the underlying service', () => {
-      const translateServiceMock = createSpyObj(['setDefaultLang', 'get']);
-      translateServiceMock.get.and.returnValue(of('translated'));
-      const localisationService = new LocalisationService(null, translateServiceMock, null, null);
+      translateService.get.and.returnValue(of('translated'));
       localisationService.translate('key').subscribe(translated => {
-        expect(translateServiceMock.get).toHaveBeenCalledWith('key');
+        expect(translateService.get).toHaveBeenCalledWith('key');
         expect(translated).toEqual('translated');
       });
     });
   });
 
-  describe('setLocalisation', () => {
+  describe('selectLocalisation', () => {
     it('should set localisation on application backend and in local service', () => {
-      const appBackendService = jasmine.createSpyObj(['post']);
       appBackendService.post.withArgs('/setLocalisation', {
         code: exampleLocalisation().code,
         language: exampleLocalisation().language,
-      })
-        .and
-        .returnValue(cold('a|', {a: new HttpResponse({body: []})}));
-      const translateServiceMock = createSpyObj(['use', 'setDefaultLang']);
-      const authFacade = {isLoggedIn: of(true)};
-      const localisationService = new LocalisationService(null, translateServiceMock, appBackendService, authFacade as any);
-
-      const response = localisationService.setLocalisation(exampleLocalisation());
-
+      }).and.returnValue(cold('a|', {a: new HttpResponse({body: []})}));
+      authFacade.isLoggedIn = of(true);
+      const response = localisationService.selectLocalisation(exampleLocalisation());
       expect(response).toBeObservable(cold('a|', {a: []}));
-      expect(translateServiceMock.use).toHaveBeenCalledWith(exampleLocalisation().language);
+      expect(translateService.use).toHaveBeenCalledWith(exampleLocalisation().language);
     });
 
     describe('if is logged out', () => {
       it('should set localisation in local service', () => {
         const responseObservable = () => cold('(a|)', {a: []});
-        const translateServiceMock = createSpyObj(['use', 'setDefaultLang']);
-        const authFacade = {isLoggedIn: of(false)};
-        const localisationService = new LocalisationService(null, translateServiceMock, null, authFacade as any);
-
-        const response = localisationService.setLocalisation(exampleLocalisation());
+        authFacade.isLoggedIn = of(false);
+        const response = localisationService.selectLocalisation(exampleLocalisation());
 
         expect(response).toBeObservable(responseObservable());
-        expect(translateServiceMock.use).toHaveBeenCalledWith(exampleLocalisation().language);
+        expect(userFacade.setIsLocalisationChangeNeeded).toHaveBeenCalledWith(true);
+        expect(translateService.use).toHaveBeenCalledWith(exampleLocalisation().language);
       });
     });
 
     describe('if localisation is undefined', () => {
       it('should exit immediately', () => {
-        const translateServiceMock = createSpyObj(['use', 'setDefaultLang']);
-        const localisationService = new LocalisationService(null, translateServiceMock, null, null);
-        const response = localisationService.setLocalisation(undefined);
-
+        const response = localisationService.selectLocalisation(undefined);
         expect(response).toBeObservable(cold('(a|)', {a: []}));
       });
     });
   });
+
+  describe('setLocalisationWhenLoginSuccess', () => {
+    it('should send request to change localisation', () => {
+      appBackendService.post.withArgs('/setLocalisation', {
+        code: exampleLocalisation().code,
+        language: exampleLocalisation().language,
+      }).and.returnValue(cold('a|', {a: new HttpResponse({body: []})}));
+      userFacade.currentLocalisation = of(exampleLocalisation());
+      userFacade.isLocalisationChangeNeeded = of(true);
+      const response = localisationService.setLocalisationWhenLoginSuccess(exampleLocalisation());
+      expect(response).toBeObservable(cold('a|', {a: []}));
+      expect(userFacade.setIsLocalisationChangeNeeded).toHaveBeenCalledWith(false);
+    });
+
+    describe('needChange is false', () => {
+      it('Only set localisation in local service', () => {
+        const responseObservable = () => cold('(a|)', {a: []});
+        userFacade.currentLocalisation = of(exampleLocalisation());
+        userFacade.isLocalisationChangeNeeded = of(false);
+        const response = localisationService.setLocalisationWhenLoginSuccess(exampleLocalisation());
+        expect(response).toBeObservable(responseObservable());
+        expect(userFacade.setCurrentLocalisation).toHaveBeenCalledWith(exampleLocalisation());
+        expect(translateService.use).toHaveBeenCalledWith(exampleLocalisation().language);
+      });
+    });
+
+    describe('if localisation is undefined', () => {
+      it('should exit immediately', () => {
+        const response = localisationService.setLocalisationWhenLoginSuccess(undefined);
+        expect(response).toBeObservable(cold('(a|)', {a: []}));
+      });
+    });
+  });
+
+  describe('setLocalLocalisation', () => {
+    it('should exit immediately', () => {
+      const response = localisationService.setLocalLocalisation(exampleLocalisation());
+      expect(response).toBeObservable(cold('(a|)', {a: []}));
+      expect(translateService.use).toHaveBeenCalledWith(exampleLocalisation().language);
+    });
+  });
+
 });

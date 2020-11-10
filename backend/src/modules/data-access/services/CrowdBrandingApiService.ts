@@ -3,15 +3,17 @@ import { UserData } from '@modules/common/types';
 import * as request from 'request-promise-native';
 
 export interface BrandingServiceResponse<T> {
-  results: T;
+  results: T[];
+  numberOfElements?: number;
+  size?: number;
+  totalElements?: number;
+  totalPages?: number;
+  first?: boolean;
+  last?: boolean;
 }
 
 export class CrowdBrandingApiService {
   private static API_PATH = '/cloud-crowd-branding-service/api';
-
-  public static async getAll<T>(userData: UserData, path: string, queryString?: Object): Promise<BrandingServiceResponse<T[]> | undefined> {
-    return this.makeRequest<BrandingServiceResponse<T[]>>('GET', userData, path, queryString);
-  }
 
   public static async get<T>(userData: UserData, path: string, queryString?: Object): Promise<T> {
     return this.makeRequest<T>('GET', userData, path, queryString);

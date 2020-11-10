@@ -9,6 +9,7 @@ export interface CompanyDetails {
   readonly name: string;
   readonly remarks: string | null;
   readonly inactive: boolean;
+  readonly syncStatus: string | null;
   readonly contact: Contact;
   readonly address: Address;
   readonly serviceArea: ServiceArea;

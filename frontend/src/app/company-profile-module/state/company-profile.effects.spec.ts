@@ -13,26 +13,41 @@ import { saveAsInjectionToken } from '../injection-tokens';
 import { exampleDocument } from '../model/document.model';
 import { EffectsMetadata, getEffectsMetadata } from '@ngrx/effects';
 import { exampleSaveCompanyProfileData } from '../model/save-company-profile-data';
+import { CompanyProfileFacade } from './company-profile.facade';
+import { TranslateService } from '@ngx-translate/core';
+import { exampleCompanyDetails } from '../model/company-profile.model';
 
 describe('CompanyProfileEffects', () => {
   let actions$: Observable<any>;
   let effects: CompanyProfileEffects;
   let companyProfileServiceMock: jasmine.SpyObj<CompanyProfileService>;
   let metadata: EffectsMetadata<CompanyProfileEffects>;
+  let companyProfileFacadeMock: jasmine.SpyObj<CompanyProfileFacade>;
+  let translateServiceMock:  jasmine.SpyObj<TranslateService>;
 
   beforeEach(() => {
-    companyProfileServiceMock = jasmine.createSpyObj(['loadProfile', 'saveProfile', 'downloadDocument']);
+    companyProfileServiceMock = jasmine.createSpyObj([
+      'loadProfile',
+      'saveProfile',
+      'downloadDocument',
+      'terminateRelationship'
+    ]);
 
+    companyProfileFacadeMock = jasmine.createSpyObj(['companyDetails']);
+    translateServiceMock = jasmine.createSpyObj(['get']);
+    companyProfileFacadeMock.companyDetails = of(exampleCompanyDetails());
     TestBed.configureTestingModule({
       providers: [
         CompanyProfileEffects,
         {provide: CompanyProfileService, useValue: companyProfileServiceMock},
+        {provide: CompanyProfileFacade, useValue: companyProfileFacadeMock},
+        {provide: TranslateService, useValue: translateServiceMock},
         {provide: saveAsInjectionToken, useValue: jasmine.createSpy()},
         provideMockActions(() => actions$),
       ],
     });
 
-    effects = TestBed.get<CompanyProfileEffects>(CompanyProfileEffects);
+    effects = TestBed.inject<CompanyProfileEffects>(CompanyProfileEffects);
     metadata = getEffectsMetadata(effects);
   });
 
@@ -59,6 +74,46 @@ describe('CompanyProfileEffects', () => {
       });
 
       expect(effects.loadCompanyProfile).toBeObservable(expected);
+    });
+  });
+
+  describe('terminateRelationship', () => {
+    it('dispatch terminate relationship', () => {
+      companyProfileServiceMock.terminateRelationship.and.returnValue(of(null));
+      actions$ = hot('--a-', {a: CompanyProfileActions.terminateRelationship()});
+
+      const expected = cold('--(bc)', {
+        b: CompanyProfileActions.terminateRelationshipSuccess(),
+        c: ReportingActions.reportSuccess({ message: 'COMPANY_PROFILE_TILE_TERMINATE_APPLY_SUCCESS'}),
+      });
+
+      expect(effects.terminateRelationship).toBeObservable(expected);
+    });
+
+    it('should report error', () => {
+      companyProfileServiceMock.terminateRelationship.and.returnValue(throwError(new HttpErrorResponse({error: {error: 'message'}})));
+      actions$ = hot('--a-', {a: CompanyProfileActions.terminateRelationship()});
+
+      const expected = cold('--(b)', {
+        b: CompanyProfileActions.terminateRelationshipFailure()
+      });
+
+      expect(effects.terminateRelationship).toBeObservable(expected);
+    });
+  });
+
+  describe('terminateRelationshipFailure', () => {
+    it('report terminateRelationshipFailure error message', () => {
+      const errorMsg = 'fail message';
+
+      translateServiceMock.get.and.returnValue(of(errorMsg));
+      actions$ = hot('--a-', {a: CompanyProfileActions.terminateRelationshipFailure()});
+
+      const expected = cold('--(b)', {
+        b: ReportingActions.reportError({ message: errorMsg}),
+      });
+
+      expect(effects.terminateRelationshipFailure).toBeObservable(expected);
     });
   });
 
@@ -112,7 +167,7 @@ describe('CompanyProfileEffects', () => {
 
       expect(effects.downloadDocument).toBeObservable(expected);
       expect(metadata.downloadDocument.dispatch).toBe(false);
-      expect(TestBed.get(saveAsInjectionToken)).toHaveBeenCalledWith(new Blob(), exampleDocument(documentId).name);
+      expect(TestBed.inject(saveAsInjectionToken)).toHaveBeenCalledWith(new Blob(), exampleDocument(documentId).name);
     });
   });
 });

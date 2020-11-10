@@ -14,7 +14,6 @@ export class SkillCertificatesService {
     certificates: NewSkillCertificate[],
     viewModelIdToSkillIdMap: { [key: string]: string },
   ): Promise<any> {
-
     return Promise.all([
       ...certificates.map(certificate => {
         const skillId = certificate.skillId ? certificate.skillId : viewModelIdToSkillIdMap[certificate.viewModelId];

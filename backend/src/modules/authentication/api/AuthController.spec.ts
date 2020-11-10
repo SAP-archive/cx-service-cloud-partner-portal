@@ -10,6 +10,7 @@ import { clientConfigService } from '@modules/common';
 import sessionDataMiddleware from '../../../api/middleware/sessiondata';
 import { DtoVersionProvider } from '@modules/data-access';
 import { TEST_APP_CONFIG } from '../../../testAppConfig';
+import querystring = require('querystring');
 
 const PORT = getNewTestServerPort();
 const server = express()
@@ -18,11 +19,19 @@ const server = express()
     whitelistPaths: [
       '/auth/login',
       '/auth/changePassword',
+      '/auth/resetPassword/userPartialEmailAddress',
+      '/auth/resetPassword/sendVerificationCode',
+      '/auth/resetPassword/verifyVerificationCode',
+      '/auth/resetPassword'
     ],
   }))
   .post('/auth/login', AuthController.login)
   .delete('/auth/logout', AuthController.logout)
   .post('/auth/changePassword', AuthController.changePassword)
+  .post('/auth/resetPassword/userPartialEmailAddress', AuthController.userPartialEmailAddress)
+  .post('/auth/resetPassword/sendVerificationCode', AuthController.sendVerificationCode)
+  .post('/auth/resetPassword/verifyVerificationCode', AuthController.verifyVerificationCode)
+  .post('/auth/resetPassword', AuthController.resetPassword)
   .listen(PORT);
 
 const tester = new Tester({
@@ -196,14 +205,35 @@ describe('AuthController', () => {
           });
       });
     });
+
+    describe('when credentials are unauthorized', () => {
+      it('inform that password needs to be changed', done => {
+        nock(TEST_APP_CONFIG.directoryServiceUrl)
+          .post('/api/oauth2/v1/token')
+          .reply(401, { error: 'unauthorized_client' });
+
+        tester.post('/auth/login')
+          .send({
+            accountName: 'core-corey',
+            userName: 'partner-technician',
+            password: 'kennwort',
+          })
+          .expectStatus(401)
+          .assertResponse((response) => {
+            assert.deepEqual(response, { error: 'ERROR_PP_NOT_ALLOWED' });
+            done();
+          });
+      });
+    });
   });
 
   describe('changePassword()', () => {
+    const oldPassword = 'kennwort';
+    const newPassword = 'hasło';
+    const accountName = 'core-corey';
+    const userName = 'admin';
+
     it('works', (done) => {
-      const oldPassword = 'kennwort';
-      const newPassword = 'hasło';
-      const accountName = 'core-corey';
-      const userName = 'admin';
 
       nock(TEST_APP_CONFIG.directoryServiceUrl)
         .post(
@@ -221,7 +251,71 @@ describe('AuthController', () => {
         })
         .expectStatus(200)
         .assertResponse((response) => {
-          assert.deepEqual(response, undefined);
+          assert.deepEqual(response, '');
+          done();
+        });
+    });
+
+    it('password disobey password policy ', (done) => {
+      nock(TEST_APP_CONFIG.directoryServiceUrl)
+        .post(
+          '/api/oauth2/v1/change_password',
+          `old_password=${oldPassword}&username=${accountName}%2F${userName}&new_password=${newPassword}`,
+        )
+        .reply(400,
+          JSON.stringify({
+            error: 'MC-13',
+            message: 'MC-13: Password is not valid',
+            values: [],
+            children: [{
+              error: 'MC-06',
+              message: 'MC-06: Password must be at least [20] character(s) long',
+            },
+            {
+              error: 'MC-07',
+              message: 'MC-07: Password must contain at least [10] digit(s)',
+            }],
+          }));
+
+      tester.post('/auth/changePassword')
+        .send({
+          accountName,
+          userName,
+          oldPassword,
+          newPassword,
+        })
+        .expectStatus(400)
+        .assertResponse((response) => {
+          assert.deepEqual(response, {
+            code: 400,
+            message: 'PASSWORD_NOT_VALID',
+            values: ['06: Password must be at least [20] character(s) long', '07: Password must contain at least [10] digit(s)'],
+          });
+          done();
+        });
+    });
+
+    it('server error ', (done) => {
+      nock(TEST_APP_CONFIG.directoryServiceUrl)
+        .post(
+          '/api/oauth2/v1/change_password',
+          `old_password=${oldPassword}&username=${accountName}%2F${userName}&new_password=${newPassword}`,
+        )
+        .reply(500, JSON.stringify({ error: 'CM-xx' }));
+
+      tester.post('/auth/changePassword')
+        .send({
+          accountName,
+          userName,
+          oldPassword,
+          newPassword,
+        })
+        .expectStatus(500)
+        .assertResponse((response) => {
+          assert.deepEqual(response, {
+            code: 500,
+            message: 'PASSWORD_CHANGE_FAILED'
+          });
           done();
         });
     });
@@ -237,7 +331,285 @@ describe('AuthController', () => {
         .with('headers', TestConfigurationService.HEADERS)
         .expectStatus(200)
         .assertResponse((response) => {
-          assert.deepEqual(response, undefined);
+          assert.deepEqual(response, '');
+          done();
+        });
+    });
+  });
+
+  describe('userPartialEmailAddress()', () => {
+    const accountName = 'core-corey';
+    const userName = 'admin';
+
+    it('userPartialEmailAddress works', (done) => {
+
+      nock(TEST_APP_CONFIG.directoryServiceUrl)
+        .post(
+          '/api/oauth2/v1/userPartialEmailAddress',
+          `accountName=${accountName}&userName=${userName}`
+        )
+        .reply(200, '***maskedEmail');
+
+      tester.post('/auth/resetPassword/userPartialEmailAddress')
+        .send({
+          accountName,
+          userName
+        })
+        .expectStatus(200)
+        .assertResponse((response) => {
+          assert.deepEqual(response, { maskedEmail: '***maskedEmail' });
+          done();
+        });
+    });
+
+    it('userPartialEmailAddress server error ', (done) => {
+      nock(TEST_APP_CONFIG.directoryServiceUrl)
+        .post(
+          '/api/oauth2/v1/userPartialEmailAddress',
+          `accountName=${accountName}&userName=${userName}`
+        )
+        .reply(500, JSON.stringify({ error: 'CM-xx' }));
+
+      tester.post('/auth/resetPassword/userPartialEmailAddress')
+        .send({
+          accountName,
+          userName,
+        })
+        .expectStatus(500)
+        .assertResponse((response) => {
+          assert.deepEqual(response, {
+            code: 500,
+            message: ''
+          });
+          done();
+        });
+    });
+  });
+
+  describe('sendVerificationCode()', () => {
+    const reqData = {
+      accountName: 'core-corey',
+      userName: 'admin',
+      user_email_address: 'test@sap.com'
+    };
+
+    it('works', (done) => {
+      nock(TEST_APP_CONFIG.directoryServiceUrl)
+        .post(
+          '/api/oauth2/v1/send_verification_code',
+          querystring.stringify(reqData)
+        )
+        .reply(200, '{}');
+
+      tester.post('/auth/resetPassword/sendVerificationCode')
+        .send(reqData)
+        .expectStatus(200)
+        .assertResponse((response) => {
+          assert.deepEqual(response, '');
+          done();
+        });
+    });
+
+    it('server error ', (done) => {
+      nock(TEST_APP_CONFIG.directoryServiceUrl)
+        .post(
+          '/api/oauth2/v1/send_verification_code',
+          querystring.stringify(reqData)
+        )
+        .reply(500, JSON.stringify({ error: 'CM-xx' }));
+
+      tester.post('/auth/resetPassword/sendVerificationCode')
+        .send(reqData)
+        .expectStatus(500)
+        .assertResponse((response) => {
+          assert.deepEqual(response, {
+            code: 500,
+            message: ''
+          });
+          done();
+        });
+    });
+
+    it('server error ', (done) => {
+      nock(TEST_APP_CONFIG.directoryServiceUrl)
+        .post(
+          '/api/oauth2/v1/send_verification_code',
+          querystring.stringify(reqData)
+        )
+        .reply(400, JSON.stringify({ error: 'CM-xx' }));
+
+      tester.post('/auth/resetPassword/sendVerificationCode')
+        .send(reqData)
+        .expectStatus(400)
+        .assertResponse((response) => {
+          assert.deepEqual(response, {
+            code: 400,
+            message: 'Cannot process the request due to multiple users with the same email were found.'
+          });
+          done();
+        });
+    });
+  });
+
+  describe('verifyVerificationCode()', () => {
+    const reqData = {
+      user_email_address: 'test@sap.com',
+      accountName: 'core-corey',
+      userName: 'admin',
+      verification_code: 'verifictionCode'
+    };
+
+    it('works', (done) => {
+      nock(TEST_APP_CONFIG.directoryServiceUrl)
+        .post(
+          '/api/oauth2/v1/verify_verification_code',
+          querystring.stringify(reqData)
+        )
+        .reply(200, '{}');
+
+      tester.post('/auth/resetPassword/verifyVerificationCode')
+        .send(reqData)
+        .expectStatus(200)
+        .assertResponse((response) => {
+          assert.deepEqual(response, '');
+          done();
+        });
+    });
+
+    it('server error ', (done) => {
+      nock(TEST_APP_CONFIG.directoryServiceUrl)
+        .post(
+          '/api/oauth2/v1/verify_verification_code',
+          querystring.stringify(reqData)
+        ).reply(500, JSON.stringify({ error: 'CM-xx' }));
+
+      tester.post('/auth/resetPassword/verifyVerificationCode')
+        .send(reqData)
+        .expectStatus(500)
+        .assertResponse((response) => {
+          assert.deepEqual(response, {
+            code: 500,
+            message: ''
+          });
+          done();
+        });
+    });
+
+    it('server error ', (done) => {
+      nock(TEST_APP_CONFIG.directoryServiceUrl)
+        .post(
+          '/api/oauth2/v1/verify_verification_code',
+          querystring.stringify(reqData)
+        ).reply(400, JSON.stringify({ error: 'CM-xx' }));
+
+      tester.post('/auth/resetPassword/verifyVerificationCode')
+        .send(reqData)
+        .expectStatus(400)
+        .assertResponse((response) => {
+          assert.deepEqual(response, {
+            code: 400,
+            message: 'Cannot process the request due to multiple users with the same email were found.'
+          });
+          done();
+        });
+    });
+
+    it('server error ', (done) => {
+      nock(TEST_APP_CONFIG.directoryServiceUrl)
+        .post(
+          '/api/oauth2/v1/verify_verification_code',
+          querystring.stringify(reqData)
+        ).reply(404, JSON.stringify({ error: 'CM-xx' }));
+
+      tester.post('/auth/resetPassword/verifyVerificationCode')
+        .send(reqData)
+        .expectStatus(404)
+        .assertResponse((response) => {
+          assert.deepEqual(response, {
+            code: 404,
+            message: 'Wrong verification code.'
+          });
+          done();
+        });
+    });
+  });
+
+  describe('resetPassword()', () => {
+    const reqData = {
+      user_email_address: 'test@sap.com',
+      accountName: 'core-corey',
+      userName: 'admin',
+      verification_code: 'verifictionCode',
+      password: 'Welcome1!'
+    };
+
+    it('works', (done) => {
+      nock(TEST_APP_CONFIG.directoryServiceUrl)
+        .post(
+          '/api/oauth2/v1/reset_password',
+          querystring.stringify(reqData)
+        )
+        .reply(200, '{}');
+
+      tester.post('/auth/resetPassword')
+        .send(reqData)
+        .expectStatus(200)
+        .assertResponse((response) => {
+          assert.deepEqual(response, '');
+          done();
+        });
+    });
+
+    it('server error ', (done) => {
+      nock(TEST_APP_CONFIG.directoryServiceUrl)
+        .post(
+          '/api/oauth2/v1/reset_password',
+          querystring.stringify(reqData)
+        )
+        .reply(500, JSON.stringify({ error: 'CM-xx' }));
+
+      tester.post('/auth/resetPassword')
+        .send(reqData)
+        .expectStatus(500)
+        .assertResponse((response) => {
+          assert.deepEqual(response, {
+            code: 500,
+            message: 'PASSWORD_CHANGE_FAILED'
+          });
+          done();
+        });
+    });
+
+    it('password disobey password policy ', (done) => {
+      nock(TEST_APP_CONFIG.directoryServiceUrl)
+        .post(
+          '/api/oauth2/v1/reset_password',
+          querystring.stringify(reqData),
+        )
+        .reply(400,
+          JSON.stringify({
+            error: 'MC-13',
+            message: 'MC-13: Password is not valid',
+            values: [],
+            children: [{
+              error: 'MC-06',
+              message: 'MC-06: Password must be at least [20] character(s) long',
+            },
+            {
+              error: 'MC-07',
+              message: 'MC-07: Password must contain at least [10] digit(s)',
+            }],
+          }));
+
+      tester.post('/auth/resetPassword')
+        .send(reqData)
+        .expectStatus(400)
+        .assertResponse((response) => {
+          assert.deepEqual(response, {
+            code: 400,
+            message: 'PASSWORD_NOT_VALID',
+            values: ['06: Password must be at least [20] character(s) long', '07: Password must contain at least [10] digit(s)'],
+          });
           done();
         });
     });

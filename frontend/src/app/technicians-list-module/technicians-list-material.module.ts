@@ -1,5 +1,8 @@
 import { NgModule } from '@angular/core';
-import { MatCardModule, MatDividerModule, MatIconModule, MatProgressSpinnerModule } from '@angular/material';
+import { MatCardModule } from '@angular/material/card';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatIconModule } from '@angular/material/icon';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { AbbreviatePipeModule } from '../abbreviate-pipe-module/abbreviate-pipe.module';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';

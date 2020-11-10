@@ -116,6 +116,10 @@ export class TechnicianProfileFacade {
     }
   }
 
+  public collapseTagDetailsView(skillViewModel: SkillViewModel) {
+    this.store.dispatch(profileActions.collapseTagDetailsView({skillViewModelId: skillViewModel.id}));
+  }
+
   private getSkillsToAdd(skillViewModels: SkillViewModel[], technicianExternalId: string): SkillWithViewModelId[] {
     return skillViewModels.filter(skillViewModel => !skillViewModel.skill && skillViewModel.selected)
       .map(skillViewModel => ({
