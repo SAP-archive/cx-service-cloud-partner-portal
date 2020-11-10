@@ -1,6 +1,6 @@
 import * as express from 'express';
-import { ILogger } from '@sap-fsm/log-infrastructure/lib/model/ILogger';
 import { UserDataRequest } from './sessiondata';
+import { ILogger } from '@modules/status/model/ILogger';
 
 const obfuscateBodyFields = [
   'password', 'oldPassword', 'newPassword', 'verification_code', 'user_email_address',

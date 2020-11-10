@@ -1,5 +1,9 @@
 //  tslint:disable:no-console
 class Logger {
+  public log(message: string): void {
+    this.info(message);
+  }
+
   public info(message: string): void {
     console.info(`[INFO] ${message}`);
   }
