@@ -24,7 +24,7 @@ describe('technicianProfileReducer', () => {
         isLoadingProfile: true,
       }, actions.loadTechnicianProfileSuccess({data: undefined}));
       expect(result.isLoadingProfile).toBeFalse();
-      expect(result.isWaitingNavigate).toBeFalse();
+      expect(result.isAwaitingNavigationChange).toBeFalse();
     });
 
     it('should set profile data', () => {
@@ -107,7 +107,7 @@ describe('technicianProfileReducer', () => {
         isLoadingProfile: true,
       }, actions.createTechnicianProfileSuccess);
       expect(result.isLoadingProfile).toBeTrue();
-      expect(result.isWaitingNavigate).toBeTrue();
+      expect(result.isAwaitingNavigationChange).toBeTrue();
     });
   });
   describe('createTechnicianProfileFailure', () => {
@@ -117,10 +117,45 @@ describe('technicianProfileReducer', () => {
         isLoadingProfile: true,
       }, actions.createTechnicianProfileFailure);
       expect(result.isLoadingProfile).toBeFalse();
-      expect(result.isWaitingNavigate).toBeFalse();
+      expect(result.isAwaitingNavigationChange).toBeFalse();
     });
   });
 
+  describe('deleteTechnicianProfile', () => {
+    it('sets isLoadingProfile to true and isAwaitingNavigationChange to true', () => {
+      const result = reducer({
+        ...initialState,
+        isLoadingProfile: false,
+        isAwaitingNavigationChange: false,
+      }, actions.deleteTechnicianProfile);
+      expect(result.isLoadingProfile).toBeTrue();
+      expect(result.isAwaitingNavigationChange).toBeTrue();
+    });
+  });
+
+  describe('deleteTechnicianProfileSuccess', () => {
+    it('sets isLoadingProfile to false and isAwaitingNavigationChange to false', () => {
+      const result = reducer({
+        ...initialState,
+        isLoadingProfile: true,
+        isAwaitingNavigationChange: true,
+      }, actions.deleteTechnicianProfileSuccess);
+      expect(result.isLoadingProfile).toBeFalse();
+      expect(result.isAwaitingNavigationChange).toBeFalse();
+    });
+  });
+
+  describe('deleteTechnicianProfileFailure', () => {
+    it('sets isLoadingProfile to true and isAwaitingNavigationChange to false', () => {
+      const result = reducer({
+        ...initialState,
+        isLoadingProfile: true,
+        isAwaitingNavigationChange: true,
+      }, actions.deleteTechnicianProfileFailure);
+      expect(result.isLoadingProfile).toBeFalse();
+      expect(result.isAwaitingNavigationChange).toBeFalse();
+    });
+  });
 
   describe('loadSkills', () => {
     it('sets isLoadingSkills to true', () => {

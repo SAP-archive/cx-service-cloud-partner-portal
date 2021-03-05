@@ -20,6 +20,9 @@ import { take, toArray } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { saveAsInjectionToken } from '../injection-tokens';
 import SpyObj = jasmine.SpyObj;
+import Spy = jasmine.Spy;
+import * as technicianProfileActions from './technician-profile.actions';
+import * as reportingActions from '../../state/reporting/reporting.actions';
 
 describe('TechnicianProfileEffects', () => {
   type MockedState = RecursivePartial<{ [technicianProfileFeatureKey]: State }>;
@@ -51,12 +54,12 @@ describe('TechnicianProfileEffects', () => {
         }),
         {
           provide: AppBackendService,
-          useValue: jasmine.createSpyObj(AppBackendService, ['get', 'post', 'delete', 'put'])
+          useValue: jasmine.createSpyObj(AppBackendService, ['get', 'post', 'delete', 'put']),
         },
         {
           provide: TechnicianProfileService,
           useValue: jasmine.createSpyObj(TechnicianProfileService, [
-            'get', 'create', 'update', 'getSkills', 'downloadCertificate'
+            'get', 'create', 'update', 'delete', 'getSkills', 'downloadCertificate',
           ]),
         },
         {
@@ -129,7 +132,7 @@ describe('TechnicianProfileEffects', () => {
         expect(profile).toEqual([
           profileActions.loadSkills({technicianExternalId: technician.externalId}),
           profileActions.saveTechnicianProfileSuccess({profile: technician} as any),
-          reportSuccess({ message: 'TECHNICIAN_PROFILE_UPDATE_SUCCEED' })
+          reportSuccess({message: 'TECHNICIAN_PROFILE_UPDATE_SUCCEED'}),
         ]);
         done();
       });
@@ -179,6 +182,36 @@ describe('TechnicianProfileEffects', () => {
         expect(results).toEqual([
           profileActions.createTechnicianProfileFailure(),
           reportError({message: 'TECHNICIAN_PROFILE_CREATE_FAILED'}),
+        ]);
+        done();
+      });
+    });
+  });
+
+  describe('deleteTechnicianProfile$', () => {
+    it('should delete the technician profile', done => {
+      const technicianId = '1';
+      (TestBed.inject(Router).navigateByUrl as Spy).and.returnValue(Promise.resolve());
+      technicianProfileMockService.delete.and.returnValue(of({}));
+      actions$ = of(profileActions.deleteTechnicianProfile({technicianId}));
+      effects.deleteTechnicianProfile$.pipe(toArray()).subscribe((results) => {
+        expect(technicianProfileMockService.delete).toHaveBeenCalledWith(technicianId);
+        expect(results).toEqual([
+          technicianProfileActions.deleteTechnicianProfileSuccess(),
+          reportingActions.reportSuccess({message: 'DASHBOARD_TECHNICIAN_HAS_BEEN_DELETED'}),
+        ]);
+        done();
+      });
+    });
+
+    it('should report errors', done => {
+      technicianProfileMockService.delete.and.returnValue(throwError('some error'));
+      actions$ = of(profileActions.deleteTechnicianProfile({technicianId: '1'}));
+      effects.deleteTechnicianProfile$.pipe(toArray()).subscribe(results => {
+        expect(technicianProfileMockService.delete).toHaveBeenCalled();
+        expect(results).toEqual([
+          profileActions.deleteTechnicianProfileFailure(),
+          reportError({message: 'DASHBOARD_TECHNICIAN_DELETION_FAILED'}),
         ]);
         done();
       });

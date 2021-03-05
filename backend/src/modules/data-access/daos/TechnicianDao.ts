@@ -16,12 +16,13 @@ export class TechnicianDao {
       .then(response => response.results);
   }
 
-  public static async search(userData: UserData, queryParams: { page: number, size: number, name?: string, externalId?: string }): Promise<CrowdServiceResponse<TechnicianDto>> {
+  public static async search(userData: UserData, queryParams: { page: number, size: number, name?: string, externalId?: string, inactive?: boolean }): Promise<CrowdServiceResponse<TechnicianDto>> {
     return CrowdServiceApi.get<TechnicianDto>(userData, 'crowd/v2/technicians', {
       page: queryParams.page,
       size: queryParams.size,
       name: queryParams.name || '',
       externalId: queryParams.externalId || '',
+      inactive: queryParams.inactive !== undefined ? queryParams.inactive : ''
     });
   }
 

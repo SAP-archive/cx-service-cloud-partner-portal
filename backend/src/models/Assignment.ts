@@ -2,6 +2,8 @@ import { PartnerDispatchingStatus } from '../types/PartnerDispatchingStatus';
 import { ServiceAssignmentState } from '../types/ServiceAssignmentState';
 import { TechnicianDto } from '@modules/data-access/models';
 import { exampleTechnicianDto } from '@modules/data-access/models/Technician';
+import { SyncStatus } from 'types/SyncStatus';
+import { Equipment, exampleEquipment } from './Equipment';
 
 export interface Assignment {
   id: string;
@@ -14,6 +16,12 @@ export interface Assignment {
   dueDateTime: string;
   responsiblePerson: TechnicianDto;
   serviceAssignmentState: ServiceAssignmentState;
+  syncStatus: SyncStatus;
+  priority: string;
+  typeName: string;
+  serviceWorkflowName: string;
+  equipment: Equipment;
+  lastChanged: number;
 }
 
 export const exampleAssignment = (id = '123'): Assignment => ({
@@ -27,4 +35,10 @@ export const exampleAssignment = (id = '123'): Assignment => ({
   partnerDispatchingStatus: 'CONFIRMED',
   responsiblePerson: exampleTechnicianDto(),
   serviceAssignmentState: 'ASSIGNED',
+  syncStatus: 'IN_CLOUD',
+  priority: 'HIGH',
+  typeName: 'Repair',
+  serviceWorkflowName: null,
+  equipment: exampleEquipment(),
+  lastChanged: 1610529399,
 });

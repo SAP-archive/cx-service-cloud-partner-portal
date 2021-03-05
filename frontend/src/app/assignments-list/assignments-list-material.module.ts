@@ -8,6 +8,9 @@ import { MatInputModule } from '@angular/material/input';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatCardModule } from '@angular/material/card';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatMenuModule } from '@angular/material/menu';
+import { A11yModule } from '@angular/cdk/a11y';
 
 @NgModule({
   imports: [],
@@ -20,7 +23,10 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
     MatInputModule,
     MatDialogModule,
     MatCardModule,
+    MatTooltipModule,
     MatProgressSpinnerModule,
+    MatMenuModule,
+    A11yModule,
   ],
 })
 export class AssignmentsListMaterialModule {

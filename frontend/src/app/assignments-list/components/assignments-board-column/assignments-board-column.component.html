@@ -1,5 +1,5 @@
 <div class="column">
-  <h2 class="mat-h3">{{columnName | translate}} ({{(assignments | async).length || 0}})</h2>
+  <h2 class="mat-h3">{{columnName | translate}} ({{((assignments | async)?.length || 0| truncateNumber)}}/{{(assignmentsTotal | async) | truncateNumber}})</h2>
   <cdk-virtual-scroll-viewport itemSize="200"
                                class="viewport"
                                [ngClass]="{

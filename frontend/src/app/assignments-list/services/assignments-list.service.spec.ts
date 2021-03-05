@@ -7,8 +7,8 @@ import { CrowdApiResponse } from '../../technicians-list-module/models/crowd-api
 import { Assignment, exampleAssignment } from '../model/assignment';
 import { exampleFetchingParams, FetchingParams } from '../model/fetching-params.model';
 import { AssignmentsListFacade } from '../state/assignments-list.facade';
-import SpyObj = jasmine.SpyObj;
 import { of } from 'rxjs';
+import SpyObj = jasmine.SpyObj;
 
 describe('AssignmentsService', () => {
   let assignmentsService: AssignmentsListService;
@@ -48,52 +48,68 @@ describe('AssignmentsService', () => {
 
   describe('reject()', () => {
     it('calls the backend service for reject', marbles(m => {
-      const exampleResponse = (): CrowdApiResponse<string> => ({
-        results: ['reject'],
-      });
       appBackendMockService.post
         .withArgs(`/assignments/${exampleAssignment().id}/actions/reject`, exampleAssignment())
         .and.returnValue(m.cold('a|', {
         a: new HttpResponse({
-          body: exampleResponse(),
+          body: exampleAssignment(),
         }),
       }));
 
-      m.expect(assignmentsService.reject(exampleAssignment())).toBeObservable('a|', {a: exampleResponse()});
+      m.expect(assignmentsService.dispatch(exampleAssignment(), 'reject')).toBeObservable('a|', {a: exampleAssignment()});
     }));
   });
 
   describe('accept()', () => {
     it('calls the backend service for accept', marbles(m => {
-      const exampleResponse = (): CrowdApiResponse<string> => ({
-        results: ['accept'],
-      });
       appBackendMockService.post
         .withArgs(`/assignments/${exampleAssignment().id}/actions/accept`, exampleAssignment())
         .and.returnValue(m.cold('a|', {
         a: new HttpResponse({
-          body: exampleResponse(),
+          body: exampleAssignment(),
         }),
       }));
 
-      m.expect(assignmentsService.accept(exampleAssignment())).toBeObservable('a|', {a: exampleResponse()});
+      m.expect(assignmentsService.dispatch(exampleAssignment(), 'accept')).toBeObservable('a|', {a: exampleAssignment()});
+    }));
+  });
+
+  describe('handover()', () => {
+    it('calls the backend service for handover', marbles(m => {
+      appBackendMockService.post
+        .withArgs(`/assignments/${exampleAssignment().id}/actions/handover`, exampleAssignment())
+        .and.returnValue(m.cold('a|', {
+        a: new HttpResponse({
+          body: exampleAssignment('updated'),
+        }),
+      }));
+
+      m.expect(assignmentsService.handover(exampleAssignment()))
+        .toBeObservable('a|', {a: exampleAssignment('updated')});
     }));
   });
 
   describe('update()', () => {
     it('calls the backend service for update', marbles(m => {
-      const exampleResponse = (): CrowdApiResponse<Assignment> => ({
-        results: [exampleAssignment()],
-      });
       appBackendMockService.post
         .withArgs(`/assignments/${exampleAssignment().id}/actions/update`, exampleAssignment())
         .and.returnValue(m.cold('a|', {
         a: new HttpResponse({
-          body: exampleResponse(),
+          body: exampleAssignment(),
         }),
       }));
 
-      m.expect(assignmentsService.update(exampleAssignment())).toBeObservable('a|', {a: exampleResponse()});
+      m.expect(assignmentsService.dispatch(exampleAssignment(), 'update')).toBeObservable('a|', {a: exampleAssignment()});
+    }));
+  });
+
+  describe('syncStatusError', () => {
+    it('should return syncError when syncStatus is BLOCKED', marbles(m => {
+      const cloudSyncError = {
+        error: { message: 'ASSIGNMENTS_SYNC_STATUS_ERROR'}
+      };
+      const blockedAssignment: Assignment = { ...exampleAssignment(), syncStatus: 'BLOCKED' };
+      m.expect(assignmentsService.dispatch(blockedAssignment, 'update')).toBeObservable('#', {}, cloudSyncError);
     }));
   });
 });

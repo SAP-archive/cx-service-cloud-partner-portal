@@ -6,9 +6,13 @@ import { AssignmentsListFacade } from '../../state/assignments-list.facade';
 import { ColumnName } from '../../model/column-name';
 import { FetchingFilter } from '../../model/fetching-filter';
 import { CdkDrag, CdkDragDrop, CdkDragStart } from '@angular/cdk/drag-drop';
-import { filter, map, take, withLatestFrom } from 'rxjs/operators';
+import { filter, map, take, takeUntil, withLatestFrom } from 'rxjs/operators';
 import { isClosed, isNew, isOngoing, isReadyToPlan } from '../../utils/assignments-columns-helper';
 import { DeviceDetectorService } from 'ngx-device-detector';
+import { MatDialog } from '@angular/material/dialog';
+import { ConfirmDialogComponent } from '../../../components/confirmatiom-popover/confirm-dialog.component';
+import { ConfigFacade } from '../../../state/config/config.facade';
+import { OnDestroyInformer } from '../../../utils/on-destroy-informer';
 
 @Component({
   selector: 'pp-assignments-board-column',
@@ -18,7 +22,7 @@ import { DeviceDetectorService } from 'ngx-device-detector';
     './drag-and-drop.scss',
   ],
 })
-export class AssignmentsBoardColumnComponent implements OnInit {
+export class AssignmentsBoardColumnComponent extends OnDestroyInformer implements OnInit {
   @Input() public columnName: ColumnName;
   @Input() public fetchingFilter: FetchingFilter;
   @ViewChild(CdkVirtualScrollViewport) public viewport: CdkVirtualScrollViewport;
@@ -27,15 +31,23 @@ export class AssignmentsBoardColumnComponent implements OnInit {
   public canReceiveDraggedAssignment: Observable<boolean>;
   public isOriginalColumnOfDraggedAssignment: Observable<boolean>;
   public dragTimeout: number;
+  private allowAssignmentClose: boolean;
+  public assignmentsTotal: Observable<number>;
 
-  constructor(private assignmentsListFacade: AssignmentsListFacade,
-              public deviceDetectorService: DeviceDetectorService) {
+  constructor(
+    private assignmentsListFacade: AssignmentsListFacade,
+    public deviceDetectorService: DeviceDetectorService,
+    private dialog: MatDialog,
+    private configFacade: ConfigFacade,
+  ) {
+    super();
   }
 
   public ngOnInit(): void {
     this.dragTimeout = this.deviceDetectorService.isDesktop() ? 0 : 100;
     this.assignmentsListFacade.setFilter(this.columnName, this.fetchingFilter);
     this.assignments = this.assignmentsListFacade.getAssignments(this.columnName);
+    this.assignmentsTotal = this.assignmentsListFacade.getAssignmentsTotal(this.columnName);
     this.isLoading = this.assignmentsListFacade.getIsLoading(this.columnName);
     this.canReceiveDraggedAssignment = this.assignmentsListFacade.draggedAssignment.pipe(
       filter(draggedAssignment => !!draggedAssignment),
@@ -45,6 +57,8 @@ export class AssignmentsBoardColumnComponent implements OnInit {
       filter(draggedAssignment => !!draggedAssignment),
       map(draggedAssignment => this.isComingFromCurrentColumn(draggedAssignment)),
     );
+    this.configFacade.allowAssignmentClose.pipe(takeUntil(this.onDestroy))
+      .subscribe(allowAssignmentClose => this.allowAssignmentClose = allowAssignmentClose);
   }
 
   public scrolledIndexChange() {
@@ -63,7 +77,13 @@ export class AssignmentsBoardColumnComponent implements OnInit {
   public onDrop($event: CdkDragDrop<Assignment[]>) {
     const assignment = $event.item.data as Assignment;
     if (this.isAssignmentReceivable(assignment)) {
-      this.assignmentsListFacade.advanceAssignment(assignment);
+      if (isNew(assignment)) {
+        this.openReminder(assignment, this.assignmentsListFacade.accept.bind(this.assignmentsListFacade));
+      } else if (isReadyToPlan(assignment)) {
+        this.assignmentsListFacade.release(assignment);
+      } else if (isOngoing(assignment)) {
+        this.openReminder(assignment, this.assignmentsListFacade.close.bind(this.assignmentsListFacade));
+      }
     }
   }
 
@@ -75,14 +95,30 @@ export class AssignmentsBoardColumnComponent implements OnInit {
     this.assignmentsListFacade.endDragging();
   }
 
-  public enterPredicate({data}: CdkDrag<Assignment>) {
+  public enterPredicate({data}: CdkDrag<Assignment>): boolean {
     return this.isAssignmentReceivable(data);
+  }
+
+  public isWindows() {
+    return navigator.userAgent && navigator.userAgent.toLowerCase().includes('windows');
+  }
+
+  private openReminder(assignment: Assignment, confirmCallback: Function) {
+    this.dialog.open(ConfirmDialogComponent, {
+      data: {
+        message: 'ASSIGNMENTS_BOARD_TILE_CONFIRM_REMINDER',
+      },
+    }).afterClosed()
+      .pipe(filter((result) => result === true))
+      .subscribe(() => {
+        confirmCallback(assignment);
+      });
   }
 
   private isAssignmentReceivable(draggedAssignment: Assignment) {
     return this.columnName === 'ASSIGNMENTS_BOARD_READY_TO_PLAN' && isNew(draggedAssignment)
       || this.columnName === 'ASSIGNMENTS_BOARD_ONGOING' && isReadyToPlan(draggedAssignment)
-      || this.columnName === 'ASSIGNMENTS_BOARD_CLOSED' && isOngoing(draggedAssignment);
+      || this.columnName === 'ASSIGNMENTS_BOARD_CLOSED' && isOngoing(draggedAssignment) && this.allowAssignmentClose;
   }
 
   private isComingFromCurrentColumn(draggedAssignment: Assignment) {
@@ -90,9 +126,5 @@ export class AssignmentsBoardColumnComponent implements OnInit {
       || this.columnName === 'ASSIGNMENTS_BOARD_READY_TO_PLAN' && isReadyToPlan(draggedAssignment)
       || this.columnName === 'ASSIGNMENTS_BOARD_ONGOING' && isOngoing(draggedAssignment)
       || this.columnName === 'ASSIGNMENTS_BOARD_CLOSED' && isClosed(draggedAssignment);
-  }
-
-  public isWindows() {
-    return navigator.userAgent && navigator.userAgent.toLowerCase().includes('windows');
   }
 }

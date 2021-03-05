@@ -1,11 +1,65 @@
 @import '../../variables';
 
-.tile {
+.assignments-board-tile {
   width: calc(100% - 2 * #{$column-margin});
   min-width: calc(#{$min-column-width} - 2 * #{$column-margin});
   height: auto;
   min-height: $row-height;
   margin: 0 $column-margin $column-margin * 2 $column-margin;
+
+  mat-card-subtitle {
+    display: flex;
+    width: calc(#{$min-column-width} - 40px);
+  }
+
+  .tile-title-subject {
+    margin-top: 4px;
+  }
+
+  .status-block {
+    margin-left: 8px;
+    padding: 2px 8px;
+    border-radius: 13px;
+    font-size: 12px;
+    width: fit-content;
+    border-width: 1px;
+    border-style: solid;
+    color: #32363A;
+  }
+
+  .high {
+    border-color: #bb0000;
+    background-color: #ffebeb;
+  }
+
+  .low {
+    border-color: #0f7e3f;
+    background-color: #f0fef5;
+  }
+
+  .medium {
+    border-color: #e9720c;
+    background-color: #fef7f1;
+  }
+
+  .unknown {
+    border-color: #6b6d70;
+    background-color: #f9f9f9;
+  }
+
+  .label-type {
+    border-color: #0d6ed1;
+    background-color: #f5fafe;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .workflow {
+    color: green;
+    margin-left: 12px;
+    font-size: 14px;
+  }
 
   mat-card {
     width: 100%;
@@ -27,11 +81,39 @@
     .content-value {
       margin: $column-margin 0px 0px $column-margin * 2;
     }
+
+    .additional-value {
+      margin: $column-margin 0px 0px 32px;
+      color: grey;
+    }
+  }
+
+  .small-icon {
+    .content-value {
+      margin: $column-margin 0px 0px $column-margin;
+    }
+
+    .mat-icon {
+      font-size: 18px;
+      margin-left: $column-margin;
+    }
+  }
+
+  .mat-card-header-text {
+    width: 100%;
   }
 }
 
-.tile-title {
+.mat-card-header .mat-card-title {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
   font-size: 16px;
+
+  .alert-icon {
+    margin-left: 6px;
+    color: #e9730c;
+  }
 }
 
 .cursor-pointer {

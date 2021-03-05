@@ -28,6 +28,10 @@ import { AssignmentsBoardFakeTileComponent } from './components/assignments-boar
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { LocalDateTimePipeModule } from '../local-date-time-pipe-module';
 import { ConfirmDialogComponent } from '../components/confirmatiom-popover/confirm-dialog.component';
+import { reducers } from './state/assignments-list.state';
+import { AssignmentsDetailsService } from './services/assignments-details.service';
+import { TruncateNumberPipeModule } from '../truncate-number-pipe-module/abbreviate-pipe.module';
+import { AssignmentsBoardSearchComponent } from './components/assignments-board-search/assignments-board-search.component';
 
 @NgModule({
   declarations: [
@@ -38,13 +42,14 @@ import { ConfirmDialogComponent } from '../components/confirmatiom-popover/confi
     AssignmentsDetailsComponent,
     AssignmentsBoardTileActionsComponent,
     AssignmentsBoardFakeTileComponent,
-    ConfirmDialogComponent
+    ConfirmDialogComponent,
+    AssignmentsBoardSearchComponent,
   ],
   imports: [
     CommonModule,
     AssignmentsListMaterialModule,
     TranslateModule,
-    StoreModule.forFeature(fromAssignments.assignmentsListFeatureKey, fromAssignments.reducer),
+    StoreModule.forFeature(fromAssignments.assignmentsListFeatureKey, reducers),
     StoreModule.forFeature(fromAssignmentsDetails.assignmentsDetailsFeatureKey, fromAssignmentsDetails.reducer),
     EffectsModule.forFeature([AssignmentsListEffects, AssignmentsDetailsEffects]),
     InfiniteScrollModule,
@@ -57,14 +62,16 @@ import { ConfirmDialogComponent } from '../components/confirmatiom-popover/confi
     AbbreviatePipeModule,
     DragDropModule,
     LocalDateTimePipeModule,
+    TruncateNumberPipeModule,
   ],
   providers: [
     AssignmentsListService,
     DeviceDetectorService,
     TechniciansListService,
+    AssignmentsDetailsService,
   ],
   entryComponents: [
-    ConfirmDialogComponent
+    ConfirmDialogComponent,
   ],
 })
 export class AssignmentsListModule {

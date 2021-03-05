@@ -4,7 +4,6 @@
   "description": "Server side app for the partner portal",
   "scripts": {
     "pretest": "npm run clean",
-    "test:docker": "./run-tests-in-docker.sh",
     "test": "cross-env CLIENT_ID=\"partner-portal\" cross-env CLIENT_SECRET=\"partner-portal-test\" nyc mocha --opts mocha.opts --watch",
     "posttest": "npm run remove-absolute-path-coverage && npm run clean",
     "pretest:ci": "npm run clean",
@@ -52,7 +51,7 @@
     "request-promise-native": "^1.0.9",
     "rimraf": "^2.6.3",
     "rxjs": "^6.5.4",
-    "socket.io": "^2.0.3",
+    "socket.io": "^3.0.5",
     "underscore": "^1.8.3",
     "uuid": "^3.3.2",
     "winston": "^3.3.3"

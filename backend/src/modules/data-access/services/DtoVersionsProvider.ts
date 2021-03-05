@@ -6,7 +6,7 @@ const DTO_VERSIONS: { [name: string]: number } = {
   'BusinessPartner': 20,
   'BusinessPartnerGroup': 14,
   'CompanyInfo': 15,
-  'CompanySettings': 13,
+  'CompanySettings': 14,
   'Equipment': 18,
   'Requirement': 8,
   'Skill': 8,

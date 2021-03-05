@@ -17,7 +17,7 @@ export class TechnicianProfileFacade {
   public skillsEdited = new Subject<void>();
   public isLoading = this.store.select(fromTechnicianProfile.selectIsLoading);
   public skillViewModels = this.store.select(fromTechnicianProfile.selectSkillViewModels);
-  public isWaitingNavigate = this.store.select(fromTechnicianProfile.selectIsWaitingNavigate);
+  public isAwaitingNavigationChange = this.store.select(fromTechnicianProfile.selectIsAwaitingNavigationChange);
   public technicianProfile = this.store.select(fromTechnicianProfile.selectProfileData)
     .pipe(filter(profile => !!profile));
   public technicianAddress = this.store.select(fromTechnicianProfile.selectProfileData).pipe(
@@ -84,6 +84,10 @@ export class TechnicianProfileFacade {
           certificates: this.getCertificatesToAdd(skillViewModels),
         }));
       });
+  }
+
+  public deleteProfile(technicianId: TechnicianProfile['externalId']) {
+    this.store.dispatch(profileActions.deleteTechnicianProfile({technicianId}));
   }
 
   public removeCertificateUpload(skillViewModelId: string) {

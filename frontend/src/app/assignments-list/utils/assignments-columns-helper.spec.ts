@@ -1,5 +1,12 @@
 import { exampleAssignment } from '../model/assignment';
-import { isClosed, isNew, isOngoing, isReadyToPlan } from './assignments-columns-helper';
+import {
+  assignmentsSortComparer,
+  isActionNotAboutMyColumn,
+  isClosed,
+  isNew,
+  isOngoing,
+  isReadyToPlan,
+} from './assignments-columns-helper';
 
 describe('isNew()', () => {
   it('should return true if assignment dispatching status is NOTIFIED', () => {
@@ -28,5 +35,37 @@ describe('isClosed()', () => {
   it('should return true if assignment serviceAssignmentState status is RELEASED', () => {
     expect(isClosed(exampleAssignment('1', 'ACCEPTED', 'CLOSED'))).toBeTrue();
     expect(isClosed(exampleAssignment('1', 'ACCEPTED', 'RELEASED'))).toBeFalse();
+  });
+});
+
+describe('assignmentsSortComparer()', () => {
+  it('should sort assignments by lastChanged ASC', () => {
+    const assignment = (lastChanged: number) => ({
+      ...exampleAssignment(lastChanged.toString(10)),
+      lastChanged: lastChanged,
+    });
+
+    expect(assignmentsSortComparer(assignment(1), assignment(2))).toEqual(1);
+    expect(assignmentsSortComparer(assignment(2), assignment(1))).toEqual(-1);
+    expect(assignmentsSortComparer(assignment(1), assignment(1))).toEqual(0);
+  });
+});
+
+describe('isActionNotAboutMyColumn()', () => {
+  it('should return true only if action has column defined and that column differs from the passed one', () => {
+    expect(isActionNotAboutMyColumn(
+      {type: 'whatever', columnName: 'ASSIGNMENTS_BOARD_CLOSED'},
+      'ASSIGNMENTS_BOARD_NEW',
+    )).toBeTrue();
+
+    expect(isActionNotAboutMyColumn(
+      {type: 'whatever', columnName: 'ASSIGNMENTS_BOARD_NEW'},
+      'ASSIGNMENTS_BOARD_NEW',
+    )).toBeFalse();
+
+    expect(isActionNotAboutMyColumn(
+      {type: 'whatever'},
+      'ASSIGNMENTS_BOARD_NEW',
+    )).toBeFalse();
   });
 });

@@ -38,6 +38,9 @@ export class TechnicianController {
         externalId: {
           type: 'string',
         },
+        inactive: {
+          type: 'boolean',
+        },
         page: {
           type: 'integer',
           minimum: 0,

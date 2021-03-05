@@ -2,15 +2,13 @@
 
 import 'zone.js/dist/zone-testing';
 import { getTestBed } from '@angular/core/testing';
-import {
-  BrowserDynamicTestingModule,
-  platformBrowserDynamicTesting
-} from '@angular/platform-browser-dynamic/testing';
+import { BrowserDynamicTestingModule, platformBrowserDynamicTesting } from '@angular/platform-browser-dynamic/testing';
 
 declare const require: any;
 
 (window as any).CS_EMBEDDED_CONFIG = {
   launchdarklyKey: 'fake-launch-darkly-key',
+  clusterName: 'unit-tests',
 };
 
 // First, initialize the Angular testing environment.

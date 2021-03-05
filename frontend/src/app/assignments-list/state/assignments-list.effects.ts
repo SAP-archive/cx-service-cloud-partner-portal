@@ -26,7 +26,7 @@ export class AssignmentsListEffects {
     return this.actions$.pipe(
       ofType(AssignmentsActions.reject),
       concatMap(({assignment, type}) =>
-        this.assignmentsService.reject(assignment).pipe(
+        this.assignmentsService.dispatch(assignment, 'reject').pipe(
           map(result => AssignmentsActions.rejectSuccess({id: assignment.id})),
           catchError((response) => of(
             AssignmentsActions.rejectFailure(),
@@ -40,8 +40,8 @@ export class AssignmentsListEffects {
     return this.actions$.pipe(
       ofType(AssignmentsActions.accept),
       concatMap(({assignment, type}) =>
-        this.assignmentsService.accept(assignment).pipe(
-          map(result => AssignmentsActions.acceptSuccess({assignment: {...assignment, partnerDispatchingStatus: 'ACCEPTED'}})),
+        this.assignmentsService.dispatch(assignment, 'accept').pipe(
+          map(updatedAssignment => AssignmentsActions.acceptSuccess({assignment: updatedAssignment})),
           catchError((response) => of(
             AssignmentsActions.acceptFailure(),
             ReportingActions.reportError({message: response.error ? response.error.message : 'BACKEND_ERROR_UNEXPECTED'}))),
@@ -54,11 +54,25 @@ export class AssignmentsListEffects {
     return this.actions$.pipe(
       ofType(AssignmentsActions.release),
       concatMap(({assignment, type}) =>
-        this.assignmentsService.update(assignment).pipe(
-          switchMap(res => this.assignmentsService.release(assignment)),
-          map(result => AssignmentsActions.releaseSuccess({ assignment: {...assignment, serviceAssignmentState: 'RELEASED'} })),
+        this.assignmentsService.dispatch(assignment, 'update').pipe(
+          switchMap(() => this.assignmentsService.dispatch(assignment, 'release')),
+          map(updatedAssignment => AssignmentsActions.releaseSuccess({assignment: updatedAssignment})),
           catchError((response) => of(
             AssignmentsActions.releaseFailure(),
+            ReportingActions.reportError({message: response.error ? response.error.message : 'BACKEND_ERROR_UNEXPECTED'}))),
+        ),
+      ),
+    );
+  });
+
+  public handover = createEffect(() => {
+    return this.actions$.pipe(
+      ofType(AssignmentsActions.handover),
+      concatMap(({assignment, type}) =>
+        this.assignmentsService.handover(assignment).pipe(
+          map(newAssignment => AssignmentsActions.handoverSuccess({assignment: newAssignment})),
+          catchError((response) => of(
+            AssignmentsActions.handoverFailure(),
             ReportingActions.reportError({message: response.error ? response.error.message : 'BACKEND_ERROR_UNEXPECTED'}))),
         ),
       ),
@@ -69,8 +83,8 @@ export class AssignmentsListEffects {
     return this.actions$.pipe(
       ofType(AssignmentsActions.close),
       concatMap(({assignment, type}) =>
-        this.assignmentsService.close(assignment).pipe(
-          map(result => AssignmentsActions.closeSuccess({assignment: {...assignment, serviceAssignmentState: 'CLOSED'}})),
+        this.assignmentsService.dispatch(assignment, 'close').pipe(
+          map(updatedAssignment => AssignmentsActions.closeSuccess({assignment: updatedAssignment})),
           catchError((response) => of(
             AssignmentsActions.closeFailure(),
             ReportingActions.reportError({message: response.error ? response.error.message : 'BACKEND_ERROR_UNEXPECTED'}))),

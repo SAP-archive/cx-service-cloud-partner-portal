@@ -3,18 +3,22 @@
     <button mat-stroked-button
             id="assignment-{{assignment?.code}}-accept-button"
             class="action-button accept"
+            [disabled]="isSyncStatusBlocked()"
             (click)="acceptAssignment()">{{ 'ASSIGNMENTS_LIST_ASSIGNMENT_ACCEPT' | translate }}</button>
 
     <button mat-stroked-button
             id="assignment-{{assignment?.code}}-reject-button"
             class="action-button reject"
+            *ngIf="allowAssignmentReject | async"
+            [disabled]="isSyncStatusBlocked()"
             (click)="rejectAssignment()">{{ 'ASSIGNMENTS_LIST_ASSIGNMENT_REJECT' | translate }}</button>
   </ng-container>
 
   <ng-container *ngIf="assignment?.partnerDispatchingStatus === 'ACCEPTED' && assignment?.serviceAssignmentState === 'ASSIGNED'">
     <button mat-stroked-button
             id="assignment-{{assignment?.code}}-assign-button"
-            class="action-button assign">{{ 'ASSIGNMENTS_LIST_ASSIGNMENT_ASSIGN' | translate }}</button>
+            [disabled]="isSyncStatusBlocked()"
+            class="action-button highlighted">{{ 'ASSIGNMENTS_LIST_ASSIGNMENT_ASSIGN' | translate }}</button>
   </ng-container>
 
   <div class="full-row" *ngIf="assignment?.serviceAssignmentState === 'RELEASED'">
@@ -31,13 +35,29 @@
         [text]="technicianName | abbreviate"></pp-avatar>
     </div>
     <div class="row">
-      <button mat-icon-button
-              id="assignment-{{assignment?.code}}-close-button"
-              title="{{'ASSIGNMENTS_LIST_CLOSE' | translate}}"
-              class="action-button"
-              (click)="closeAssignment()">
-        <mat-icon class="assign">check_circle_outline</mat-icon>
+      <button class="action-button highlighted"
+              id="released-assignment-{{assignment?.code}}-menu-button"
+              mat-icon-button
+              *ngIf="(allowAssignmentClose | async) || (allowHandover | async)"
+              [matMenuTriggerFor]="releasedMenu">
+        <mat-icon>more_vert</mat-icon>
       </button>
+      <mat-menu #releasedMenu="matMenu">
+        <button id="assignment-{{assignment?.code}}-close-button"
+                name="assignment-action-menu-close"
+                mat-menu-item
+                translate
+                *ngIf="allowAssignmentClose | async"
+                (click)="closeAssignment()"
+                [disabled]="isSyncStatusBlocked()">ASSIGNMENTS_LIST_CLOSE</button>
+        <button id="assignment-{{assignment?.code}}-handover-button"
+                *ngIf="allowHandover | async"
+                name="assignment-action-menu-handover"
+                mat-menu-item
+                translate
+                (click)="handoverAssignment()"
+                [disabled]="isSyncStatusBlocked()">ASSIGNMENTS_LIST_HANDOVER</button>
+      </mat-menu>
     </div>
   </div>
 
@@ -56,8 +76,9 @@
     <div class="row">
       <button mat-icon-button
               id="assignment-{{assignment?.code}}-closed-button"
-              class="action-button">
-        <mat-icon class="accept">check_circle_two_tone</mat-icon>
+              class="action-button accept"
+              [disabled]="isSyncStatusBlocked()">
+        <mat-icon>check_circle_two_tone</mat-icon>
       </button>
     </div>
   </div>

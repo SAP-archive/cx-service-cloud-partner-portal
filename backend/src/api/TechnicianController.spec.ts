@@ -73,12 +73,12 @@ describe('TechnicianController', () => {
       const techniciansSearched = exampleTechnicianSearchResult();
       const nockScopes = [
         nock(`https://${TEST_APP_CONFIG.backendClusterDomain}`)
-          .get(`/cloud-crowd-service/api/crowd/v2/technicians?page=0&size=5&name=technicianName&externalId=technicianId${TestConfigurationService.requestQuerySuffix('&')}`)
+          .get(`/cloud-crowd-service/api/crowd/v2/technicians?page=0&size=5&name=technicianName&externalId=technicianId&inactive=true${TestConfigurationService.requestQuerySuffix('&')}`)
           .reply(200, techniciansSearched),
       ];
 
       tester.post('/portal/search/technicians')
-        .send({page: 0, size: 5, name: 'technicianName', externalId: 'technicianId'})
+        .send({page: 0, size: 5, name: 'technicianName', externalId: 'technicianId', inactive: true})
         .expectStatus(200)
         .with('headers', TestConfigurationService.HEADERS)
         .assertResponse((response) => {

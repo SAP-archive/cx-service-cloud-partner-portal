@@ -65,6 +65,17 @@
                 [placeholder]="'TECHNICIAN_PROFILE_ABOUT_PHONE_NUMBER' | translate"
                 formControlName="phoneNumber">
             </mat-form-field>
+            <mat-form-field *ngIf="editorMode === 'EDIT'">
+              <mat-select id="tech-detail-role"
+                (selectionChange)="onRoleChanged($event.value)"
+                placeholder="{{'CROWD_USER_TYPE' | translate}}"
+                [disabled]="isLoggedInUser()"
+                formControlName="crowdType">
+                <mat-option *ngFor="let type of crowdTypes" [value]="type">
+                  {{ type | translate }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
             <div><label class="active-label">{{ 'TECHNICIAN_PROFILE_ABOUT_ACTIVE' | translate }}</label></div>
             <div class="pp-technician-detail-active">
               <mat-checkbox [disabled]="isLoggedInUser()"

@@ -28,6 +28,7 @@ import { CompanyProfileFacade } from './state/company-profile.facade';
 import { CompanyProfileResolver } from './services/company-profile.resolver';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialogModule } from '@angular/material/dialog';
+import { CompanySettingsResolver } from '../services/company-settings.resolver';
 
 @NgModule({
   declarations: [
@@ -62,8 +63,8 @@ import { MatDialogModule } from '@angular/material/dialog';
     RemovedDocumentsFacade,
     CompanyProfileFacade,
     CompanyProfileResolver,
+    CompanySettingsResolver,
   ],
-  
   exports: [
     CompanyProfileTileComponent,
     CompanyProfileEditorComponent,

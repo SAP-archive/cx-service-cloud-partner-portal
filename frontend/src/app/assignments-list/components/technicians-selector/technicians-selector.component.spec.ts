@@ -22,7 +22,7 @@ describe('TechniciansSelectorComponent', () => {
         AssignmentsListMaterialModule,
         BrowserAnimationsModule,
       ],
-      declarations: [TechniciansSelectorComponent]
+      declarations: [TechniciansSelectorComponent],
     })
       .compileComponents();
     fixture = TestBed.createComponent(TechniciansSelectorComponent);
@@ -43,21 +43,20 @@ describe('TechniciansSelectorComponent', () => {
       fixture.detectChanges();
       component.technicians = [exampleTechnician()];
       component.ngOnChanges();
-      m.expect(component.filteredOptions).toBeObservable('f', { f: component.fullNames });
+      m.expect(component.filteredOptions).toBeObservable('f', {f: component.fullNames});
+    }));
+
+    it('should emit false on isValid if responsible is empty', (() => {
+      fixture.detectChanges();
+      component.technicians = [exampleTechnician()];
+      component.ngOnChanges();
+      expect(component.isValid.emit).toHaveBeenCalledWith(false);
     }));
   });
 
   describe('validationCheck()', () => {
-    it('should emit true when allow null and get null input', () => {
+    it('should emit false when get null input', () => {
       fixture.detectChanges();
-      component.allowNull = true;
-      component.changeResponsiblePerson('');
-      expect(component.isValid.emit).toHaveBeenCalledWith(true);
-    });
-
-    it('should emit false when do not allow null and get null input', () => {
-      fixture.detectChanges();
-      component.allowNull = false;
       component.changeResponsiblePerson('');
       expect(component.isValid.emit).toHaveBeenCalledWith(false);
     });
@@ -83,10 +82,10 @@ describe('TechniciansSelectorComponent', () => {
     it('should emit changeResponsiblePerson when valid technician is selected', () => {
       fixture.detectChanges();
       component.fullNames = ['admin one', 'technician two'];
-      const selectedTechnician = () => ({ ...exampleTechnician('1'), firstName: 'admin', lastName: 'one' });
+      const selectedTechnician = () => ({...exampleTechnician('1'), firstName: 'admin', lastName: 'one'});
       component.technicians = [
-       selectedTechnician(),
-       { ...exampleTechnician('2'), firstName: 'technician', lastName: 'two' },
+        selectedTechnician(),
+        {...exampleTechnician('2'), firstName: 'technician', lastName: 'two'},
       ];
       component.changeResponsiblePerson('admin one');
       expect(component.responsibleChanged.emit).toHaveBeenCalledWith(selectedTechnician());

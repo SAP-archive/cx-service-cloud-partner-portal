@@ -9,15 +9,17 @@ import { AssignmentsListFacadeMockBuilder } from '../../state/assignments-list.f
 import { LocalDateTimePipeModule } from '../../../local-date-time-pipe-module';
 import { MatDialog } from '@angular/material/dialog';
 import { of } from 'rxjs';
-
-export class MatDialogMock {
-  public open: () => {};
-}
+import { AssignmentsDetailsFacade } from '../../state/assignments-details/assignments-details.facade';
+import { AssignmentsDetailsFacadeMockBuilder } from '../../state/assignments-details/assignments-details.facade.mock.spec';
+import { ConfigFacade } from '../../../state/config/config.facade';
+import { ConfigFacadeMockBuilder } from '../../../state/config/config.facade.mock.spec';
+import { take } from 'rxjs/operators';
 
 describe('AssignmentsBoardTileActionsComponent', () => {
   let component: AssignmentsBoardTileActionsComponent;
   let fixture: ComponentFixture<AssignmentsBoardTileActionsComponent>;
   const dialogMock = jasmine.createSpyObj(['open']);
+
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       imports: [
@@ -25,14 +27,28 @@ describe('AssignmentsBoardTileActionsComponent', () => {
         HttpClientModule,
         LocalDateTimePipeModule,
       ],
-      providers: [{
+      providers: [
+        {
           provide: AssignmentsListFacade,
           useValue: new AssignmentsListFacadeMockBuilder().build(),
         },
         {
+          provide: AssignmentsDetailsFacade,
+          useValue: new AssignmentsDetailsFacadeMockBuilder().build(),
+        },
+        {
           provide: MatDialog,
-          useValue: dialogMock
-      }],
+          useValue: dialogMock,
+        },
+        {
+          provide: ConfigFacade,
+          useValue: new ConfigFacadeMockBuilder()
+            .setAllowAssignmentHandover(of(true))
+            .setAllowAssignmentReject(of(true))
+            .setAllowAssignmentClose(of(true))
+            .build(),
+        },
+      ],
       declarations: [AssignmentsBoardTileActionsComponent],
     })
       .compileComponents();
@@ -45,6 +61,33 @@ describe('AssignmentsBoardTileActionsComponent', () => {
     fixture.detectChanges();
   });
 
+  it('should share allowHandover based on state', done => {
+    component.allowHandover
+      .pipe(take(1))
+      .subscribe(allowHandover => {
+        expect(allowHandover).toBeTrue();
+        done();
+      });
+  });
+
+  it('should share allowAssignmentReject based on state', done => {
+    component.allowAssignmentReject
+      .pipe(take(1))
+      .subscribe(allowAssignmentReject => {
+        expect(allowAssignmentReject).toBeTrue();
+        done();
+      });
+  });
+
+  it('should share allowAssignmentClose based on state', done => {
+    component.allowAssignmentClose
+      .pipe(take(1))
+      .subscribe(allowAssignmentClose => {
+        expect(allowAssignmentClose).toBeTrue();
+        done();
+      });
+  });
+
   describe('ngOnChanges()', () => {
     it('should share technicians name', () => {
       const technician = exampleTechnician();
@@ -55,29 +98,41 @@ describe('AssignmentsBoardTileActionsComponent', () => {
 
   describe('acceptAssignment()', () => {
     it('should dispatch acceptAssignment action', () => {
-      const facdeService = TestBed.inject(AssignmentsListFacade) as jasmine.SpyObj<AssignmentsListFacade>;
+      const facadeService = TestBed.inject(AssignmentsListFacade) as jasmine.SpyObj<AssignmentsListFacade>;
+      dialogMock.open.and.returnValue({
+        afterClosed: () => of(true),
+      });
       component.acceptAssignment();
-      expect(facdeService.accept).toHaveBeenCalledWith(component.assignment);
+      expect(dialogMock.open).toHaveBeenCalled();
+      expect(facadeService.accept).toHaveBeenCalledWith(component.assignment);
     });
   });
 
   describe('rejectAssignment()', () => {
     it('should dispatch rejectAssignment action', () => {
-      const facdeService = TestBed.inject(AssignmentsListFacade) as jasmine.SpyObj<AssignmentsListFacade>;
+      const facadeService = TestBed.inject(AssignmentsListFacade) as jasmine.SpyObj<AssignmentsListFacade>;
       component.rejectAssignment();
-      expect(facdeService.reject).toHaveBeenCalledWith(component.assignment);
+      expect(facadeService.reject).toHaveBeenCalledWith(component.assignment);
+    });
+  });
+
+  describe('handoverAssignment()', () => {
+    it('should dispatch showAssignment action', () => {
+      const facadeService = TestBed.inject(AssignmentsDetailsFacade) as jasmine.SpyObj<AssignmentsDetailsFacade>;
+      component.handoverAssignment();
+      expect(facadeService.showAssignment).toHaveBeenCalledWith(component.assignment);
     });
   });
 
   describe('closeAssignment()', () => {
     it('should dispatch closeAssignment action', () => {
-      const facdeService = TestBed.inject(AssignmentsListFacade) as jasmine.SpyObj<AssignmentsListFacade>;
+      const facadeService = TestBed.inject(AssignmentsListFacade) as jasmine.SpyObj<AssignmentsListFacade>;
       dialogMock.open.and.returnValue({
-        afterClosed: () => of(true)
+        afterClosed: () => of(true),
       });
       component.closeAssignment();
       expect(dialogMock.open).toHaveBeenCalled();
-      expect(facdeService.close).toHaveBeenCalledWith(component.assignment);
+      expect(facadeService.close).toHaveBeenCalledWith(component.assignment);
     });
   });
 });

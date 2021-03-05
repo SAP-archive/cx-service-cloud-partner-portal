@@ -5,7 +5,7 @@ import { AppBackendService } from 'src/app/services/app-backend.service';
 import { CrowdApiResponse } from '../../technicians-list-module/models/crowd-api-response.model';
 import { Technician, exampleTechnician } from '../../technicians-list-module/models/technician.model';
 
-describe('AssignmentsService', () => {
+describe('TechniciansService', () => {
   let TechniciansListMockService: TechniciansListService;
   let appBackendMockService: jasmine.SpyObj<AppBackendService>;
 
@@ -23,7 +23,7 @@ describe('AssignmentsService', () => {
         .withArgs(`/search/technicians`, {
           page: 0,
           size: 1000,
-          name: ''
+          inactive: false
         })
         .and.returnValue(m.cold('a|', {
           a: new HttpResponse({
@@ -32,6 +32,25 @@ describe('AssignmentsService', () => {
         }));
 
       m.expect(TechniciansListMockService.loadTechnicians()).toBeObservable('a|', { a: exampleResponse().results });
+    }));
+
+    it('should remove inactive technicians', marbles(m => {
+      const exampleResponse = (): CrowdApiResponse<Technician> => ({
+        results: [exampleTechnician('1')]
+      });
+      appBackendMockService.post
+        .withArgs(`/search/technicians`, {
+          page: 0,
+          size: 1000,
+          inactive: false
+        })
+        .and.returnValue(m.cold('a|', {
+          a: new HttpResponse({
+            body: exampleResponse(),
+          }),
+        }));
+
+      m.expect(TechniciansListMockService.loadTechnicians()).toBeObservable('a|', { a: [exampleTechnician('1')]});
     }));
   });
 });

@@ -4,3 +4,8 @@ export interface EmbeddedConfig {
 }
 
 export const getEmbeddedConfig = () => CS_EMBEDDED_CONFIG as EmbeddedConfig;
+
+export const exampleEmbeddedConfig = (): EmbeddedConfig => ({
+  clusterName: 'DE',
+  launchdarklyKey: 'xyz',
+});

@@ -5,9 +5,16 @@ import { AssignmentsListFacadeMockBuilder } from '../../state/assignments-list.f
 import { exampleFetchingParams } from '../../model/fetching-params.model';
 import { marbles } from 'rxjs-marbles';
 import { of } from 'rxjs';
-import { Assignment, exampleAssignment, newAssignment } from '../../model/assignment';
+import {
+  Assignment,
+  exampleAssignment,
+  newAssignment,
+  ongoingAssignment,
+  readyToPlanAssignment,
+} from '../../model/assignment';
 import { CdkDrag, CdkDragDrop, CdkDragStart } from '@angular/cdk/drag-drop';
 import { DeviceDetectorService } from 'ngx-device-detector';
+import { ConfigFacadeMockBuilder } from '../../../state/config/config.facade.mock.spec';
 import SpyObj = jasmine.SpyObj;
 import createSpyObj = jasmine.createSpyObj;
 
@@ -16,13 +23,16 @@ describe('AssignmentsBoardColumnComponent', () => {
   let facade: SpyObj<AssignmentsListFacade>;
   let viewport: SpyObj<CdkVirtualScrollViewport>;
   let deviceDetectorServiceMock: SpyObj<DeviceDetectorService>;
+  let dialogMock = createSpyObj(['open']);
+  let configFacadeMock;
 
   const setupTestBed = (draggedAssignment: any = of(null)) => {
     facade = new AssignmentsListFacadeMockBuilder()
       .setDraggedAssignment(draggedAssignment)
       .build();
     deviceDetectorServiceMock = createSpyObj(['isDesktop']);
-    component = new AssignmentsBoardColumnComponent(facade, deviceDetectorServiceMock);
+    configFacadeMock = new ConfigFacadeMockBuilder().setAllowAssignmentClose(of(true)).build();
+    component = new AssignmentsBoardColumnComponent(facade, deviceDetectorServiceMock, dialogMock, configFacadeMock);
     component.columnName = 'ASSIGNMENTS_BOARD_NEW';
     component.viewport = viewport = jasmine.createSpyObj(['getRenderedRange', 'getDataLength']);
     viewport.getRenderedRange.and.returnValue({start: 0, end: 1});
@@ -43,6 +53,12 @@ describe('AssignmentsBoardColumnComponent', () => {
       facade.getAssignments.withArgs(component.columnName).and.returnValue(m.cold('a', {a: [exampleAssignment()]}));
       component.ngOnInit();
       m.expect(component.assignments).toBeObservable('a', {a: [exampleAssignment()]});
+    }));
+
+    it('should share assignmentsTotal from facade', marbles(m => {
+      facade.getAssignmentsTotal.withArgs(component.columnName).and.returnValue(m.cold('a', {a: 123}));
+      component.ngOnInit();
+      m.expect(component.assignmentsTotal).toBeObservable('a', {a: 123});
     }));
 
     it('should share isLoading info from facade', marbles((m) => {
@@ -263,6 +279,7 @@ describe('AssignmentsBoardColumnComponent', () => {
 
     it('should return true only if assignment can be dropped on ASSIGNMENTS_BOARD_CLOSED column', () => {
       component.columnName = 'ASSIGNMENTS_BOARD_CLOSED';
+      component.ngOnInit();
 
       expect(component.enterPredicate({data: exampleAssignment('1', 'ACCEPTED', 'RELEASED')} as CdkDrag<Assignment>)).toBeTrue();
       expect(component.enterPredicate({data: exampleAssignment('1', 'ACCEPTED', 'ASSIGNED')} as CdkDrag<Assignment>)).toBeFalse();
@@ -287,16 +304,27 @@ describe('AssignmentsBoardColumnComponent', () => {
     describe('if assignment is receivable', () => {
       it('should advance the assignment ', () => {
         component.columnName = 'ASSIGNMENTS_BOARD_READY_TO_PLAN';
+        dialogMock.open.and.returnValue({
+          afterClosed: () => of(true)
+        });
         component.onDrop({item: {data: newAssignment()}} as CdkDragDrop<Assignment[]>);
-        expect(facade.advanceAssignment).toHaveBeenCalledWith(newAssignment());
+        expect(facade.accept).toHaveBeenCalled();
+        expect(dialogMock.open).toHaveBeenCalled();
       });
-    });
-
-    describe(`if assignment isn't receivable`, () => {
-      it('should not advance the assignment ', () => {
-        component.columnName = 'ASSIGNMENTS_BOARD_NEW';
-        component.onDrop({item: {data: newAssignment()}} as CdkDragDrop<Assignment[]>);
-        expect(facade.advanceAssignment).not.toHaveBeenCalled();
+      it('should release the assignment ', () => {
+        component.columnName = 'ASSIGNMENTS_BOARD_ONGOING';
+        component.onDrop({item: {data: readyToPlanAssignment()}} as CdkDragDrop<Assignment[]>);
+        expect(facade.release).toHaveBeenCalledWith(readyToPlanAssignment());
+      });
+      it('should close the assignment ', () => {
+        component.columnName = 'ASSIGNMENTS_BOARD_CLOSED';
+        component.ngOnInit();
+        dialogMock.open.and.returnValue({
+          afterClosed: () => of(true)
+        });
+        component.onDrop({item: {data: ongoingAssignment()}} as CdkDragDrop<Assignment[]>);
+        expect(facade.close).toHaveBeenCalled();
+        expect(dialogMock.open).toHaveBeenCalled();
       });
     });
   });

@@ -1,77 +1,133 @@
-<h1 mat-dialog-title class="assignment-details-title">
-    <mat-card-title class="title-text">{{assignment.subject}}</mat-card-title>
-    <mat-card-subtitle>{{assignment.code}}</mat-card-subtitle>
-</h1>
-<div mat-dialog-content class="assignment-details-content">
-    <div class="assignment-fields-title">{{ 'ASSIGNMENTS_DETAILS_ASSIGNMENT' | translate }}</div>
-    <div class="assignment-fields-container" *ngIf="!(isLoading | async)">
-        <div [ngClass]="(displayMode | async) == 'web' ? 'assignment-fields-row' : 'assignment-fields-column'">
-            <pp-date-time-picker id="assignment-start-date-time" [allowNull]="false"
-                [label]="'ASSIGNMENTS_LIST_START_DATE'" [maxDate]="assignment.endDateTime"
-                [dateTimeValue]="assignment.startDateTime" (isValid)="updateValidation($event, 'startDateTime')"
-                (onDateTimeChange)="updateStartDateTime($event)">
-            </pp-date-time-picker>
-            <pp-date-time-picker id="assignment-web-end-date-time"
-                [allowNull]="false" [label]="'ASSIGNMENTS_LIST_END_DATE'" [minDate]="assignment.startDateTime"
-                [dateTimeValue]="assignment.endDateTime" (isValid)="updateValidation($event, 'endDateTime')"
-                (onDateTimeChange)="updateEndDateTime($event)">
-            </pp-date-time-picker>
-        </div>
-        <div class="assignment-fields-row">
-            <pp-technicians-selector [technicians]="technicians | async" [allowNull]="false"
-                                     [label]="'ASSIGNMENTS_LIST_RESPONSIBLE_PERSON'"
-                                     [responsibleId]="assignment?.responsiblePerson?.externalId"
-                                     (isValid)="updateValidation($event, 'responsiblePerson')"
-                                     (responsibleChanged)="updateResponsiblePerson($event)">
-            </pp-technicians-selector>
-        </div>
+<div class="pp-assignment-details">
+  <h1 mat-dialog-title
+      class="assignment-details-title">
+    <mat-card-title class="title-text">
+      {{assignment.subject}}
+    </mat-card-title>
+    <mat-card-subtitle class="sub-title">{{assignment.code}}</mat-card-subtitle>
+    <div *ngIf="assignment.syncStatus == 'BLOCKED'"
+         class="sync-error-reminder warning">
+      <mat-icon aria-hidden="false"
+                class="sync-error-icon">error_outline
+      </mat-icon>
+      <span>{{ 'ASSIGNMENTS_SYNC_STATUS_ERROR' | translate }}</span>
     </div>
-    <div class="assignment-fields-container" *ngIf="isLoading | async">
-        <div class="assignment-fields-row">
-            <pp-fake-data [fontSize]="16" [lineHeight]="28"></pp-fake-data>
-        </div>
-        <div class="assignment-fields-row">
-            <pp-fake-data [fontSize]="16" [lineHeight]="28"></pp-fake-data>
-        </div>
-        <div class="assignment-fields-row">
-            <pp-fake-data [fontSize]="16" [lineHeight]="28"></pp-fake-data>
-        </div>
-        <div class="assignment-fields-row">
-            <pp-fake-data [fontSize]="16" [lineHeight]="28"></pp-fake-data>
-        </div>
+  </h1>
+  <div mat-dialog-content
+       class="assignment-details-content">
+    <div class="assignment-fields-title">{{ 'ASSIGNMENTS_DETAILS_ASSIGNMENT' | translate }}</div>
+    <div class="assignment-fields-container"
+         *ngIf="!(isLoading | async)">
+      <div [ngClass]="(displayMode | async) == 'web' ? 'assignment-fields-row' : 'assignment-fields-column'">
+        <pp-date-time-picker id="assignment-start-date-time"
+                             [allowNull]="false"
+                             [label]="'ASSIGNMENTS_LIST_START_DATE'"
+                             [maxDate]="assignment.endDateTime"
+                             [dateTimeValue]="assignment.startDateTime"
+                             (isValid)="updateValidation($event, 'startDateTime')"
+                             (onDateTimeChange)="updateStartDateTime($event)">
+        </pp-date-time-picker>
+        <pp-date-time-picker id="assignment-web-end-date-time"
+                             [allowNull]="false"
+                             [label]="'ASSIGNMENTS_LIST_END_DATE'"
+                             [minDate]="assignment.startDateTime"
+                             [dateTimeValue]="assignment.endDateTime"
+                             (isValid)="updateValidation($event, 'endDateTime')"
+                             (onDateTimeChange)="updateEndDateTime($event)">
+        </pp-date-time-picker>
+      </div>
+      <div [ngClass]="(displayMode | async) == 'web' ? 'assignment-fields-row' : 'assignment-fields-column'">
+        <pp-technicians-selector [inputId]="'pp-responsible-auto-complete-input'"
+                                 [disabled]="isOngoing(assignment)"
+                                 [technicians]="technicians | async"
+                                 [label]="'ASSIGNMENTS_LIST_RESPONSIBLE_PERSON'"
+                                 [responsible]="assignment?.responsiblePerson"
+                                 (isValid)="updateValidation($event, 'responsiblePerson')"
+                                 (responsibleChanged)="updateResponsiblePerson($event)">
+        </pp-technicians-selector>
+        <pp-technicians-selector *ngIf="isOngoing(assignment)"
+                                 [inputId]="'pp-handover-to-auto-complete-input'"
+                                 [technicians]="techniciansToHandoverTo | async"
+                                 [label]="'ASSIGNMENTS_LIST_HANDOVER_TO'"
+                                 (isValid)="updateValidation($event, 'handoverToPerson')"
+                                 (responsibleChanged)="updateHandoverToPerson($event)">
+        </pp-technicians-selector>
+      </div>
+    </div>
+    <div class="assignment-fields-container"
+         *ngIf="isLoading | async">
+      <div class="assignment-fields-row">
+        <pp-fake-data [fontSize]="16"
+                      [lineHeight]="28"></pp-fake-data>
+      </div>
+      <div class="assignment-fields-row">
+        <pp-fake-data [fontSize]="16"
+                      [lineHeight]="28"></pp-fake-data>
+      </div>
+      <div class="assignment-fields-row">
+        <pp-fake-data [fontSize]="16"
+                      [lineHeight]="28"></pp-fake-data>
+      </div>
+      <div class="assignment-fields-row">
+        <pp-fake-data [fontSize]="16"
+                      [lineHeight]="28"></pp-fake-data>
+      </div>
     </div>
     <div class="assignment-fields-title">{{ 'ASSIGNMENTS_DETAILS_INFORMATION' | translate }}</div>
-    <div class="assignment-fields-container" *ngIf="!(isLoading | async)">
-        <div class="assignment-fields-column assignment-read-only-field">
-            <mat-card-subtitle class="title-with-no-margin">{{ 'ASSIGNMENTS_LIST_DUE_DATE' | translate}}</mat-card-subtitle>
-            <span>{{assignment.dueDateTime | localDateTimeFormat}}</span>
-            <span *ngIf="!assignment.dueDateTime">-</span>
-        </div>
-        <div class="assignment-fields-column assignment-read-only-field">
-            <mat-card-subtitle class="title-with-no-margin">{{ 'ASSIGNMENTS_LIST_ADDRESS' | translate}}</mat-card-subtitle>
-            <span>{{assignment.address}}</span>
-            <span *ngIf="!assignment.address">-</span>
-        </div>
-        <div class="assignment-fields-column assignment-read-only-field">
-            <mat-card-subtitle class="title-with-no-margin">{{'ASSIGNMENTS_LIST_DISPATCHING_STATUS' | translate}}</mat-card-subtitle>
-            <span>{{assignment.partnerDispatchingStatus}}</span>
-            <span *ngIf="!assignment.partnerDispatchingStatus">-</span>
-        </div>
+    <div class="assignment-fields-container"
+         *ngIf="!(isLoading | async)">
+      <div class="assignment-fields-column assignment-read-only-field">
+        <mat-card-subtitle class="title-with-no-margin">{{ 'ASSIGNMENTS_LIST_DUE_DATE' | translate}}</mat-card-subtitle>
+        <span>{{assignment.dueDateTime | localDateTimeFormat}}</span>
+        <span *ngIf="!assignment.dueDateTime">-</span>
+      </div>
+      <div class="assignment-fields-column assignment-read-only-field">
+        <mat-card-subtitle class="title-with-no-margin">{{ 'ASSIGNMENTS_LIST_ADDRESS' | translate}}</mat-card-subtitle>
+        <span>{{assignment.address}}</span>
+        <span *ngIf="!assignment.address">-</span>
+      </div>
+      <div class="assignment-fields-column assignment-read-only-field">
+        <mat-card-subtitle class="title-with-no-margin">{{'ASSIGNMENTS_LIST_DISPATCHING_STATUS' | translate}}</mat-card-subtitle>
+        <span>{{assignment.partnerDispatchingStatus}}</span>
+        <span *ngIf="!assignment.partnerDispatchingStatus">-</span>
+      </div>
     </div>
-    <div class="assignment-fields-container" *ngIf="isLoading | async">
-        <div class="assignment-fields-row">
-            <pp-fake-data [fontSize]="16" [lineHeight]="28"></pp-fake-data>
-        </div>
-        <div class="assignment-fields-row">
-            <pp-fake-data [fontSize]="16" [lineHeight]="28"></pp-fake-data>
-        </div>
-        <div class="assignment-fields-row">
-            <pp-fake-data [fontSize]="16" [lineHeight]="28"></pp-fake-data>
-        </div>
+    <div class="assignment-fields-container"
+         *ngIf="isLoading | async">
+      <div class="assignment-fields-row">
+        <pp-fake-data [fontSize]="16"
+                      [lineHeight]="28"></pp-fake-data>
+      </div>
+      <div class="assignment-fields-row">
+        <pp-fake-data [fontSize]="16"
+                      [lineHeight]="28"></pp-fake-data>
+      </div>
+      <div class="assignment-fields-row">
+        <pp-fake-data [fontSize]="16"
+                      [lineHeight]="28"></pp-fake-data>
+      </div>
     </div>
-</div>
-<div mat-dialog-actions align="end" class="assignment-details-footer" *ngIf="!(isLoading | async)">
-    <button mat-button id="assignment-cancel-button" (click)="closeDetails()">{{ 'BUTTON_CANCEL' | translate }}</button>
-    <button mat-flat-button color="primary" id="assignment-release-button" (click)="releaseAssignment(assignment)" cdkFocusInitial
-        [disabled]="formErrorsCounter.length > 0">{{ 'BUTTON_RELEASE'  | translate }}</button>
+  </div>
+  <div mat-dialog-actions
+       align="end"
+       class="assignment-details-footer"
+       *ngIf="!(isLoading | async)">
+    <button mat-button
+            id="assignment-cancel-button"
+            (click)="closeDetails()">{{ 'BUTTON_CANCEL' | translate }}</button>
+    <button mat-flat-button
+            *ngIf="isReadyToPlan(assignment)"
+            color="primary"
+            id="assignment-release-button"
+            (click)="releaseAssignment(assignment)"
+            cdkFocusInitial
+            [disabled]="formErrorsCounter.length > 0 || assignment.syncStatus == 'BLOCKED'">{{ 'BUTTON_RELEASE'  | translate }}</button>
+    <button mat-flat-button
+            *ngIf="isOngoing(assignment)"
+            color="primary"
+            id="assignment-handover-button"
+            (click)="handoverAssignment(assignment)"
+            cdkFocusInitial
+            [disabled]="formErrorsCounter.length > 0 || assignment.syncStatus == 'BLOCKED'">{{ 'BUTTON_HANDOVER'  | translate }}</button>
+  </div>
 </div>

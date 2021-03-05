@@ -16,9 +16,9 @@ export const selectIsLoading = createSelector(
   state => state.isLoadingProfile || state.isLoadingSkills || state.isLoadingTags,
 );
 
-export const selectIsWaitingNavigate = createSelector(
+export const selectIsAwaitingNavigationChange = createSelector(
   selectTechnicianProfileState,
-  state => state.isWaitingNavigate,
+  state => state.isAwaitingNavigationChange,
 );
 
 export const selectSkillViewModels = createSelector(

@@ -39,3 +39,29 @@
 .title-with-no-margin {
     margin: 0;
 }
+
+.sub-title {
+    margin-bottom: 0;
+    margin-top: -12px;
+}
+
+.pp-assignment-details {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    height: 100%;
+}
+
+.sync-error-reminder {
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+
+    .sync-error-icon {
+        margin-right: 6px;
+    }
+}
+
+.warning {
+    color: #e9730c;
+}

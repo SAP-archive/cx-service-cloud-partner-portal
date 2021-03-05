@@ -1,8 +1,19 @@
-<div class="tile" (click)="openDetails()" [ngClass]="{'cursor-pointer': shouldOpenDialog()}">
+<div class="assignments-board-tile" (click)="openDetails()" [ngClass]="{'cursor-pointer': shouldOpenDialog()}">
   <mat-card>
     <mat-card-header>
-      <mat-card-title class="tile-title">{{assignment?.subject}}</mat-card-title>
-      <mat-card-subtitle>{{assignment?.code}}</mat-card-subtitle>
+      <mat-card-title>
+        <span>{{assignment?.subject}}</span>
+        <mat-icon *ngIf="assignment?.syncStatus == 'BLOCKED'"
+                  matTooltip="{{'ASSIGNMENTS_SYNC_STATUS_ERROR' | translate}}"
+                  class="alert-icon cursor-pointer"
+                  aria-hidden="false">error_outline</mat-icon>
+        <div class="workflow" *ngIf="isOngoingStatus()">{{assignment?.serviceWorkflowName}}</div>
+      </mat-card-title>
+      <mat-card-subtitle>
+        <span class="tile-title-subject"> {{assignment?.code}}</span>
+        <div class="status-block" [ngClass]="getPriorityClass()">{{ getPriorityKey() | translate}}</div>
+        <div class="status-block label-type" [title]="assignment.typeName">{{ assignment.typeName }}</div>
+      </mat-card-subtitle>
     </mat-card-header>
     <mat-card-content>
       <div class="content-row">
@@ -12,6 +23,13 @@
       <div class="content-row">
         <mat-icon aria-label="Address">location_on</mat-icon>
         <span class="content-value">{{assignment?.address}}</span>
+      </div>
+      <div class="content-row small-icon" *ngIf="assignment?.equipment.name">
+        <mat-icon aria-label="Equipment">build</mat-icon>
+        <span class="content-value">{{assignment?.equipment.name}}</span>
+      </div>
+      <div class="content-row" *ngIf="assignment?.equipment.serialNumber">
+        <span class="additional-value">{{assignment?.equipment.serialNumber}}</span>
       </div>
     </mat-card-content>
     <mat-card-actions>

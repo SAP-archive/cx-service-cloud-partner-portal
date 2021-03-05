@@ -7,9 +7,13 @@ import { UserCockpitComponent } from './components/user-cockpit/user-cockpit.com
 import { CompanyProfileResolver } from './company-profile-module/services/company-profile.resolver';
 import { CompanyProfileEditorComponent } from './company-profile-module/components/company-profile-editor/company-profile-editor.component';
 // tslint:disable-next-line: max-line-length
-import { TechnicianDetailsEditorComponent, WorkingMode } from './technician-details-module/components/technician-details-editor/technician-details-editor.component';
+import {
+  TechnicianDetailsEditorComponent,
+  WorkingMode,
+} from './technician-details-module/components/technician-details-editor/technician-details-editor.component';
 import { UnsavedGuard } from './services/guard/unsaved.guard';
 import { AssignmentsBoardComponent } from './assignments-list/components/assignments-board/assignments-board.component';
+import { CompanySettingsResolver } from './services/company-settings.resolver';
 
 interface TechnicianEditorParameters {
   mode: WorkingMode;
@@ -20,6 +24,9 @@ const routes: Routes = [
     path: '',
     component: UserCockpitComponent,
     canActivate: [AuthGuard],
+    resolve: {
+      companySettings: CompanySettingsResolver,
+    },
     children: [
       {
         path: '',

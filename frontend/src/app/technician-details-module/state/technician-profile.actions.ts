@@ -6,12 +6,12 @@ import { NewCertificateWithViewModelId, NewSkillCertificate } from '../models/sk
 
 export const loadTechnicianProfile = createAction(
   '[TechnicianProfile] Load TechnicianProfile',
-  props<{ technicianId: string }>()
+  props<{ technicianId: string }>(),
 );
 
 export const loadTechnicianProfileSuccess = createAction(
   '[TechnicianProfile] Load TechnicianProfile Success',
-  props<{ data: TechnicianProfile }>()
+  props<{ data: TechnicianProfile }>(),
 );
 
 export const loadTechnicianProfileFailure = createAction('[TechnicianProfile] Load TechnicianProfile Failure');
@@ -19,17 +19,17 @@ export const loadTechnicianProfileFailure = createAction('[TechnicianProfile] Lo
 export const loadTags = createAction('[TechnicianProfile] Load Tags');
 export const loadTagsSuccess = createAction(
   '[TechnicianProfile] Load Tags Success',
-  props<{ data: Tag[] }>()
+  props<{ data: Tag[] }>(),
 );
 export const loadTagsFailure = createAction('[TechnicianProfile] Load Tags Failure');
 
 export const loadSkills = createAction(
   '[TechnicianProfile] Load Skills',
-  props<{ technicianExternalId: string }>()
+  props<{ technicianExternalId: string }>(),
 );
 export const loadSkillsSuccess = createAction(
   '[TechnicianProfile] Load Skills Success',
-  props<{ data: Skill[] }>()
+  props<{ data: Skill[] }>(),
 );
 export const loadSkillsFailure = createAction('[TechnicianProfile] Load Skills Failure');
 
@@ -41,13 +41,28 @@ export const createTechnicianProfile = createAction(
     profile: Partial<TechnicianProfile>,
     skills: SkillWithViewModelId[],
     certificates: NewSkillCertificate[],
-  }>()
+  }>(),
 );
+
 export const createTechnicianProfileSuccess = createAction(
   '[TechnicianProfile] Create Success',
-  props<{profile: Partial<TechnicianProfile>}>()
+  props<{ profile: Partial<TechnicianProfile> }>(),
 );
+
 export const createTechnicianProfileFailure = createAction('[TechnicianProfile] Create Failure');
+
+export const deleteTechnicianProfile = createAction(
+  '[TechnicianProfile] Delete',
+  props<{ technicianId: TechnicianProfile['externalId'] }>(),
+);
+
+export const deleteTechnicianProfileSuccess = createAction(
+  '[TechnicianProfile] Delete Success',
+);
+
+export const deleteTechnicianProfileFailure = createAction(
+  '[TechnicianProfile] Delete Failure',
+);
 
 export const saveTechnicianProfile = createAction(
   '[TechnicianProfile] Save TechnicianProfile',
@@ -61,21 +76,21 @@ export const saveTechnicianProfile = createAction(
       add: NewCertificateWithViewModelId[];
       remove: Skill[];
     };
-  }>()
+  }>(),
 );
 export const saveTechnicianProfileSuccess = createAction(
   '[TechnicianProfile] Save TechnicianProfile Success',
-  props<{ profile: TechnicianProfile }>()
+  props<{ profile: TechnicianProfile }>(),
 );
 export const saveTechnicianProfileFailure = createAction('[TechnicianProfile] Save TechnicianProfile Failure');
 
 export const addSkillToProfile = createAction(
   '[TechnicianProfile] Add Skill to Profile',
-  props<{ skillViewModelId: string; }>()
+  props<{ skillViewModelId: string; }>(),
 );
 export const removeSkillFromProfile = createAction(
   '[TechnicianProfile] Remove Skill from Profile',
-  props<{ skillViewModelId: string; }>()
+  props<{ skillViewModelId: string; }>(),
 );
 
 export const downloadCertificate = createAction(
@@ -85,26 +100,26 @@ export const downloadCertificate = createAction(
 
 export const addCertificateUpload = createAction(
   '[TechnicianProfile] Add Certificate file',
-  props<{skillViewModelId: string, certificate: NewSkillCertificate}>(),
+  props<{ skillViewModelId: string, certificate: NewSkillCertificate }>(),
 );
 export const removeCertificateUpload = createAction(
   '[TechnicianProfile] Remove Certificate Upload',
-  props<{skillViewModelId: string}>(),
+  props<{ skillViewModelId: string }>(),
 );
 export const deleteCertificate = createAction(
   '[TechnicianProfile] Delete Certificate',
-  props<{skillViewModelId: string}>(),
+  props<{ skillViewModelId: string }>(),
 );
 export const undoDeleteCertificate = createAction(
   '[TechnicianProfile] Undo Deletion of Certificate',
-  props<{skillViewModelId: string}>(),
+  props<{ skillViewModelId: string }>(),
 );
 
 export const expandTagDetailsView = createAction(
   '[TechnicianProfile] Expand skill details',
-  props<{skillViewModelId: string}>(),
+  props<{ skillViewModelId: string }>(),
 );
 export const collapseTagDetailsView = createAction(
   '[TechnicianProfile] Collapse skill details',
-  props<{skillViewModelId: string}>(),
+  props<{ skillViewModelId: string }>(),
 );

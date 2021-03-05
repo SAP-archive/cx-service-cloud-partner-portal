@@ -8,13 +8,12 @@ import { AssignmentsTileEffects } from './state/assignments-tile.effects';
 import { AssignmentsTileComponent } from './components/assignments-tile/assignments-tile.component';
 import { MatCardModule } from '@angular/material/card';
 import { TranslateModule } from '@ngx-translate/core';
-import { TruncateNumberPipe } from './pipes/truncate-number.pipe';
 import { RouterModule } from '@angular/router';
+import { TruncateNumberPipeModule } from '../truncate-number-pipe-module/abbreviate-pipe.module';
 
 @NgModule({
   declarations: [
     AssignmentsTileComponent,
-    TruncateNumberPipe,
   ],
   imports: [
     CommonModule,
@@ -23,6 +22,7 @@ import { RouterModule } from '@angular/router';
     EffectsModule.forFeature([AssignmentsTileEffects]),
     TranslateModule,
     MatCardModule,
+    TruncateNumberPipeModule,
   ],
   providers: [
     AssignmentsTileService,

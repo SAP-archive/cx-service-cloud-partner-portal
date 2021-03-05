@@ -70,6 +70,20 @@ export const releaseFailure = createAction(
   '[Assignments] release Assignment Failure',
 );
 
+export const handover = createAction(
+  '[Assignments] handover Assignment',
+  props<{ assignment: Assignment }>(),
+);
+
+export const handoverSuccess = createAction(
+  '[Assignments] handover Assignment Success',
+  props<{ assignment: Assignment }>(),
+);
+
+export const handoverFailure = createAction(
+  '[Assignments] handover Assignment Failure',
+);
+
 export const close = createAction(
   '[Assignments] close Assignment',
   props<{ assignment: Assignment }>(),
@@ -91,4 +105,9 @@ export const startDragging = createAction(
 
 export const endDragging = createAction(
   '[Assignments] end dragging Assignment',
+);
+
+export const setSearchQuery = createAction(
+  '[Assignments] search query',
+  props<{ query: string }>(),
 );

@@ -22,7 +22,9 @@ export class DateTimePickerComponent implements OnInit, OnChanges {
 
   constructor(private locationService: LocalisationService, private dateTimeAdapter: NgxMatDateAdapter<any>) {
     const locale = this.locationService.localisation.language ? this.locationService.localisation.language : 'en';
-    this.dateTimeAdapter.setLocale(locale);
+    if (this.dateTimeAdapter && locale) {
+      this.dateTimeAdapter.setLocale(locale);
+    }
   }
 
   public ngOnChanges() {

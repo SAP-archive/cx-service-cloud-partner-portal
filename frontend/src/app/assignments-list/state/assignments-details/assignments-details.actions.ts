@@ -20,8 +20,8 @@ export const loadTechniciansFailure = createAction(
     '[AssignmentsDetails] Fetch Technicians Failure',
 );
 
-export const setCurrentAssignment = createAction(
-    '[AssignmentsDetails] Set current Assignment',
+export const showAssignment = createAction(
+    '[AssignmentsDetails] Show assignment',
     props<{ assignment: Assignment }>(),
 );
 

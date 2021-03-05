@@ -2,21 +2,33 @@ import { TestBed } from '@angular/core/testing';
 import { AssignmentsListFacade } from './assignments-list.facade';
 import { Store, StoreModule } from '@ngrx/store';
 import * as fromAssignments from './assignments-list.reducer';
-import { initialState, State } from './assignments-list.reducer';
+import * as fromMain from './assignments-list.reducer';
 import { AssignmentsListService } from '../services/assignments-list.service';
 import { EffectsModule } from '@ngrx/effects';
 import { AssignmentsListEffects } from './assignments-list.effects';
 import { marbles } from 'rxjs-marbles/jasmine';
-import { Assignment, exampleAssignment, newAssignment, ongoingAssignment, readyToPlanAssignment } from '../model/assignment';
+import { Assignment, exampleAssignment } from '../model/assignment';
 import { CrowdApiResponse } from '../../technicians-list-module/models/crowd-api-response.model';
-import { selectAssignmentsState } from './assignments-list.selectors';
+import {
+  getFetchingParamsFromColumnState,
+  selectMainState,
+  selectNewAssignmentsState,
+  selectOngoingState,
+  selectReadyToPlanState,
+} from './assignments-list.selectors';
 import * as AssignmentsActions from './assignments-list.actions';
 import { accept, release } from './assignments-list.actions';
-import { emptyFetchingParams } from '../model/fetching-params.model';
 import { DispatchingStatus } from '../model/dispatching-status';
 import { ServiceAssignmentState } from '../model/service-assignment-state';
 import { exampleFetchingFilter } from '../model/fetching-filter';
 import { throwError } from 'rxjs';
+import { reducers } from './assignments-list.state';
+import * as fromNewAssignments from './columns-reducers/new-assignments.reducer';
+import * as fromReadyToPlan from './columns-reducers/ready-to-plan-assignments.reducer';
+import * as fromOngoing from './columns-reducers/ongoing-assignments.reducer';
+import * as fromClosed from './columns-reducers/closed-assignments.reducer';
+import { ColumnName } from '../model/column-name';
+import { emptyFetchingParams } from '../model/fetching-params.model';
 import SpyObj = jasmine.SpyObj;
 
 describe('AssignmentsFacade', () => {
@@ -24,18 +36,25 @@ describe('AssignmentsFacade', () => {
   let store: Store;
   let assignmentsListServiceMock: SpyObj<AssignmentsListService>;
 
+  const loadDataForAllColumns = () => {
+    facadeService.loadNextPage('ASSIGNMENTS_BOARD_NEW');
+    facadeService.loadNextPage('ASSIGNMENTS_BOARD_READY_TO_PLAN');
+    facadeService.loadNextPage('ASSIGNMENTS_BOARD_ONGOING');
+    facadeService.loadNextPage('ASSIGNMENTS_BOARD_CLOSED');
+  };
+
   const exampleAssignments = (partnerDispatchingStatus: DispatchingStatus = 'NOTIFIED', serviceAssignmentState: ServiceAssignmentState = 'ASSIGNED') => [
     exampleAssignment('1', partnerDispatchingStatus, serviceAssignmentState),
     exampleAssignment('2', partnerDispatchingStatus, serviceAssignmentState),
   ];
 
   beforeEach(() => {
-    assignmentsListServiceMock = jasmine.createSpyObj<AssignmentsListService>(['loadNextPage', 'reject', 'accept', 'update', 'release', 'close']);
+    assignmentsListServiceMock = jasmine.createSpyObj<AssignmentsListService>(['loadNextPage', 'dispatch', 'handover']);
 
     TestBed.configureTestingModule({
       imports: [
         StoreModule.forRoot({}),
-        StoreModule.forFeature(fromAssignments.assignmentsListFeatureKey, fromAssignments.reducer),
+        StoreModule.forFeature(fromAssignments.assignmentsListFeatureKey, reducers),
         EffectsModule.forRoot([]),
         EffectsModule.forFeature([AssignmentsListEffects]),
       ],
@@ -108,35 +127,34 @@ describe('AssignmentsFacade', () => {
     describe('getIsLoading() should emit true and then false', () => {
       it('when next page loads correctly', marbles(m => {
         m.expect(facadeService.getIsLoading('ASSIGNMENTS_BOARD_NEW')).toBeObservable('(ftf)', {t: true, f: false});
-        m.expect(facadeService.getIsLoading('ASSIGNMENTS_BOARD_READY_TO_PLAN')).toBeObservable('(ftf)', {t: true, f: false});
+        m.expect(facadeService.getIsLoading('ASSIGNMENTS_BOARD_READY_TO_PLAN')).toBeObservable('(ftf)', {
+          t: true,
+          f: false,
+        });
         m.expect(facadeService.getIsLoading('ASSIGNMENTS_BOARD_ONGOING')).toBeObservable('(ftf)', {t: true, f: false});
         m.expect(facadeService.getIsLoading('ASSIGNMENTS_BOARD_CLOSED')).toBeObservable('(ftf)', {t: true, f: false});
 
         assignmentsListServiceMock.loadNextPage.and.returnValue(m.cold('a|', {
           a: {results: exampleAssignments()},
         }));
-        facadeService.loadNextPage('ASSIGNMENTS_BOARD_NEW');
-        facadeService.loadNextPage('ASSIGNMENTS_BOARD_READY_TO_PLAN');
-        facadeService.loadNextPage('ASSIGNMENTS_BOARD_ONGOING');
-        facadeService.loadNextPage('ASSIGNMENTS_BOARD_CLOSED');
+        loadDataForAllColumns();
       }));
 
       it(`when there's an error while loading next page`, marbles(m => {
         m.expect(facadeService.getIsLoading('ASSIGNMENTS_BOARD_NEW')).toBeObservable('(ftf)', {t: true, f: false});
-        m.expect(facadeService.getIsLoading('ASSIGNMENTS_BOARD_READY_TO_PLAN')).toBeObservable('(ftf)', {t: true, f: false});
+        m.expect(facadeService.getIsLoading('ASSIGNMENTS_BOARD_READY_TO_PLAN')).toBeObservable('(ftf)', {
+          t: true,
+          f: false,
+        });
         m.expect(facadeService.getIsLoading('ASSIGNMENTS_BOARD_ONGOING')).toBeObservable('(ftf)', {t: true, f: false});
         m.expect(facadeService.getIsLoading('ASSIGNMENTS_BOARD_CLOSED')).toBeObservable('(ftf)', {t: true, f: false});
 
         assignmentsListServiceMock.loadNextPage.and.returnValue(m.cold('#|'));
-        facadeService.loadNextPage('ASSIGNMENTS_BOARD_NEW');
-
-        facadeService.loadNextPage('ASSIGNMENTS_BOARD_READY_TO_PLAN');
-        facadeService.loadNextPage('ASSIGNMENTS_BOARD_ONGOING');
-        facadeService.loadNextPage('ASSIGNMENTS_BOARD_CLOSED');
+        loadDataForAllColumns();
       }));
     });
 
-    it('should set fetching params', marbles(m => {
+    it('should set fetching params in all column states', marbles(m => {
       assignmentsListServiceMock.loadNextPage.and.returnValue(m.cold('-v|', {
         v: {
           results: exampleAssignments(),
@@ -145,11 +163,26 @@ describe('AssignmentsFacade', () => {
           totalPages: 1,
         } as CrowdApiResponse<Assignment>,
       }));
-      facadeService.loadNextPage('ASSIGNMENTS_BOARD_NEW');
+      loadDataForAllColumns();
 
       m.expect(facadeService.getFetchingParams('ASSIGNMENTS_BOARD_NEW')).toBeObservable('iv', {
-        i: initialState().readyToPlanAssignments.fetchingParams,
-        v: {pagesLoaded: 1, totalPages: 1, totalElements: 2},
+        i: getFetchingParamsFromColumnState(fromNewAssignments.initialState()),
+        v: {pagesLoaded: 1, totalPages: 1, totalElements: 2, filter: null},
+      });
+
+      m.expect(facadeService.getFetchingParams('ASSIGNMENTS_BOARD_READY_TO_PLAN')).toBeObservable('iv', {
+        i: getFetchingParamsFromColumnState(fromNewAssignments.initialState()),
+        v: {pagesLoaded: 1, totalPages: 1, totalElements: 2, filter: null},
+      });
+
+      m.expect(facadeService.getFetchingParams('ASSIGNMENTS_BOARD_ONGOING')).toBeObservable('iv', {
+        i: getFetchingParamsFromColumnState(fromOngoing.initialState()),
+        v: {pagesLoaded: 1, totalPages: 1, totalElements: 2, filter: null},
+      });
+
+      m.expect(facadeService.getFetchingParams('ASSIGNMENTS_BOARD_CLOSED')).toBeObservable('iv', {
+        i: getFetchingParamsFromColumnState(fromClosed.initialState()),
+        v: {pagesLoaded: 1, totalPages: 1, totalElements: 2, filter: null},
       });
     }));
 
@@ -162,53 +195,169 @@ describe('AssignmentsFacade', () => {
           totalElements: 1,
         },
       }));
-      facadeService.loadNextPage('ASSIGNMENTS_BOARD_NEW');
+      loadDataForAllColumns();
       m.flush();
-      facadeService.loadNextPage('ASSIGNMENTS_BOARD_NEW');
+      loadDataForAllColumns();
 
       m.expect(facadeService.getAssignments('ASSIGNMENTS_BOARD_NEW')).toBeObservable('--a', {
         a: exampleAssignments(),
       });
+      m.expect(facadeService.getAssignments('ASSIGNMENTS_BOARD_READY_TO_PLAN')).toBeObservable('--a', {
+        a: exampleAssignments(),
+      });
+      m.expect(facadeService.getAssignments('ASSIGNMENTS_BOARD_ONGOING')).toBeObservable('--a', {
+        a: exampleAssignments(),
+      });
+      m.expect(facadeService.getAssignments('ASSIGNMENTS_BOARD_CLOSED')).toBeObservable('--a', {
+        a: exampleAssignments(),
+      });
 
-      expect(assignmentsListServiceMock.loadNextPage).toHaveBeenCalledTimes(1);
+      expect(assignmentsListServiceMock.loadNextPage).toHaveBeenCalledTimes(4);
+    }));
+  });
+
+  describe('getAssignmentsTotal()', () => {
+    it('should fetch total of new assignments', marbles(m => {
+      assignmentsListServiceMock.loadNextPage.and.returnValue(m.cold('-a|', {
+        a: {totalElements: 123, results: []},
+      }));
+
+      facadeService.loadNextPage('ASSIGNMENTS_BOARD_NEW');
+
+      m.expect(facadeService.getAssignmentsTotal('ASSIGNMENTS_BOARD_NEW')).toBeObservable('ea', {
+        e: 0,
+        a: 123,
+      });
+    }));
+
+    it('should fetch total of ongoing assignments', marbles(m => {
+      assignmentsListServiceMock.loadNextPage.and.returnValue(m.cold('-a|', {
+        a: {totalElements: 123, results: []},
+      }));
+
+      facadeService.loadNextPage('ASSIGNMENTS_BOARD_ONGOING');
+
+      m.expect(facadeService.getAssignmentsTotal('ASSIGNMENTS_BOARD_ONGOING')).toBeObservable('ea', {
+        e: 0,
+        a: 123,
+      });
+    }));
+
+    it('should fetch total of ready to plan assignments', marbles(m => {
+      assignmentsListServiceMock.loadNextPage.and.returnValue(m.cold('-a|', {
+        a: {totalElements: 123, results: []},
+      }));
+
+      facadeService.loadNextPage('ASSIGNMENTS_BOARD_READY_TO_PLAN');
+
+      m.expect(facadeService.getAssignmentsTotal('ASSIGNMENTS_BOARD_READY_TO_PLAN')).toBeObservable('ea', {
+        e: 0,
+        a: 123,
+      });
+    }));
+
+    it('should fetch total of closed assignments', marbles(m => {
+      assignmentsListServiceMock.loadNextPage.and.returnValue(m.cold('-a|', {
+        a: {totalElements: 123, results: []},
+      }));
+
+      facadeService.loadNextPage('ASSIGNMENTS_BOARD_CLOSED');
+
+      m.expect(facadeService.getAssignmentsTotal('ASSIGNMENTS_BOARD_CLOSED')).toBeObservable('ea', {
+        e: 0,
+        a: 123,
+      });
     }));
   });
 
   describe('reset()', () => {
-    it('should reset state to initial value', marbles(m => {
-      m.expect(store.select(selectAssignmentsState)).toBeObservable('(eae)', {
-        e: initialState(),
+    it('should reset main state to initial value', marbles(m => {
+      m.expect(store.select(selectMainState)).toBeObservable('(eae)', {
+        e: fromMain.initialState(),
         a: {
-          isUpdating: false,
-          originalAssignment: null,
-          draggedAssignment: null,
+          ...fromMain.initialState(),
+          draggedAssignment: exampleAssignment(),
+        },
+      });
+
+      store.dispatch(AssignmentsActions.startDragging({assignment: exampleAssignment()}));
+
+      facadeService.reset();
+    }));
+
+    it('should reset new assignments state to initial value', marbles(m => {
+      m.expect(store.select(selectNewAssignmentsState)).toBeObservable('(eae)', {
+        e: fromNewAssignments.initialState(),
+        a: {
           ids: ['1', '2'],
           entities: {1: exampleAssignment('1'), 2: exampleAssignment('2')},
-          newAssignments: {
-            fetchingParams: {
-              pagesLoaded: 1,
-              totalPages: 1,
-              totalElements: 2,
-            },
-            isLoading: false,
-          },
-          readyToPlanAssignments: {
-            fetchingParams: emptyFetchingParams(),
-            isLoading: false,
-          },
-          ongoingAssignments: {
-            fetchingParams: emptyFetchingParams(),
-            isLoading: false,
-          },
-          closedAssignments: {
-            fetchingParams: emptyFetchingParams(),
-            isLoading: false,
-          },
-        } as State,
+          pagesLoaded: 1,
+          totalPages: 1,
+          totalElements: 2,
+          filter: null,
+          isLoading: false,
+          updatedAssignment: null,
+        },
       });
 
       store.dispatch(AssignmentsActions.loadNextPageSuccess({
         columnName: 'ASSIGNMENTS_BOARD_NEW',
+        response: {
+          results: exampleAssignments(),
+          numberOfElements: 2,
+          totalElements: 2,
+          totalPages: 1,
+        },
+      }));
+
+      facadeService.reset();
+    }));
+
+    it('should reset ready to plan state to initial value', marbles(m => {
+      m.expect(store.select(selectReadyToPlanState)).toBeObservable('(eae)', {
+        e: fromReadyToPlan.initialState(),
+        a: {
+          ids: ['1', '2'],
+          entities: {1: exampleAssignment('1'), 2: exampleAssignment('2')},
+          pagesLoaded: 1,
+          totalPages: 1,
+          totalElements: 2,
+          filter: null,
+          isLoading: false,
+          updatedAssignment: null,
+        },
+      });
+
+      store.dispatch(AssignmentsActions.loadNextPageSuccess({
+        columnName: 'ASSIGNMENTS_BOARD_READY_TO_PLAN',
+        response: {
+          results: exampleAssignments(),
+          numberOfElements: 2,
+          totalElements: 2,
+          totalPages: 1,
+        },
+      }));
+
+      facadeService.reset();
+    }));
+
+    it('should reset ongoing state to initial value', marbles(m => {
+      m.expect(store.select(selectOngoingState)).toBeObservable('(eae)', {
+        e: fromOngoing.initialState(),
+        a: {
+          ids: ['1', '2'],
+          entities: {1: exampleAssignment('1'), 2: exampleAssignment('2')},
+          pagesLoaded: 1,
+          totalPages: 1,
+          totalElements: 2,
+          filter: null,
+          isLoading: false,
+          updatedAssignment: null,
+        },
+      });
+
+      store.dispatch(AssignmentsActions.loadNextPageSuccess({
+        columnName: 'ASSIGNMENTS_BOARD_ONGOING',
         response: {
           results: exampleAssignments(),
           numberOfElements: 2,
@@ -249,17 +398,8 @@ describe('AssignmentsFacade', () => {
         t: true,
       });
 
-      facadeService.loadNextPage('ASSIGNMENTS_BOARD_NEW');
-      facadeService.loadNextPage('ASSIGNMENTS_BOARD_NEW');
-
-      facadeService.loadNextPage('ASSIGNMENTS_BOARD_READY_TO_PLAN');
-      facadeService.loadNextPage('ASSIGNMENTS_BOARD_READY_TO_PLAN');
-
-      facadeService.loadNextPage('ASSIGNMENTS_BOARD_ONGOING');
-      facadeService.loadNextPage('ASSIGNMENTS_BOARD_ONGOING');
-
-      facadeService.loadNextPage('ASSIGNMENTS_BOARD_CLOSED');
-      facadeService.loadNextPage('ASSIGNMENTS_BOARD_CLOSED');
+      loadDataForAllColumns();
+      loadDataForAllColumns();
     }));
   });
 
@@ -267,19 +407,20 @@ describe('AssignmentsFacade', () => {
     it('should update isUpdating state', marbles(m => {
       m.expect(facadeService.isUpdating).toBeObservable('(ftf)', {t: true, f: false});
 
-      assignmentsListServiceMock.reject.and.returnValue(m.cold('a|', {
-        a: {results: ['reject']},
+      assignmentsListServiceMock.dispatch.withArgs(exampleAssignment(), 'reject').and.returnValue(m.cold('a|', {
+        a: exampleAssignment('1'),
       }));
       facadeService.reject(exampleAssignment());
     }));
 
-    it('should remove reject assignment when reject success', marbles(m => {
+    it('should remove rejected assignment', marbles(m => {
       assignmentsListServiceMock.loadNextPage.and.returnValue(m.cold('-a|', {
         a: {results: exampleAssignments()},
       }));
 
-      assignmentsListServiceMock.reject.and.returnValue(m.cold('a|', {
-        a: {results: ['reject']},
+      assignmentsListServiceMock.dispatch.withArgs(exampleAssignment('1'), 'reject')
+        .and.returnValue(m.cold('a|', {
+        a: exampleAssignment('1'),
       }));
 
       facadeService.loadNextPage('ASSIGNMENTS_BOARD_NEW');
@@ -297,7 +438,8 @@ describe('AssignmentsFacade', () => {
         a: {results: exampleAssignments()},
       }));
 
-      assignmentsListServiceMock.reject.and.returnValue(throwError('some error'));
+      assignmentsListServiceMock.dispatch.withArgs(exampleAssignment('1'), 'reject')
+        .and.returnValue(throwError('some error'));
 
       facadeService.loadNextPage('ASSIGNMENTS_BOARD_NEW');
       m.flush();
@@ -305,7 +447,7 @@ describe('AssignmentsFacade', () => {
       m.flush();
 
       m.expect(facadeService.getAssignments('ASSIGNMENTS_BOARD_NEW')).toBeObservable('--a', {
-        a: exampleAssignments().reverse(),
+        a: exampleAssignments(),
       });
     }));
   });
@@ -314,19 +456,19 @@ describe('AssignmentsFacade', () => {
     it('should update isUpdating state', marbles(m => {
       m.expect(facadeService.isUpdating).toBeObservable('(ftf)', {t: true, f: false});
 
-      assignmentsListServiceMock.accept.and.returnValue(m.cold('a|', {
-        a: {results: ['accept']},
+      assignmentsListServiceMock.dispatch.withArgs(exampleAssignment(), 'accept').and.returnValue(m.cold('a|', {
+        a: exampleAssignment('1'),
       }));
       facadeService.accept(exampleAssignment());
     }));
 
-    it('should update assignment dispatchStatus when accept success', marbles(m => {
+    it('should remove assignment from new assignments', marbles(m => {
       assignmentsListServiceMock.loadNextPage.and.returnValue(m.cold('-a|', {
-        a: {results: exampleAssignments()},
+        a: {results: exampleAssignments(), totalElements: 2},
       }));
 
-      assignmentsListServiceMock.accept.and.returnValue(m.cold('a|', {
-        a: {results: ['accept']},
+      assignmentsListServiceMock.dispatch.withArgs(exampleAssignment('1'), 'accept').and.returnValue(m.cold('a|', {
+        a: exampleAssignment('1'),
       }));
 
       facadeService.loadNextPage('ASSIGNMENTS_BOARD_NEW');
@@ -334,8 +476,29 @@ describe('AssignmentsFacade', () => {
       facadeService.accept(exampleAssignment('1'));
       m.flush();
 
-      m.expect(facadeService.getAssignments('ASSIGNMENTS_BOARD_READY_TO_PLAN')).toBeObservable('---a', {
-        a: [{...exampleAssignment('1'), partnerDispatchingStatus: 'ACCEPTED'}],
+      m.expect(facadeService.getAssignments('ASSIGNMENTS_BOARD_NEW')).toBeObservable('---a', {
+        a: [exampleAssignment('2')],
+      });
+      m.expect(facadeService.getAssignmentsTotal('ASSIGNMENTS_BOARD_NEW')).toBeObservable('---a', {
+        a: 1,
+      });
+    }));
+
+    it('should add updated assignment to ready to plan assignments', marbles(m => {
+      const updatedAssignment = exampleAssignment('1', 'ACCEPTED', 'RELEASED');
+      assignmentsListServiceMock.dispatch.withArgs(exampleAssignment('1'), 'accept')
+        .and.returnValue(m.cold('a|', {
+        a: updatedAssignment,
+      }));
+
+      facadeService.accept(exampleAssignment('1'));
+      m.flush();
+
+      m.expect(facadeService.getAssignments('ASSIGNMENTS_BOARD_READY_TO_PLAN')).toBeObservable('-a', {
+        a: [updatedAssignment],
+      });
+      m.expect(facadeService.getAssignmentsTotal('ASSIGNMENTS_BOARD_READY_TO_PLAN')).toBeObservable('-a', {
+        a: 1,
       });
     }));
 
@@ -344,7 +507,7 @@ describe('AssignmentsFacade', () => {
         a: {results: exampleAssignments()},
       }));
 
-      assignmentsListServiceMock.accept.and.returnValue(throwError('some error'));
+      assignmentsListServiceMock.dispatch.withArgs(exampleAssignment('1'), 'accept').and.returnValue(throwError('some error'));
 
       facadeService.loadNextPage('ASSIGNMENTS_BOARD_NEW');
       m.flush();
@@ -361,52 +524,119 @@ describe('AssignmentsFacade', () => {
     it('should update isUpdating state', marbles(m => {
       m.expect(facadeService.isUpdating).toBeObservable('(ftf)', {t: true, f: false});
 
-      assignmentsListServiceMock.update.and.returnValue(m.cold('a|', {
-        a: {results: [exampleAssignment()]},
+      assignmentsListServiceMock.dispatch.withArgs(exampleAssignment(), 'update').and.returnValue(m.cold('a|', {
+        a: exampleAssignment('1'),
       }));
 
-      assignmentsListServiceMock.release.and.returnValue(m.cold('a|', {
-        a: {results: [exampleAssignment()]},
+      assignmentsListServiceMock.dispatch.withArgs(exampleAssignment(), 'release').and.returnValue(m.cold('a|', {
+        a: exampleAssignment('1'),
       }));
+
       facadeService.release(exampleAssignment());
     }));
 
-    it('should update assignment when release is successful', marbles(m => {
+    it('should remove released assignment from ready to plan states', marbles(m => {
       assignmentsListServiceMock.loadNextPage.and.returnValue(m.cold('-a|', {
-        a: {results: exampleAssignments()},
+        a: {results: exampleAssignments(), totalElements: 2},
       }));
 
-      assignmentsListServiceMock.release.and.returnValue(m.cold('a|', {
-        a: {results: [exampleAssignment()]},
+      assignmentsListServiceMock.dispatch
+        .and.returnValue(m.cold('a|', {
+        a: exampleAssignment('1'),
       }));
 
-      facadeService.loadNextPage('ASSIGNMENTS_BOARD_NEW');
+      facadeService.loadNextPage('ASSIGNMENTS_BOARD_READY_TO_PLAN');
       m.flush();
-      const dateTime = new Date('2020/01/01 00:00:00');
-      const updateAssignment: Assignment = {...exampleAssignment('1'), startDateTime: dateTime.toJSON(), serviceAssignmentState: 'RELEASED'};
-      facadeService.release(updateAssignment);
+      facadeService.release(exampleAssignment('1'));
       m.flush();
 
-      m.expect(facadeService.getAssignments('ASSIGNMENTS_BOARD_NEW')).toBeObservable('--a', {
-        a: [updateAssignment, exampleAssignment('2')],
+      m.expect(facadeService.getAssignments('ASSIGNMENTS_BOARD_READY_TO_PLAN')).toBeObservable('---a', {
+        a: [exampleAssignment('2')],
+      });
+      m.expect(facadeService.getAssignmentsTotal('ASSIGNMENTS_BOARD_READY_TO_PLAN')).toBeObservable('---a', {
+        a: 1,
       });
     }));
 
-    it('should restore original assignment when update fails', marbles(m => {
+    it('should add updated assignment to ongoing assignments', marbles(m => {
+      const updatedAssignment = exampleAssignment('1', 'ACCEPTED', 'RELEASED');
+      assignmentsListServiceMock.dispatch
+        .and.returnValue(m.cold('a|', {
+        a: updatedAssignment,
+      }));
+
+      facadeService.release(exampleAssignment('1'));
+      m.flush();
+
+      m.expect(facadeService.getAssignments('ASSIGNMENTS_BOARD_ONGOING')).toBeObservable('-a', {
+        a: [updatedAssignment],
+      });
+      m.expect(facadeService.getAssignmentsTotal('ASSIGNMENTS_BOARD_ONGOING')).toBeObservable('-a', {
+        a: 1,
+      });
+    }));
+
+    it('should restore original assignment when release fails', marbles(m => {
       assignmentsListServiceMock.loadNextPage.and.returnValue(m.cold('-a|', {
         a: {results: exampleAssignments()},
       }));
 
-      assignmentsListServiceMock.update.and.returnValue(throwError('some error'));
-
-      facadeService.loadNextPage('ASSIGNMENTS_BOARD_NEW');
+      facadeService.loadNextPage('ASSIGNMENTS_BOARD_READY_TO_PLAN');
       m.flush();
-      const dateTime = new Date('2020/01/01 00:00:00');
-      const updatedAssignment: Assignment = {...exampleAssignment('1'), startDateTime: dateTime.toJSON()};
-      facadeService.release(updatedAssignment);
+      facadeService.getAssignments('ASSIGNMENTS_BOARD_READY_TO_PLAN').subscribe(a => JSON.stringify(a, null, 2));
+
+      assignmentsListServiceMock.dispatch.withArgs(exampleAssignment('1'), 'update')
+        .and.returnValue(throwError('some error'));
+      facadeService.release(exampleAssignment('1'));
       m.flush();
 
-      m.expect(facadeService.getAssignments('ASSIGNMENTS_BOARD_NEW')).toBeObservable('--a', {
+      m.expect(facadeService.getAssignments('ASSIGNMENTS_BOARD_READY_TO_PLAN')).toBeObservable('--a', {
+        a: exampleAssignments(),
+      });
+    }));
+  });
+
+  describe('handover()', () => {
+    it('should update isUpdating state', marbles(m => {
+      m.expect(facadeService.isUpdating).toBeObservable('(ftf)', {t: true, f: false});
+
+      assignmentsListServiceMock.handover.withArgs(exampleAssignment()).and.returnValue(m.cold('a|', {
+        a: exampleAssignment('1'),
+      }));
+
+      facadeService.handover(exampleAssignment());
+    }));
+
+    it('should add new assignment on success', marbles(m => {
+      const updatedAssignment = (): Assignment => exampleAssignment('updated');
+      assignmentsListServiceMock.handover.and.returnValue(m.cold('a|', {
+        a: updatedAssignment(),
+      }));
+
+      m.flush();
+      facadeService.handover(exampleAssignment());
+      m.flush();
+
+      m.expect(facadeService.getAssignments('ASSIGNMENTS_BOARD_ONGOING')).toBeObservable('-a', {
+        a: [updatedAssignment()],
+      });
+    }));
+
+    it('should restore original assignment when handover fails', marbles(m => {
+      assignmentsListServiceMock.loadNextPage.and.returnValue(m.cold('-a|', {
+        a: {results: exampleAssignments()},
+      }));
+
+      facadeService.loadNextPage('ASSIGNMENTS_BOARD_ONGOING');
+      m.flush();
+      facadeService.getAssignments('ASSIGNMENTS_BOARD_ONGOING').subscribe(a => JSON.stringify(a, null, 2));
+
+      assignmentsListServiceMock.handover.withArgs(exampleAssignment('1'))
+        .and.returnValue(throwError('some error'));
+      facadeService.handover(exampleAssignment('1'));
+      m.flush();
+
+      m.expect(facadeService.getAssignments('ASSIGNMENTS_BOARD_ONGOING')).toBeObservable('--a', {
         a: exampleAssignments(),
       });
     }));
@@ -416,19 +646,20 @@ describe('AssignmentsFacade', () => {
     it('should update isUpdating state', marbles(m => {
       m.expect(facadeService.isUpdating).toBeObservable('(ftf)', {t: true, f: false});
 
-      assignmentsListServiceMock.close.and.returnValue(m.cold('a|', {
-        a: {results: [exampleAssignment()]},
+      assignmentsListServiceMock.dispatch.withArgs(exampleAssignment(), 'close').and.returnValue(m.cold('a|', {
+        a: exampleAssignment('1'),
       }));
       facadeService.close(exampleAssignment());
     }));
 
-    it('should update assignment when close is successful', marbles(m => {
+    it('should remove closed assignment from ongoing state', marbles(m => {
       assignmentsListServiceMock.loadNextPage.and.returnValue(m.cold('-a|', {
-        a: {results: exampleAssignments()},
+        a: {results: exampleAssignments(), totalElements: 2},
       }));
 
-      assignmentsListServiceMock.close.and.returnValue(m.cold('a|', {
-        a: {results: [exampleAssignment()]},
+      assignmentsListServiceMock.dispatch
+        .and.returnValue(m.cold('a|', {
+        a: exampleAssignment('1'),
       }));
 
       facadeService.loadNextPage('ASSIGNMENTS_BOARD_ONGOING');
@@ -436,17 +667,39 @@ describe('AssignmentsFacade', () => {
       facadeService.close(exampleAssignment('1'));
       m.flush();
 
-      m.expect(facadeService.getAssignments('ASSIGNMENTS_BOARD_CLOSED')).toBeObservable('---a', {
-        a: [{...exampleAssignment('1'), serviceAssignmentState: 'CLOSED'}],
+      m.expect(facadeService.getAssignments('ASSIGNMENTS_BOARD_ONGOING')).toBeObservable('---a', {
+        a: [exampleAssignment('2')],
+      });
+      m.expect(facadeService.getAssignmentsTotal('ASSIGNMENTS_BOARD_ONGOING')).toBeObservable('---a', {
+        a: 1,
+      });
+    }));
+
+    it('should add updated assignment to closed assignments', marbles(m => {
+      const updatedAssignment = exampleAssignment('1', 'ACCEPTED', 'CLOSED');
+      assignmentsListServiceMock.dispatch
+        .and.returnValue(m.cold('a|', {
+        a: updatedAssignment,
+      }));
+
+      facadeService.close(exampleAssignment('1'));
+      m.flush();
+
+      m.expect(facadeService.getAssignments('ASSIGNMENTS_BOARD_CLOSED')).toBeObservable('-a', {
+        a: [updatedAssignment],
+      });
+      m.expect(facadeService.getAssignmentsTotal('ASSIGNMENTS_BOARD_CLOSED')).toBeObservable('-a', {
+        a: 1,
       });
     }));
 
     it('should restore original assignment when close fails', marbles(m => {
       assignmentsListServiceMock.loadNextPage.and.returnValue(m.cold('-a|', {
-        a: {results: exampleAssignments('ACCEPTED', 'RELEASED')},
+        a: {results: exampleAssignments()},
       }));
 
-      assignmentsListServiceMock.close.and.returnValue(throwError('some error'));
+      assignmentsListServiceMock.dispatch.withArgs(exampleAssignment('1'), 'close')
+        .and.returnValue(throwError('some error'));
 
       facadeService.loadNextPage('ASSIGNMENTS_BOARD_ONGOING');
       m.flush();
@@ -454,8 +707,67 @@ describe('AssignmentsFacade', () => {
       m.flush();
 
       m.expect(facadeService.getAssignments('ASSIGNMENTS_BOARD_ONGOING')).toBeObservable('--a', {
-        a: exampleAssignments('ACCEPTED', 'RELEASED'),
+        a: exampleAssignments(),
       });
+    }));
+  });
+
+  describe('search()', () => {
+    it('should clean up assignments', marbles(m => {
+      const query = 'search query';
+
+      assignmentsListServiceMock.loadNextPage.and.returnValue(m.cold('-a|', {
+        a: {results: exampleAssignments()},
+      }));
+
+      loadDataForAllColumns();
+      m.flush();
+      facadeService.search(query);
+
+      const assertEmptyAssignments = (column: ColumnName) =>
+        m.expect(facadeService.getAssignments(column)).toBeObservable(
+          '--ea',
+          {e: [], a: exampleAssignments()},
+        );
+
+      assertEmptyAssignments('ASSIGNMENTS_BOARD_NEW');
+      assertEmptyAssignments('ASSIGNMENTS_BOARD_READY_TO_PLAN');
+      assertEmptyAssignments('ASSIGNMENTS_BOARD_ONGOING');
+      assertEmptyAssignments('ASSIGNMENTS_BOARD_CLOSED');
+    }));
+
+    it('should clean up fetching params and set filter query', marbles(m => {
+      const query = 'search query';
+
+      assignmentsListServiceMock.loadNextPage.and.returnValue(m.cold('-a|', {
+        a: {results: exampleAssignments(), totalElements: 1, totalPages: 2},
+      }));
+
+      loadDataForAllColumns();
+      m.flush();
+      facadeService.search(query);
+
+      const assertEmptyFetchingParamsAssignments = (column: ColumnName) =>
+        m.expect(facadeService.getFetchingParams(column)).toBeObservable(
+          '--ea',
+          {
+            e: {
+              ...emptyFetchingParams(),
+              filter: {query},
+            },
+            a: {
+              pagesLoaded: 1,
+              totalElements: 1,
+              totalPages: 2,
+              filter: {query: 'search query'},
+            } as any,
+          },
+        );
+
+      assertEmptyFetchingParamsAssignments('ASSIGNMENTS_BOARD_NEW');
+      assertEmptyFetchingParamsAssignments('ASSIGNMENTS_BOARD_READY_TO_PLAN');
+      assertEmptyFetchingParamsAssignments('ASSIGNMENTS_BOARD_ONGOING');
+      assertEmptyFetchingParamsAssignments('ASSIGNMENTS_BOARD_CLOSED');
     }));
   });
 
@@ -469,26 +781,19 @@ describe('AssignmentsFacade', () => {
   });
 
   describe('setFilter()', () => {
-    it(`should update column's state with filter`, marbles(m => {
+    it(`should update new assignments state filter`, marbles(m => {
       facadeService.setFilter('ASSIGNMENTS_BOARD_NEW', exampleFetchingFilter());
       m.expect(facadeService.getFetchingParams('ASSIGNMENTS_BOARD_NEW')).toBeObservable('v', {
         v: {pagesLoaded: 0, totalPages: 0, totalElements: 0, filter: exampleFetchingFilter()},
       });
     }));
-  });
 
-  describe('advanceAssignment()', () => {
-    it('should accept a new assignment', () => {
-      const dispatchSpy = spyOn(store, 'dispatch');
-      facadeService.advanceAssignment(newAssignment());
-      expect(dispatchSpy).toHaveBeenCalledWith(accept({assignment: newAssignment()}));
-    });
-
-    it(`should release an assignment that's ready to plan`, () => {
-      const dispatchSpy = spyOn(store, 'dispatch');
-      facadeService.advanceAssignment(readyToPlanAssignment());
-      expect(dispatchSpy).toHaveBeenCalledWith(release({assignment: ongoingAssignment()}));
-    });
+    it(`should update ready to plan state filter`, marbles(m => {
+      facadeService.setFilter('ASSIGNMENTS_BOARD_READY_TO_PLAN', exampleFetchingFilter());
+      m.expect(facadeService.getFetchingParams('ASSIGNMENTS_BOARD_READY_TO_PLAN')).toBeObservable('v', {
+        v: {pagesLoaded: 0, totalPages: 0, totalElements: 0, filter: exampleFetchingFilter()},
+      });
+    }));
   });
 
   describe('wrong column name error handling', () => {

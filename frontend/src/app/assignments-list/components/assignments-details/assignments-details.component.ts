@@ -2,27 +2,32 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Assignment } from '../../model/assignment';
 import { MatDialog } from '@angular/material/dialog';
 import { Technician } from '../../../technicians-list-module/models/technician.model';
-import { take, takeUntil } from 'rxjs/operators';
+import { map, take, takeUntil } from 'rxjs/operators';
 import { AssignmentsListFacade } from '../../state/assignments-list.facade';
 import { AssignmentsDetailsFacade } from '../../state/assignments-details/assignments-details.facade';
 import { Observable, Subject } from 'rxjs';
 import { DetailsDisplayMode } from '../../model/details-display-mode';
 import { AssignmentEditableFields } from '../../model/assignment-editable-fields';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
+import { isOngoing, isReadyToPlan } from '../../utils/assignments-columns-helper';
 
 @Component({
   selector: 'pp-assignments-details',
   templateUrl: './assignments-details.component.html',
-  styleUrls: ['./assignments-details.component.scss']
+  styleUrls: ['./assignments-details.component.scss'],
 })
 export class AssignmentsDetailsComponent implements OnInit, OnDestroy {
   public isLoading: Observable<boolean>;
   public technicians: Observable<Technician[]>;
+  public techniciansToHandoverTo: Observable<Technician[]>;
   public displayMode: Observable<DetailsDisplayMode>;
   public originalAssignment: Assignment;
   public assignment: Assignment;
   public formErrorsCounter: AssignmentEditableFields[] = [];
+  public isReadyToPlan = isReadyToPlan;
+  public isOngoing = isOngoing;
   private onDestroy$: Subject<void> = new Subject<void>();
+  private handoverToPerson: Technician;
 
   constructor(
     private dialogService: MatDialog,
@@ -37,9 +42,10 @@ export class AssignmentsDetailsComponent implements OnInit, OnDestroy {
     this.isLoading = this.assignmentsDetailsFacade.isLoading$;
     this.technicians = this.assignmentsDetailsFacade.technicians$;
     this.displayMode = this.assignmentsDetailsFacade.displayMode$;
-    this.assignmentsDetailsFacade.currentAssignment$.pipe(takeUntil(this.onDestroy$)).subscribe(assignment => {
+    this.assignmentsDetailsFacade.displayedAssignment$.pipe(takeUntil(this.onDestroy$)).subscribe(assignment => {
       this.originalAssignment = assignment;
-      this.assignment = { ...this.originalAssignment };
+      this.assignment = {...this.originalAssignment};
+      this.techniciansToHandoverTo = this.getTechniciansToHandoverTo();
     });
   }
 
@@ -65,8 +71,17 @@ export class AssignmentsDetailsComponent implements OnInit, OnDestroy {
     this.assignment.responsiblePerson = responsiblePerson;
   }
 
+  public updateHandoverToPerson(person: Technician) {
+    this.handoverToPerson = person;
+  }
+
   public releaseAssignment(updatedAssignment: Assignment) {
-    this.assignmentsListFacade.release({...updatedAssignment, serviceAssignmentState: 'RELEASED'});
+    this.assignmentsListFacade.release(updatedAssignment);
+    this.closeDetails();
+  }
+
+  public handoverAssignment(updatedAssignment: Assignment) {
+    this.assignmentsListFacade.handover({...updatedAssignment, responsiblePerson: this.handoverToPerson});
     this.closeDetails();
   }
 
@@ -84,9 +99,11 @@ export class AssignmentsDetailsComponent implements OnInit, OnDestroy {
     this.onDestroy$.complete();
   }
 
-  private isValueChanged(assignment: Assignment): boolean {
-    return this.originalAssignment.responsiblePerson !== assignment.responsiblePerson ||
-      this.originalAssignment.startDateTime !== assignment.startDateTime ||
-      this.originalAssignment.endDateTime !== assignment.endDateTime;
+  private getTechniciansToHandoverTo() {
+    return this.technicians.pipe(
+      map(technicians => technicians
+        .filter(technician => technician.externalId !== this.assignment.responsiblePerson.externalId),
+      ),
+    );
   }
 }

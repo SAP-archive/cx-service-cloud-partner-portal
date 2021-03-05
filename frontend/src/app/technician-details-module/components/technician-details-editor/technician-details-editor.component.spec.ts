@@ -1,10 +1,14 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { TechnicianDetailsEditorComponent, WorkingMode } from './technician-details-editor.component';
-import { emptyTechnicianProfile, exampleTechnicianProfile, TechnicianProfile } from '../../models/technician-profile.model';
+import {
+  emptyTechnicianProfile,
+  exampleTechnicianProfile,
+  TechnicianProfile,
+} from '../../models/technician-profile.model';
 import { FormBuilder, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { TechnicianProfileFacade } from '../../state/technician-profile.facade';
-import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { ActivatedRoute, RouterModule } from '@angular/router';
 import { TechnicianDetailsMaterialModule } from '../../technician-details-material.module';
 import { TranslateModule } from '@ngx-translate/core';
 import { AbbreviatePipeModule } from 'src/app/abbreviate-pipe-module/abbreviate-pipe.module';
@@ -12,7 +16,6 @@ import { RecursivePartial } from 'src/app/utils/recursive-partial';
 import { initialState, State, technicianProfileFeatureKey } from '../../state/technician-profile.reducer';
 import { MockStore, provideMockStore } from '@ngrx/store/testing';
 import { Store } from '@ngrx/store';
-import { TechnicianProfileService } from '../../services/technician-profile.service';
 import { SkillsCardComponent } from '../skills-card/skills-card.component';
 import { ApprovalDecisionStatusModule } from 'src/app/approval-decision-status-module/approval-decision-status.module';
 import { FileUploaderModule } from 'src/app/file-uploader/file-uploader.module';
@@ -22,6 +25,9 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { examplePerson } from '../../../model/unified-person.model';
 import { UserState } from '../../../state/user/user.reducer';
 import { omit } from '../../../utils/omit';
+import { MatDialog } from '@angular/material/dialog';
+import { MatDialogMockBuilder } from '../../../utils/mat-dialog-mock.spec';
+import { of } from 'rxjs';
 
 interface RouteSnapshot {
   params: {};
@@ -64,7 +70,7 @@ describe('TechnicianDetailsEditorComponent', () => {
       ...profileState,
     },
     user: {
-      person: examplePerson()
+      person: examplePerson(),
     },
   });
 
@@ -108,12 +114,6 @@ describe('TechnicianDetailsEditorComponent', () => {
       providers: [
         FormBuilder,
         TechnicianProfileFacade,
-        {
-          provide: TechnicianProfileService,
-          useValue: jasmine.createSpyObj(TechnicianProfileService, [
-            'get', 'create', 'update', 'getSkills', 'downloadCertificate'
-          ]),
-        },
         provideMockStore({
           initialState: getState({
             isLoadingProfile: true,
@@ -121,16 +121,16 @@ describe('TechnicianDetailsEditorComponent', () => {
           }),
         }),
         {
-          provide: Router,
-          useClass: class {},
-        },
-        {
           provide: ActivatedRoute,
           useValue: activatedRouteMock,
         },
-      ]
+        {
+          provide: MatDialog,
+          useValue: new MatDialogMockBuilder().withResponse(of(true)).build(),
+        },
+      ],
     })
-    .compileComponents();
+      .compileComponents();
 
     store = TestBed.inject(Store) as MockStore<MockedState>;
     technicianFacade = TestBed.inject(TechnicianProfileFacade);
@@ -251,7 +251,7 @@ describe('TechnicianDetailsEditorComponent', () => {
           component.onSubmit().then(() => {
             expect(spy).toHaveBeenCalledWith({
               ...mapToTechnicianData(exampleTechnicianProfile()),
-              crowdType: ''
+              crowdType: '',
             });
             done();
           });
@@ -318,6 +318,15 @@ describe('TechnicianDetailsEditorComponent', () => {
         expect(spy).toHaveBeenCalled();
       });
     });
+
+    describe('deleteTechnician()', () => {
+      it('should open a confirmation dialog', () => {
+        const deleteSpy = spyOn(technicianFacade, 'deleteProfile');
+        component.technicianProfile = exampleTechnicianProfile();
+        component.deleteTechnician();
+        expect(deleteSpy).toHaveBeenCalledWith(currentTechnicianId);
+      });
+    });
   });
 
   describe('in CREATE mode', () => {
@@ -358,5 +367,4 @@ describe('TechnicianDetailsEditorComponent', () => {
       });
     });
   });
-
 });
