@@ -10,7 +10,7 @@ export const assignmentsDetailsFeatureKey = 'assignmentsDetails';
 export interface State extends EntityState<Technician> {
     isLoading: boolean;
     displayMode: DetailsDisplayMode;
-    currentAssignment: Assignment;
+    displayedAssignment: Assignment;
 }
 
 export const adapter: EntityAdapter<Technician> = createEntityAdapter<Technician>({
@@ -22,7 +22,7 @@ export const initialState = () => adapter.getInitialState<State>({
     entities: {},
     isLoading: false,
     displayMode: 'web',
-    currentAssignment: null,
+    displayedAssignment: null,
 });
 
 const assignmentsListReducer = createReducer(
@@ -66,10 +66,10 @@ const assignmentsListReducer = createReducer(
     ),
 
     on(
-        AssignmentsDetailsActions.setCurrentAssignment,
+        AssignmentsDetailsActions.showAssignment,
         ((state, { assignment }) => ({
             ...state,
-            currentAssignment: assignment,
+            displayedAssignment: assignment,
         })),
     ),
 );

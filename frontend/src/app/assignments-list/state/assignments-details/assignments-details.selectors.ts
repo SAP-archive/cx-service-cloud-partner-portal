@@ -16,9 +16,9 @@ export const selectIsLoading = createSelector(
     state => state.isLoading,
 );
 
-export const selectCurrentAssignment = createSelector(
+export const selectDisplayedAssignment = createSelector(
     selectAssignmentsDetailsState,
-    state => state.currentAssignment,
+    state => state.displayedAssignment,
 );
 
 export const selectDisplayMode = createSelector(

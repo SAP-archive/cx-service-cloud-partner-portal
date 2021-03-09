@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { switchMap, tap } from 'rxjs/operators';
+import { tap } from 'rxjs/operators';
 import * as ReportingActions from './reporting.actions';
 import { LocalisationService } from '../../services/localisation.service';
 import { MatSnackBar, MatSnackBarConfig } from '@angular/material/snack-bar';

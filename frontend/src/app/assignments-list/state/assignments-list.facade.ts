@@ -1,4 +1,4 @@
-import { State } from './assignments-list.reducer';
+import { MainState } from './assignments-list.reducer';
 import * as fromAssignments from './assignments-list.selectors';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
@@ -8,7 +8,6 @@ import { Assignment } from '../model/assignment';
 import { filter, take } from 'rxjs/operators';
 import { ColumnName } from '../model/column-name';
 import { FetchingFilter } from '../model/fetching-filter';
-import { isNew, isOngoing, isReadyToPlan } from '../utils/assignments-columns-helper';
 
 @Injectable({providedIn: 'root'})
 export class AssignmentsListFacade {
@@ -16,7 +15,7 @@ export class AssignmentsListFacade {
   public draggedAssignment = this.store.select(fromAssignments.selectDraggedAssignment);
 
   constructor(
-    private store: Store<State>,
+    private store: Store<MainState>,
   ) {
   }
 
@@ -41,6 +40,21 @@ export class AssignmentsListFacade {
         return this.store.select(fromAssignments.selectOngoingAssignments);
       case 'ASSIGNMENTS_BOARD_CLOSED':
         return this.store.select(fromAssignments.selectClosedAssignments);
+      default:
+        throw new Error(`Unknown column ${columnName}`);
+    }
+  }
+
+  public getAssignmentsTotal(columnName: ColumnName) {
+    switch (columnName) {
+      case 'ASSIGNMENTS_BOARD_NEW':
+        return this.store.select(fromAssignments.selectNewAssignmentsTotal);
+      case 'ASSIGNMENTS_BOARD_READY_TO_PLAN':
+        return this.store.select(fromAssignments.selectReadyToPlanAssignmentsTotal);
+      case 'ASSIGNMENTS_BOARD_ONGOING':
+        return this.store.select(fromAssignments.selectOngoingAssignmentsTotal);
+      case 'ASSIGNMENTS_BOARD_CLOSED':
+        return this.store.select(fromAssignments.selectClosedAssignmentsTotal);
       default:
         throw new Error(`Unknown column ${columnName}`);
     }
@@ -96,15 +110,19 @@ export class AssignmentsListFacade {
   }
 
   public reject(assignment: Assignment) {
-    this.store.dispatch(assignmentsActions.reject({ assignment }));
+    this.store.dispatch(assignmentsActions.reject({assignment}));
   }
 
   public accept(assignment: Assignment) {
-    this.store.dispatch(assignmentsActions.accept({ assignment }));
+    this.store.dispatch(assignmentsActions.accept({assignment}));
   }
 
   public release(assignment: Assignment) {
     this.store.dispatch(assignmentsActions.release({assignment}));
+  }
+
+  public handover(assignment: Assignment) {
+    this.store.dispatch(assignmentsActions.handover({assignment}));
   }
 
   public close(assignment: Assignment) {
@@ -119,13 +137,11 @@ export class AssignmentsListFacade {
     this.store.dispatch(assignmentsActions.endDragging());
   }
 
-  public advanceAssignment(assignment: Assignment) {
-    if (isNew(assignment)) {
-      this.accept(assignment);
-    } else if (isReadyToPlan(assignment)) {
-      this.release({...assignment, serviceAssignmentState: 'RELEASED'});
-    } else if (isOngoing(assignment)) {
-      this.close({ ...assignment, serviceAssignmentState: 'CLOSED'});
-    }
+  public search(query: string) {
+    this.store.dispatch(assignmentsActions.setSearchQuery({query}));
+    this.loadNextPage('ASSIGNMENTS_BOARD_NEW');
+    this.loadNextPage('ASSIGNMENTS_BOARD_READY_TO_PLAN');
+    this.loadNextPage('ASSIGNMENTS_BOARD_ONGOING');
+    this.loadNextPage('ASSIGNMENTS_BOARD_CLOSED');
   }
 }

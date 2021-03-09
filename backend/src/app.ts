@@ -38,6 +38,7 @@ import { CrowdOwnerContactController } from './api/CrowdOwnerContactController';
 import { BusinessPartnerController } from './api/BusinessPartnerController';
 import { AssignmentsController } from './api/AssignmentsController';
 import { requestsLogger } from './api/middleware/requestsLogger';
+import { CompanySettingsController } from './api/CompanySettingsController';
 
 VaultService.initializeEnvVars();
 
@@ -151,6 +152,9 @@ app.post('/portal/auth/resetPassword/userPartialEmailAddress', AuthController.us
 app.post('/portal/auth/resetPassword/sendVerificationCode', AuthController.sendVerificationCode);
 app.post('/portal/auth/resetPassword/verifyVerificationCode', AuthController.verifyVerificationCode);
 app.post('/portal/auth/resetPassword', AuthController.resetPassword);
+
+app.get('/portal/company-settings', CompanySettingsController.fetch);
+
 app.get('/portal/crowdOwnerContact', CrowdOwnerContactController.getContact);
 app.get('/portal/partners/:partnerId/action/terminate', BusinessPartnerController.terminateCrowdPartner);
 
@@ -161,6 +165,7 @@ app.post('/portal/assignments/:assignmentId/actions/accept', AssignmentsControll
 app.post('/portal/assignments/:assignmentId/actions/update', AssignmentsController.updateAssignment);
 app.post('/portal/assignments/:assignmentId/actions/close', AssignmentsController.closeAssignment);
 app.post('/portal/assignments/:assignmentId/actions/release', AssignmentsController.releaseAssignment);
+app.post('/portal/assignments/:assignmentId/actions/handover', AssignmentsController.handoverAssignment);
 
 try {
   app.listen(NODE_LISTEN_PORT, function () {

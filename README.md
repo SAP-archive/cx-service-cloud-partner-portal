@@ -16,6 +16,7 @@ This repository contains a reference implementation. It is an example on how to 
   - [Installation](#installation)
   - [Configuration](#configuration)
   - [Logging](#logging)
+  - [Stats](#stats)
   - [Known issues](#known-issues)
   - [How to obtain support](#how-to-obtain-support)
   - [Contributing](#contributing)
@@ -61,7 +62,11 @@ The application can be started with configuration files as parameters. Those fil
 
 ## Logging
 
-You may extend LoggerService class with a functionality to report BFF's logs to a 3rd party solution, like ELK or Loggly. 
+You may extend LoggerService class with a functionality to report BFF's logs to a 3rd party solution, like ELK or Loggly.
+
+## Stats
+
+You may use StateEffects class on frontend to report app events (based on NgRX actions) to some analytics tools like Google Analytics or Countly.  
 
 ## Known issues
 

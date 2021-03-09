@@ -10,10 +10,10 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { initLocalisation } from '../../state/user/user.actions';
 import { translateModule } from '../../utils/translate.module';
 import { HttpClientModule } from '@angular/common/http';
-import createSpyObj = jasmine.createSpyObj;
 import { LaunchDarklyClientService } from '../../services/launch-darkly-client.service';
 import { ConfigFacade } from '../../state/config/config.facade';
 import { of } from 'rxjs';
+import createSpyObj = jasmine.createSpyObj;
 
 describe('PartnerPortalComponent', () => {
   let storeMock,
@@ -30,7 +30,8 @@ describe('PartnerPortalComponent', () => {
       canAccess: Promise.resolve(true),
     });
     configFacadeMock = {
-      embeddedConfig: of(fromConfig.initialState.embeddedConfig)
+      embeddedConfig: of(fromConfig.initialState.embeddedConfig),
+      fetchCompanySettings: jasmine.createSpy(),
     };
     storeMock.dispatch = () => null;
     TestBed.configureTestingModule({
@@ -56,7 +57,7 @@ describe('PartnerPortalComponent', () => {
         {
           provide: ConfigFacade,
           useValue: configFacadeMock,
-        }
+        },
       ],
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
     }).compileComponents();

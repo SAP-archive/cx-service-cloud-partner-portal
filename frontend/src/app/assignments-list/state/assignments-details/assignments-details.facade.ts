@@ -8,28 +8,29 @@ import * as AssignmentsDetailsSelector from './assignments-details.selectors';
 import { Technician } from '../../../technicians-list-module/models/technician.model';
 import { DetailsDisplayMode } from '../../model/details-display-mode';
 
-@Injectable({ providedIn: 'root' })
+@Injectable({providedIn: 'root'})
 export class AssignmentsDetailsFacade {
-    public technicians$: Observable<Technician[]> = this.store.select(AssignmentsDetailsSelector.selectTechnicians);
-    public isLoading$: Observable<boolean> = this.store.select(AssignmentsDetailsSelector.selectIsLoading);
-    public currentAssignment$: Observable<Assignment> = this.store.select(AssignmentsDetailsSelector.selectCurrentAssignment);
-    public displayMode$: Observable<DetailsDisplayMode> = this.store.select(AssignmentsDetailsSelector.selectDisplayMode);
+  public technicians$: Observable<Technician[]> = this.store.select(AssignmentsDetailsSelector.selectTechnicians);
+  public isLoading$: Observable<boolean> = this.store.select(AssignmentsDetailsSelector.selectIsLoading);
+  public displayedAssignment$: Observable<Assignment> = this.store.select(AssignmentsDetailsSelector.selectDisplayedAssignment);
+  public displayMode$: Observable<DetailsDisplayMode> = this.store.select(AssignmentsDetailsSelector.selectDisplayMode);
 
-    constructor(private store: Store<State>) { }
+  constructor(private store: Store<State>) {
+  }
 
-    public loadTechnicians() {
-        this.store.dispatch(AssignmentsDetailsActions.loadTechnicians());
-    }
+  public loadTechnicians() {
+    this.store.dispatch(AssignmentsDetailsActions.loadTechnicians());
+  }
 
-    public setCurrentAssignment(assignment: Assignment) {
-        this.store.dispatch(AssignmentsDetailsActions.setCurrentAssignment({ assignment }));
-    }
+  public showAssignment(assignment: Assignment) {
+    this.store.dispatch(AssignmentsDetailsActions.showAssignment({assignment}));
+  }
 
-    public setDisplayMode(displayMode: DetailsDisplayMode) {
-        this.store.dispatch(AssignmentsDetailsActions.setDisplayMode({ displayMode }));
-    }
+  public setDisplayMode(displayMode: DetailsDisplayMode) {
+    this.store.dispatch(AssignmentsDetailsActions.setDisplayMode({displayMode}));
+  }
 
-    public reset() {
-        this.store.dispatch(AssignmentsDetailsActions.reset());
-    }
+  public reset() {
+    this.store.dispatch(AssignmentsDetailsActions.reset());
+  }
 }

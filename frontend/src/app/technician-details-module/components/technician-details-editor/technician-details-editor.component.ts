@@ -1,8 +1,8 @@
-import { Component, OnDestroy, OnInit, HostListener } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { TechnicianProfileFacade } from '../../state/technician-profile.facade';
-import { Observable, Subject, of } from 'rxjs';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Observable, of, Subject } from 'rxjs';
+import { ActivatedRoute } from '@angular/router';
 import { TechnicianProfile } from '../../models/technician-profile.model';
 import { filter, map, take, takeUntil } from 'rxjs/operators';
 import { MatDialog } from '@angular/material/dialog';
@@ -10,13 +10,11 @@ import { UnsavedConfirmationDialogComponent } from '../../../components/unsaved-
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ReportingFacade } from '../../../state/reporting/reporting.facade';
 import { selectPerson } from '../../../state/user/user.selectors';
-import { Store, select } from '@ngrx/store';
+import { select, Store } from '@ngrx/store';
 import { RootState } from '../../../state';
 import { UnifiedPerson } from '../../..//model/unified-person.model';
 import { RemovalConfirmationDialogComponent } from '../removal-confirmation-dialog/removal-confirmation-dialog.component';
-import { TechnicianProfileService } from '../../services/technician-profile.service';
 import { CrowdType } from '../../models/crowd-type';
-import { LaunchDarklyClientService } from '../../../services/launch-darkly-client.service';
 import { omit } from '../../../utils/omit';
 
 interface FormDataStructure {
@@ -44,14 +42,7 @@ export type WorkingMode = 'EDIT' | 'CREATE';
   styleUrls: ['./technician-details-editor.component.scss'],
 })
 export class TechnicianDetailsEditorComponent implements OnInit, OnDestroy {
-  @HostListener('window:beforeunload', ['$event'])
-  private beforeunload(event: Event) {
-    if (this.profileForm.dirty) {
-      event.returnValue = true;
-    }
-  }
   public isLoading: Observable<boolean> = this.profileFacade.isLoading;
-  private isWaitingNavigate: boolean;
   public technicianProfile: TechnicianProfile;
   public profileForm: FormGroup = this.formBuilder.group({
     about: this.formBuilder.group({
@@ -70,11 +61,12 @@ export class TechnicianDetailsEditorComponent implements OnInit, OnDestroy {
     }),
   });
   public person: UnifiedPerson;
-  private destroyed = new Subject<void>();
-  private editorMode: WorkingMode;
   public isBlocked: boolean;
   public isActive: boolean;
   public crowdTypes: CrowdType[] = ['PARTNER_ADMIN', 'PARTNER_TECHNICIAN'];
+  private isAwaitingNavigationChange: boolean;
+  private destroyed = new Subject<void>();
+  private editorMode: WorkingMode;
   private isRoleChanged: boolean = false;
 
   constructor(
@@ -85,8 +77,6 @@ export class TechnicianDetailsEditorComponent implements OnInit, OnDestroy {
     private snackBar: MatSnackBar,
     private reportingFacade: ReportingFacade,
     private store: Store<RootState>,
-    private profileService: TechnicianProfileService,
-    private router: Router,
   ) {
     this.editorMode = route.snapshot.data.mode;
   }
@@ -102,7 +92,7 @@ export class TechnicianDetailsEditorComponent implements OnInit, OnDestroy {
   }
 
   public getFullName(): string {
-    const { firstName, lastName } = this.technicianProfile;
+    const {firstName, lastName} = this.technicianProfile;
 
     if (!firstName && !lastName) {
       return 'Unnamed';
@@ -154,18 +144,15 @@ export class TechnicianDetailsEditorComponent implements OnInit, OnDestroy {
       takeUntil(this.destroyed),
       map(() => this.profileForm.markAsDirty()))
       .subscribe();
-    this.profileFacade.isWaitingNavigate.subscribe((navigate: boolean) => this.isWaitingNavigate = navigate);
+    this.profileFacade.isAwaitingNavigationChange
+      .pipe(takeUntil(this.destroyed))
+      .subscribe((navigate: boolean) => this.isAwaitingNavigationChange = navigate);
     this.store.pipe(
       select(selectPerson),
+      takeUntil(this.destroyed),
       filter(person => !!person),
     )
-    .subscribe(person => this.person = person);
-  }
-
-  private isProfileBlockedBySyncStatus(): boolean {
-    const BLOCKED_STATUS = 'BLOCKED';
-    return (this.technicianProfile.syncStatus === BLOCKED_STATUS) ||
-      (this.technicianProfile.address && this.technicianProfile.address.syncStatus === BLOCKED_STATUS);
+      .subscribe(person => this.person = person);
   }
 
   public ngOnDestroy() {
@@ -175,12 +162,40 @@ export class TechnicianDetailsEditorComponent implements OnInit, OnDestroy {
     this.snackBar.dismiss();
   }
 
-  private getTechnicianId(): string {
+  public onPageLeaving(): Observable<boolean> {
+    if (this.isAwaitingNavigationChange || this.profileForm.pristine) {
+      return of(true);
+    } else {
+      return this.dialog.open(UnsavedConfirmationDialogComponent).afterClosed();
+    }
+  }
+
+  public deleteTechnician(): void {
+    this.dialog.open(RemovalConfirmationDialogComponent, {data: this.getFullName()})
+      .afterClosed()
+      .pipe(filter(confirmed => confirmed))
+      .subscribe(() => this.profileFacade.deleteProfile(this.getTechnicianId()));
+  }
+
+  @HostListener('window:beforeunload', ['$event'])
+  private beforeunload(event: Event) {
+    if (this.profileForm.dirty) {
+      event.returnValue = true;
+    }
+  }
+
+  private isProfileBlockedBySyncStatus(): boolean {
+    const BLOCKED_STATUS = 'BLOCKED';
+    return (this.technicianProfile.syncStatus === BLOCKED_STATUS) ||
+      (this.technicianProfile.address && this.technicianProfile.address.syncStatus === BLOCKED_STATUS);
+  }
+
+  private getTechnicianId(): TechnicianProfile['externalId'] {
     return this.route.snapshot.params.technicianId;
   }
 
   private mapTechnicianToFormData(technician: TechnicianProfile) {
-    const { address } = technician;
+    const {address} = technician;
     return {
       about: {
         firstName: technician.firstName,
@@ -228,29 +243,5 @@ export class TechnicianDetailsEditorComponent implements OnInit, OnDestroy {
           zipCode: formData.address.zipCode,
         },
       }))).toPromise();
-  }
-
-  public onPageLeaving(): Observable<boolean> {
-    if ((this.editorMode === 'CREATE' && this.isWaitingNavigate) || this.profileForm.pristine) {
-      return of(true);
-    } else {
-      return this.dialog.open(UnsavedConfirmationDialogComponent).afterClosed();
-    }
-  }
-
-  public deleteTechnician(): void {
-    this.dialog.open(RemovalConfirmationDialogComponent, { data: this.getFullName()})
-    .afterClosed()
-    .pipe(filter(confirmed => confirmed))
-    .subscribe(() => {
-      this.profileService.delete(this.getTechnicianId())
-      .subscribe(() => {
-        this.router.navigate(['']).then(() => {
-          this.reportingFacade.reportSuccess('DASHBOARD_TECHNICIAN_HAS_BEEN_DELETED');
-        });
-      }, () => {
-        this.reportingFacade.reportError('DASHBOARD_TECHNICIAN_DELETION_FAILED');
-      });
-    });
   }
 }

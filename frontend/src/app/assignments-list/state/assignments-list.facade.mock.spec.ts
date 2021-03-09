@@ -16,7 +16,9 @@ export class AssignmentsListFacadeMockBuilder {
     'close',
     'startDragging',
     'endDragging',
-    'advanceAssignment',
+    'handover',
+    'getAssignmentsTotal',
+    'search',
   ]);
 
   public setIsUpdating(isUpdating: any) {

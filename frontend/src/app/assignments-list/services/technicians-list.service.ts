@@ -14,7 +14,7 @@ export class TechniciansListService {
             '/search/technicians', {
             page: 0,
             size: 1000,
-            name: ''
+            inactive: false
         }).pipe(
             map(response => response.body.results)
         );

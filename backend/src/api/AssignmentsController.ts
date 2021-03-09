@@ -2,6 +2,7 @@ import * as express from 'express';
 import { AssignmentsDao } from '@modules/data-access/daos/AssignmentsDao';
 import { UserDataRequest } from './middleware/sessiondata';
 import { ApiHelper } from './APIHelper';
+import { Assignment } from '../models/Assignment';
 
 export class AssignmentsController {
   public static async fetchAssignments(req: express.Request & UserDataRequest, res: express.Response) {
@@ -77,10 +78,24 @@ export class AssignmentsController {
 
   public static async releaseAssignment(req: express.Request & UserDataRequest, res: express.Response) {
     try {
-      const response = await AssignmentsDao.dispatch(
+      const updatedAssignment = await AssignmentsDao.dispatch(
         req.userData,
         req.body,
         'release',
+      );
+      res.json({...updatedAssignment, serviceAssignmentState: 'RELEASED'} as Assignment);
+    } catch (error) {
+      ApiHelper.processError(res, AssignmentsDao.getError(error));
+    } finally {
+      res.end();
+    }
+  }
+
+  public static async handoverAssignment(req: express.Request & UserDataRequest, res: express.Response) {
+    try {
+      const response = await AssignmentsDao.handover(
+        req.userData,
+        req.body,
       );
       res.json(response);
     } catch (error) {

@@ -7,14 +7,15 @@ import { DetailsDisplayMode } from '../../model/details-display-mode';
 export class AssignmentsDetailsFacadeMockBuilder {
   private mock = jasmine.createSpyObj<AssignmentsDetailsFacade>([
     'reset',
-    'setCurrentAssignment',
+    'showAssignment',
     'setDisplayMode',
     'loadTechnicians',
   ]);
 
   constructor() {
     this.mock.technicians$ = of([exampleTechnician('1'), exampleTechnician('2')]);
-    this.mock.currentAssignment$ = of(exampleAssignment());
+    this.mock.displayedAssignment$ = of(exampleAssignment());
+    this.mock.displayMode$ = of('web');
   }
 
   public setIsLoading(isLoading: any) {

@@ -26,6 +26,7 @@ const server = express()
   .post('/portal/assignments/:assignmentId/actions/accept', AssignmentsController.acceptAssignment)
   .post('/portal/assignments/:assignmentId/actions/close', AssignmentsController.closeAssignment)
   .post('/portal/assignments/:assignmentId/actions/release', AssignmentsController.releaseAssignment)
+  .post('/portal/assignments/:assignmentId/actions/handover', AssignmentsController.handoverAssignment)
   .listen(PORT);
 
 const tester = new Tester({
@@ -51,14 +52,17 @@ describe('AssignmentsController', () => {
 
       const nockScopes = [
         nock(`https://${TEST_APP_CONFIG.backendClusterDomain}`)
-          .get(`/cloud-partner-dispatch-service/api/v1/assignment-details?page=1&size=10&partnerDispatchingStatus=ACCEPTED&ServiceAssignmentState=CLOSED${TestConfigurationService.requestQuerySuffix('&')}`)
+          .get(`/cloud-partner-dispatch-service/api/v1/assignment-details?page=1&size=10&partnerDispatchingStatus=ACCEPTED&serviceAssignmentState=CLOSED,MODIFIED${TestConfigurationService.requestQuerySuffix('&')}`)
           .reply(200, assignmentDtosResponse()),
         nock(`https://${TEST_APP_CONFIG.backendClusterDomain}`)
-          .get(`/cloud-crowd-service/api/crowd/v2/technicians?page=1&size=10&name=&externalId=${exampleTechnicianDto().externalId}${TestConfigurationService.requestQuerySuffix('&')}`)
+          .get(`/cloud-crowd-service/api/crowd/v2/technicians?page=0&size=10&name=&externalId=${exampleTechnicianDto().externalId}&inactive=${TestConfigurationService.requestQuerySuffix('&')}`)
           .reply(200, {results: [exampleTechnicianDto()]}),
       ];
 
-      tester.get(`/portal/assignments?page=1&size=10&filter=${JSON.stringify({partnerDispatchingStatus: 'ACCEPTED', ServiceAssignmentState: 'CLOSED'})}`)
+      tester.get(`/portal/assignments?page=1&size=10&filter=${JSON.stringify({
+        partnerDispatchingStatus: 'ACCEPTED',
+        serviceAssignmentState: ['CLOSED', 'MODIFIED'],
+      })}`)
         .expectStatus(200)
         .with('headers', TestConfigurationService.HEADERS)
         .assertResponse((response) => {
@@ -98,7 +102,7 @@ describe('AssignmentsController', () => {
           .get(`/cloud-partner-dispatch-service/api/v1/assignment-details?page=0&size=1&partnerDispatchingStatus=ACCEPTED&serviceAssignmentState=CLOSED${TestConfigurationService.requestQuerySuffix('&')}`)
           .reply(200, assignmentDtosResponse(4)),
         nock(`https://${TEST_APP_CONFIG.backendClusterDomain}`)
-          .get(`/cloud-crowd-service/api/crowd/v2/technicians?page=0&size=1&name=&externalId=${TestConfigurationService.requestQuerySuffix('&')}`)
+          .get(`/cloud-crowd-service/api/crowd/v2/technicians?page=0&size=1&name=&externalId=&inactive=${TestConfigurationService.requestQuerySuffix('&')}`)
           .times(4)
           .reply(200, {results: []}),
       ];
@@ -145,8 +149,8 @@ describe('AssignmentsController', () => {
         .assertResponse((response) => {
           nockScopes.forEach(scope => assert(scope.isDone(), 'Not all nock scopes have been called!'));
           assert.deepEqual(
-            response,
-            exampleAssignment(),
+            response.id,
+            exampleAssignment().id,
           );
           done();
         });
@@ -174,8 +178,8 @@ describe('AssignmentsController', () => {
         .assertResponse((response) => {
           nockScopes.forEach(scope => assert(scope.isDone(), 'Not all nock scopes have been called!'));
           assert.deepEqual(
-            response,
-            { ...exampleAssignment(), partnerDispatchingStatus: 'REJECTED' },
+            response.partnerDispatchingStatus,
+            'REJECTED',
           );
           done();
         });
@@ -201,15 +205,15 @@ describe('AssignmentsController', () => {
         .assertResponse((response) => {
           nockScopes.forEach(scope => assert(scope.isDone(), 'Not all nock scopes have been called!'));
           assert.deepEqual(
-            response,
-            { ...exampleAssignment(), partnerDispatchingStatus: 'ACCEPTED' },
+            response.partnerDispatchingStatus,
+            'ACCEPTED',
           );
           done();
         });
     });
 
     it('should send release request', done => {
-      const releasedAssignment: Assignment = { ...exampleAssignment(), serviceAssignmentState: 'RELEASED' };
+      const releasedAssignment: Assignment = {...exampleAssignment(), serviceAssignmentState: 'RELEASED'};
       const nockScopes = [
         nock(`https://${TEST_APP_CONFIG.backendClusterDomain}`)
           .post(`/cloud-partner-dispatch-service/api/partner-dispatch/v1/release${TestConfigurationService.requestQuerySuffix()}`)
@@ -224,9 +228,35 @@ describe('AssignmentsController', () => {
         .with('headers', TestConfigurationService.HEADERS)
         .assertResponse((response) => {
           nockScopes.forEach(scope => assert(scope.isDone(), 'Not all nock scopes have been called!'));
+          assert.deepEqual(response.id, releasedAssignment.id);
+          assert.deepEqual(response.serviceAssignmentState, 'RELEASED');
+          done();
+        });
+    });
+  });
+
+  describe('handoverAssignment', () => {
+    it('should send a handover request', done => {
+      const newActivityId = 'xyz';
+      const assignmentResponse = () => ({newActivityId} as Partial<{ activityId: string }>);
+
+      const nockScopes = [
+        nock(`https://${TEST_APP_CONFIG.backendClusterDomain}`)
+          .post(`/cloud-partner-dispatch-service/api/partner-dispatch/v1/handover${TestConfigurationService.requestQuerySuffix()}`)
+          .reply(200, assignmentResponse()),
+      ];
+
+      tester.post(`/portal/assignments/${exampleAssignment().id}/actions/handover`)
+        .send({
+          ...exampleAssignment(),
+        })
+        .expectStatus(200)
+        .with('headers', TestConfigurationService.HEADERS)
+        .assertResponse((response) => {
+          nockScopes.forEach(scope => assert(scope.isDone(), 'Not all nock scopes have been called!'));
           assert.deepEqual(
-            response,
-            releasedAssignment,
+            response.id,
+            newActivityId,
           );
           done();
         });
@@ -251,8 +281,8 @@ describe('AssignmentsController', () => {
         .assertResponse((response) => {
           nockScopes.forEach(scope => assert(scope.isDone(), 'Not all nock scopes have been called!'));
           assert.deepEqual(
-            response,
-            closedAssignment,
+            response.id,
+            closedAssignment.id,
           );
           done();
         });

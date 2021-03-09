@@ -4,7 +4,7 @@ import { AssignmentsTileComponent } from './assignments-tile.component';
 import { AssignmentsTileFacade } from '../../state/assignments-tile.facade';
 import { AssignmentsTileFacadeMockBuilder } from '../../state/assignments-tile.facade.mock.spec';
 import { marbles } from 'rxjs-marbles';
-import { TruncateNumberPipe } from '../../pipes/truncate-number.pipe';
+import { TruncateNumberPipe } from '../../../truncate-number-pipe-module/truncate-number.pipe';
 import { MatCardModule } from '@angular/material/card';
 import SpyObj = jasmine.SpyObj;
 

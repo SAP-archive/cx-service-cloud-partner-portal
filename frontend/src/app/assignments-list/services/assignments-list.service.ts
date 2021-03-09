@@ -1,11 +1,13 @@
 import { Injectable } from '@angular/core';
 import { AppBackendService } from 'src/app/services/app-backend.service';
-import { Observable } from 'rxjs';
+import { Observable, throwError } from 'rxjs';
 import { map, switchMap, take } from 'rxjs/operators';
 import { AssignmentsListFacade } from '../state/assignments-list.facade';
 import { CrowdApiResponse } from '../../technicians-list-module/models/crowd-api-response.model';
 import { Assignment } from '../model/assignment';
 import { ColumnName } from '../model/column-name';
+import { AssignmentDispatchActions } from '../model/assignment-dispatch-actions';
+import { pageSize } from '../page-size';
 
 @Injectable()
 export class AssignmentsListService {
@@ -19,38 +21,23 @@ export class AssignmentsListService {
       take(1),
       switchMap(
         (fetchingParams) => this.appBackend.get<CrowdApiResponse<Assignment>>(
-          `/assignments?page=${fetchingParams.pagesLoaded}&size=50&filter=${JSON.stringify(fetchingParams.filter)}`),
+          `/assignments?page=${fetchingParams.pagesLoaded}&size=${pageSize}&filter=${JSON.stringify(fetchingParams.filter)}`),
       ),
       map(response => response.body),
     );
   }
 
-  public reject(assignment: Assignment): Observable<CrowdApiResponse<string>> {
-    return this.appBackend.post<CrowdApiResponse<string>>(`/assignments/${assignment.id}/actions/reject`, assignment).pipe(
+  public dispatch(assignment: Assignment, action: AssignmentDispatchActions): Observable<Assignment> {
+    if (assignment.syncStatus === 'BLOCKED') {
+      return throwError({error: {message: 'ASSIGNMENTS_SYNC_STATUS_ERROR'}});
+    }
+    return this.appBackend.post<Assignment>(`/assignments/${assignment.id}/actions/${action}`, assignment).pipe(
       map(response => response.body),
     );
   }
 
-  public accept(assignment: Assignment): Observable<CrowdApiResponse<string>> {
-    return this.appBackend.post<CrowdApiResponse<string>>(`/assignments/${assignment.id}/actions/accept`, assignment).pipe(
-      map(response => response.body),
-    );
-  }
-
-  public update(assignment: Assignment): Observable<CrowdApiResponse<Assignment>> {
-    return this.appBackend.post<CrowdApiResponse<Assignment>>(`/assignments/${assignment.id}/actions/update`, assignment).pipe(
-      map(response => response.body),
-    );
-  }
-
-  public close(assignment: Assignment): Observable<CrowdApiResponse<Assignment>> {
-    return this.appBackend.post<CrowdApiResponse<Assignment>>(`/assignments/${assignment.id}/actions/close`, assignment).pipe(
-      map(response => response.body),
-    );
-  }
-
-  public release(assignment: Assignment): Observable<CrowdApiResponse<Assignment>> {
-    return this.appBackend.post<CrowdApiResponse<Assignment>>(`/assignments/${assignment.id}/actions/release`, assignment).pipe(
+  public handover(assignment: Assignment): Observable<Assignment> {
+    return this.appBackend.post<Assignment>(`/assignments/${assignment.id}/actions/handover`, assignment).pipe(
       map(response => response.body),
     );
   }

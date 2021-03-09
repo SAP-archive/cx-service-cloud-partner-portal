@@ -15,7 +15,7 @@ export interface State {
   isLoadingProfile: boolean;
   isLoadingTags: boolean;
   isLoadingSkills: boolean;
-  isWaitingNavigate: boolean;
+  isAwaitingNavigationChange: boolean;
   profileData: TechnicianProfile | null;
   tags: Tag[] | null;
   skillViewModels: EntityState<SkillViewModel>;
@@ -25,7 +25,7 @@ export const initialState: State = {
   isLoadingProfile: false,
   isLoadingTags: false,
   isLoadingSkills: false,
-  isWaitingNavigate: false,
+  isAwaitingNavigationChange: false,
   profileData: emptyTechnicianProfile(),
   tags: null,
   skillViewModels: skillViewModelsAdapter.getInitialState(),
@@ -197,7 +197,7 @@ const technicianProfileReducer = createReducer(
     return {
       ...state,
       profileData: action.data,
-      isWaitingNavigate: false,
+      isAwaitingNavigationChange: false,
       isLoadingProfile: false,
     };
   }),
@@ -226,22 +226,52 @@ const technicianProfileReducer = createReducer(
     };
   }),
 
-  on(TechnicianProfileActions.createTechnicianProfile, state => ({
-    ...state,
-    isLoadingProfile: true,
-  })),
+  on(
+    TechnicianProfileActions.createTechnicianProfile,
+    state => ({
+      ...state,
+      isLoadingProfile: true,
+    })),
 
-  on(TechnicianProfileActions.createTechnicianProfileSuccess, state => ({
-    ...state,
-    isWaitingNavigate: true,
-    isLoadingProfile: true,
-  })),
+  on(
+    TechnicianProfileActions.createTechnicianProfileSuccess,
+    state => ({
+      ...state,
+      isAwaitingNavigationChange: true,
+      isLoadingProfile: true,
+    })),
 
-  on(TechnicianProfileActions.createTechnicianProfileFailure, state => ({
-    ...state,
-    isWaitingNavigate: false,
-    isLoadingProfile: false,
-  })),
+  on(
+    TechnicianProfileActions.createTechnicianProfileFailure,
+    state => ({
+      ...state,
+      isAwaitingNavigationChange: false,
+      isLoadingProfile: false,
+    })),
+
+  on(
+    TechnicianProfileActions.deleteTechnicianProfile,
+    state => ({
+      ...state,
+      isLoadingProfile: true,
+      isAwaitingNavigationChange: true,
+    })),
+
+  on(
+    TechnicianProfileActions.deleteTechnicianProfileSuccess,
+    state => ({
+      ...state,
+      isLoadingProfile: false,
+      isAwaitingNavigationChange: false,
+    })),
+
+  on(
+    TechnicianProfileActions.deleteTechnicianProfileFailure,
+    state => ({
+      ...state,
+      isLoadingProfile: false,
+      isAwaitingNavigationChange: false,
+    })),
 
   on(TechnicianProfileActions.loadSkills, state => ({
     ...state,

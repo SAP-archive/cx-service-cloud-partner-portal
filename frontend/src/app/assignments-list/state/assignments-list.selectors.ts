@@ -1,81 +1,117 @@
 import { createFeatureSelector, createSelector } from '@ngrx/store';
 import * as fromAssignments from './assignments-list.reducer';
-import { adapter } from './assignments-list.reducer';
+import * as fromNewAssignments from './columns-reducers/new-assignments.reducer';
+import * as fromReadyToPlanAssignments from './columns-reducers/ready-to-plan-assignments.reducer';
+import * as fromOngoing from './columns-reducers/ongoing-assignments.reducer';
+import * as fromClosed from './columns-reducers/closed-assignments.reducer';
+import { AssignmentsListState } from './assignments-list.state';
+import { ColumnState } from './column-state';
+import { FetchingParams } from '../model/fetching-params.model';
 
-export const selectAssignmentsState = createFeatureSelector<fromAssignments.State>(
+export const getFetchingParamsFromColumnState = ({
+                                                   pagesLoaded,
+                                                   totalElements,
+                                                   totalPages,
+                                                   filter,
+                                                 }: ColumnState): FetchingParams => ({
+  pagesLoaded,
+  totalElements,
+  totalPages,
+  filter,
+});
+
+export const selectAssignmentsState = createFeatureSelector<AssignmentsListState>(
   fromAssignments.assignmentsListFeatureKey,
 );
 
-export const selectAssignments = createSelector(
+export const selectMainState = createSelector(
   selectAssignmentsState,
-  adapter.getSelectors().selectAll,
+  state => state.main,
+);
+
+export const selectNewAssignmentsState = createSelector(
+  selectAssignmentsState,
+  state => state.newAssignments,
+);
+
+export const selectReadyToPlanState = createSelector(
+  selectAssignmentsState,
+  state => state.readyToPlan,
+);
+
+export const selectOngoingState = createSelector(
+  selectAssignmentsState,
+  state => state.ongoing,
+);
+
+export const selectClosedState = createSelector(
+  selectAssignmentsState,
+  state => state.closed,
 );
 
 export const selectNewAssignments = createSelector(
-  selectAssignments,
-  state => state.filter(assignment => assignment.partnerDispatchingStatus === 'NOTIFIED'),
+  selectNewAssignmentsState,
+  fromNewAssignments.adapter.getSelectors().selectAll,
 );
 
 export const selectReadyToPlanAssignments = createSelector(
-  selectAssignments,
-  state =>
-    state.filter(assignment => assignment.partnerDispatchingStatus === 'ACCEPTED'
-      && assignment.serviceAssignmentState === 'ASSIGNED'),
+  selectReadyToPlanState,
+  fromReadyToPlanAssignments.adapter.getSelectors().selectAll,
 );
 
 export const selectOngoingAssignments = createSelector(
-  selectAssignments,
-  state => state.filter(assignment => assignment.serviceAssignmentState === 'RELEASED'),
+  selectOngoingState,
+  fromOngoing.adapter.getSelectors().selectAll,
 );
 
 export const selectClosedAssignments = createSelector(
-  selectAssignments,
-  state => state.filter(assignment => assignment.serviceAssignmentState === 'CLOSED'),
+  selectClosedState,
+  fromClosed.adapter.getSelectors().selectAll,
 );
 
 export const selectIsLoadingNewAssignments = createSelector(
-  selectAssignmentsState,
-  state => state.newAssignments.isLoading,
+  selectNewAssignmentsState,
+  state => state.isLoading,
 );
 
 export const selectIsLoadingReadyToPlanAssignments = createSelector(
-  selectAssignmentsState,
-  state => state.readyToPlanAssignments.isLoading,
+  selectReadyToPlanState,
+  state => state.isLoading,
 );
 
 export const selectIsLoadingOngoingAssignments = createSelector(
-  selectAssignmentsState,
-  state => state.ongoingAssignments.isLoading,
+  selectOngoingState,
+  state => state.isLoading,
 );
 
 export const selectIsLoadingClosedAssignments = createSelector(
-  selectAssignmentsState,
-  state => state.closedAssignments.isLoading,
+  selectClosedState,
+  state => state.isLoading,
 );
 
 export const selectIsUpdating = createSelector(
-  selectAssignmentsState,
+  selectMainState,
   state => state.isUpdating,
 );
 
 export const selectNewAssignmentsFetchingParams = createSelector(
-  selectAssignmentsState,
-  state => state.newAssignments.fetchingParams,
+  selectNewAssignmentsState,
+  state => getFetchingParamsFromColumnState(state),
 );
 
 export const selectReadyToPlanAssignmentsFetchingParams = createSelector(
-  selectAssignmentsState,
-  state => state.readyToPlanAssignments.fetchingParams,
+  selectReadyToPlanState,
+  state => getFetchingParamsFromColumnState(state),
 );
 
 export const selectOngoingAssignmentsFetchingParams = createSelector(
-  selectAssignmentsState,
-  state => state.ongoingAssignments.fetchingParams,
+  selectOngoingState,
+  state => getFetchingParamsFromColumnState(state),
 );
 
 export const selectClosedAssignmentsFetchingParams = createSelector(
-  selectAssignmentsState,
-  state => state.closedAssignments.fetchingParams,
+  selectClosedState,
+  state => getFetchingParamsFromColumnState(state),
 );
 
 export const selectHasFetchedAllNewAssignments = createSelector(
@@ -99,6 +135,28 @@ export const selectHasFetchedAllClosedAssignments = createSelector(
 );
 
 export const selectDraggedAssignment = createSelector(
-  selectAssignmentsState,
+  selectMainState,
   state => state.draggedAssignment,
+);
+
+const selectTotalElements = (state: ColumnState) => state.totalElements;
+
+export const selectNewAssignmentsTotal = createSelector(
+  selectNewAssignmentsState,
+  selectTotalElements,
+);
+
+export const selectReadyToPlanAssignmentsTotal = createSelector(
+  selectReadyToPlanState,
+  selectTotalElements,
+);
+
+export const selectOngoingAssignmentsTotal = createSelector(
+  selectOngoingState,
+  selectTotalElements,
+);
+
+export const selectClosedAssignmentsTotal = createSelector(
+  selectClosedState,
+  selectTotalElements,
 );

@@ -1,5 +1,7 @@
 const process = require('process');
-process.env.CHROME_BIN = 'chromium-browser';
+process.env.CHROME_BIN = require('puppeteer').executablePath();
+
+console.log('CHROME_BIN', process.env.CHROME_BIN)
 
 module.exports = function (config) {
   config.set({

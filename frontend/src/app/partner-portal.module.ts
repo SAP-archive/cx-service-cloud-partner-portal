@@ -30,6 +30,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { AssignmentsListModule } from './assignments-list/assignments-list.module';
 import { AssignmentsTileModule } from './assignments-tile/assignments-tile.module';
 import { LocalDateTimePipeModule } from './local-date-time-pipe-module';
+import { CompanySettingsService } from './services/company-settings.service';
 
 @NgModule({
   declarations: [
@@ -73,6 +74,7 @@ import { LocalDateTimePipeModule } from './local-date-time-pipe-module';
       multi: true,
     },
     UnifiedPersonService,
+    CompanySettingsService,
   ],
   entryComponents: [
     UnsavedConfirmationDialogComponent,

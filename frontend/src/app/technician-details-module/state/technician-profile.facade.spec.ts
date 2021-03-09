@@ -13,6 +13,7 @@ import {
   collapseTagDetailsView,
   createTechnicianProfile,
   deleteCertificate,
+  deleteTechnicianProfile,
   downloadCertificate,
   expandTagDetailsView,
   removeCertificateUpload,
@@ -74,7 +75,7 @@ describe('TechnicianProfileFacade', () => {
           [
             selectedNewSkillViewModel,
             unselectedOldSkillViewModel,
-            oldSkillViewModelWithCertificateToBeRemoved
+            oldSkillViewModelWithCertificateToBeRemoved,
           ],
           skillViewModelsAdapter.getInitialState()),
       }));
@@ -136,6 +137,17 @@ describe('TechnicianProfileFacade', () => {
           ...selectedSkillViewModel.newCertificate,
           viewModelId: selectedSkillViewModel.id,
         }],
+      }));
+    });
+  });
+
+  describe('deleteProfile()', () => {
+    it('should trigger a delete call', () => {
+      const spy = spyOn(store, 'dispatch');
+      const technicianId = '1';
+      facade.deleteProfile(technicianId);
+      expect(spy).toHaveBeenCalledWith(deleteTechnicianProfile({
+        technicianId,
       }));
     });
   });

@@ -5,6 +5,6 @@
     "clientIdentifier": "partner-portal",
     "clientSecret": "",
     "title": "Partner Portal",
-    "version": "0.31.0-rc8"
+    "version": "0.39.0-rc3"
   }
 }

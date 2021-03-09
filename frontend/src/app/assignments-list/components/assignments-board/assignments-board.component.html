@@ -1,20 +1,21 @@
+<pp-assignments-board-search></pp-assignments-board-search>
 <div class="board" cdkDropListGroup>
   <pp-assignments-board-column
     class="column"
     columnName="ASSIGNMENTS_BOARD_NEW"
-    [fetchingFilter]="{partnerDispatchingStatus: 'NOTIFIED', serviceAssignmentState: 'ASSIGNED'}"></pp-assignments-board-column>
+    [fetchingFilter]="{partnerDispatchingStatus: 'NOTIFIED', serviceAssignmentState: ['ASSIGNED']}"></pp-assignments-board-column>
   <pp-assignments-board-column
     class="column"
     columnName="ASSIGNMENTS_BOARD_READY_TO_PLAN"
-    [fetchingFilter]="{partnerDispatchingStatus: 'ACCEPTED', serviceAssignmentState: 'ASSIGNED'}"></pp-assignments-board-column>
+    [fetchingFilter]="{partnerDispatchingStatus: 'ACCEPTED', serviceAssignmentState: ['ASSIGNED']}"></pp-assignments-board-column>
   <pp-assignments-board-column
     class="column"
     columnName="ASSIGNMENTS_BOARD_ONGOING"
-    [fetchingFilter]="{partnerDispatchingStatus: 'ACCEPTED', serviceAssignmentState: 'RELEASED'}"></pp-assignments-board-column>
+    [fetchingFilter]="{partnerDispatchingStatus: 'ACCEPTED', serviceAssignmentState: ['RELEASED']}"></pp-assignments-board-column>
   <pp-assignments-board-column
     class="column"
     columnName="ASSIGNMENTS_BOARD_CLOSED"
-    [fetchingFilter]="{partnerDispatchingStatus: 'ACCEPTED', serviceAssignmentState: 'CLOSED'}"></pp-assignments-board-column>
+    [fetchingFilter]="{partnerDispatchingStatus: 'ACCEPTED', serviceAssignmentState: ['CLOSED']}"></pp-assignments-board-column>
 </div>
 <div *ngIf="isUpdating | async"
   class="busy-indicator">

@@ -22,6 +22,11 @@ export const clusterConfigs: ClusterConfig[] = [
     appsBaseUrl: 'https://sb.coresystems.net'
   },
   {
+    code: 'DT',
+    cloudBaseUrl: 'https://dt.dev.coresuite.com',
+    appsBaseUrl: 'https://dt.coresystems.net'
+  },
+  {
     code: 'US',
     cloudBaseUrl: 'https://us.coresuite.com',
     appsBaseUrl: 'https://us.coresystems.net'
