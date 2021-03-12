@@ -1,3 +1,5 @@
+<!--[![REUSE status](https://api.reuse.software/badge/github.com/SAP-samples/cx-service-cloud-partner-portal)](https://api.reuse.software/info/github.com/SAP-samples/cx-service-cloud-partner-portal)-->
+
 # SAP Field Service Management Crowd Partner Portal
 
 Partner Portal enables [SAP FSM Crowd](https://apps.coresystems.net/marketplace/) service partners to:
